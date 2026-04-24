@@ -1,4 +1,4 @@
- RESEARCH_AGENDA.md
+# RESEARCH_AGENDA.md
 # Blueprint v11 | Track 3 Research Agenda
 # Independent Study Specifications
 # Maps to: {{COURSE_MAPPING}} (configure per academic program)
