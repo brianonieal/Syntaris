@@ -275,7 +275,7 @@ $requiredSkills = @(
     "start", "build-rules", "global-rules", "critical-thinker",
     "testing", "security", "deployment", "costs", "performance",
     "debug", "research", "freelance-billing", "handoff",
-    "health", "onboard", "coursework"
+    "health", "onboard", "rollback"
 )
 foreach ($skill in $requiredSkills) {
     $path = Join-Path $InstallRoot "skills\$skill\SKILL.md"
@@ -371,11 +371,11 @@ Write-Host "============================================" -ForegroundColor Cyan
 if ($allOk) {
     Write-Host "  Blueprint v11 installed successfully!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Skills:     $InstallRoot\skills\ (17 skills)" -ForegroundColor White
+    Write-Host "  Skills:     $InstallRoot\skills\ (16 skills)" -ForegroundColor White
     Write-Host "  Hooks:      $InstallRoot\hooks\ (9 hooks + 1 wrapper, bash + PowerShell)" -ForegroundColor White
     Write-Host "  Agents:     $InstallRoot\agents\ (3 subagents)" -ForegroundColor White
     Write-Host "  Settings:   $InstallRoot\settings.json" -ForegroundColor White
-    Write-Host "  Foundation: $BlueprintRoot\foundation\ (23 templates)" -ForegroundColor White
+    Write-Host "  Foundation: $BlueprintRoot\foundation\ (22 templates)" -ForegroundColor White
     Write-Host ""
     Write-Host "  Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Configure git identity for your project" -ForegroundColor White

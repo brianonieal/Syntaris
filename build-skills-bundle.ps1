@@ -71,15 +71,14 @@ Write-Host "Packaged $count skill(s) to: $OutDir" -ForegroundColor Cyan
 $readme = @'
 # Blueprint v11 -- claude.ai skills bundle
 
-This directory contains 17 skill zip files ready to upload to **claude.ai**
+This directory contains 16 skill zip files ready to upload to **claude.ai**
 (the web app at claude.ai, and the Claude mobile app for iOS and Android).
 
 ## What you're getting
 
-**Included:** the 17 skill definitions that make up Blueprint's methodology
-layer -- the five-gate build-rules, critical-thinker, coursework support,
-freelance billing, and so on. These give Claude skill-based guidance in
-chat.
+**Included:** the 16 skill definitions that make up Blueprint's methodology
+layer -- the five-gate build-rules, critical-thinker, freelance billing,
+and so on. These give Claude skill-based guidance in chat.
 
 **NOT included** (because claude.ai doesn't support them):
 
@@ -117,7 +116,7 @@ of the value:
 3. `start.zip` -- session orchestration entry point
 4. `global-rules.zip` -- baseline coding rules
 
-Add the rest as you need them (billing, coursework, onboard, etc.).
+Add the rest as you need them (billing, onboard, etc.).
 
 ## Verifying an upload worked
 

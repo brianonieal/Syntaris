@@ -94,7 +94,6 @@ Get-ChildItem $skillsDir -Directory -ErrorAction SilentlyContinue | ForEach-Obje
             'research'         { '(competitive (intel|intelligence|analysis)|research (the )?market|look up (the )?competitors?|competitor analysis)' }
             'costs'            { '(how much will (this|it) cost|cost (estimate|projection|forecast)|monthly bill|pricing for)' }
             'onboard'          { '(new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)' }
-            'coursework'       { '(assignment|discussion (board|post)|homework|quiz|graduate school|class project)' }
             'start'            { '(resume (the|this) project|pick (this|it) up|continue from|where did we leave)' }
             default            { $null }
         }

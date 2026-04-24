@@ -16,5 +16,4 @@
 [Empty until first gate close]
 
 ## PRE-FILL ACCURACY LOG
-# For Research Question 1 (RESEARCH_AGENDA.md)
 [Empty until first interrogation with pre-fills]

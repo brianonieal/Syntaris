@@ -20,7 +20,7 @@ your individual identity lives.
    ```
 
 2. **Edit `owner-config.md`** with your own name, email, rate, git identity,
-   and any academic program details (if applicable).
+   and other personal details.
 
 3. **Run the installer with the `-PersonalConfig` flag:**
 
@@ -48,8 +48,6 @@ template (`owner-config.template.md`) is tracked in git.
 The installer substitutes `{{VARIABLE}}` placeholders in these files:
 
 - `foundation/DECISIONS.md` - `{{OWNER_NAME}}` in the decision log ownership fields
-- `foundation/RESEARCH_AGENDA.md` - `{{OWNER_NAME}}`, `{{ACADEMIC_ADVISOR}}`,
-  `{{ACADEMIC_INSTITUTION}}`, `{{GRADUATION_DATE}}`, `{{COURSE_651}}`, etc.
 - `foundation/TEAM.md` - `{{OWNER_NAME}}` in solo-mode defaults
 - Any skill file under `claude-skills/` that references owner variables
 

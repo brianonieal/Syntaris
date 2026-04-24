@@ -154,9 +154,6 @@ for skill_dir in "$SKILLS_DIR"/*/; do
       onboard)
         kw='(new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)'
         ;;
-      coursework)
-        kw='(assignment|discussion (board|post)|homework|quiz|graduate school|class project)'
-        ;;
       start)
         kw='(resume (the|this) project|pick (this|it) up|continue from|where did we leave)'
         ;;

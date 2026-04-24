@@ -22,10 +22,3 @@ DEGREE_PROGRAM: Your degree program (or "N/A" if not applicable)
 ACADEMIC_INSTITUTION: Your institution (or "N/A")
 ACADEMIC_ADVISOR: Your advisor name (or "N/A")
 GRADUATION_DATE: Your graduation date (or "N/A")
-
-# Optional course mappings for RESEARCH_AGENDA.md
-# (only needed if you use the academic research track)
-COURSE_MAPPING: (e.g. "MS AI Engineering")
-COURSE_651: (e.g. EN.705.651 - your course number)
-COURSE_625: (e.g. EN.705.625 - your course number)
-COURSE_744: (e.g. EN.705.744 - your course number)
