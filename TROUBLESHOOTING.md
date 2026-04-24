@@ -190,15 +190,14 @@ invocation counts for skills like `debug`, `deployment`, `start`, and
 **Cause.** The telemetry hook uses a curated natural-language keyword
 map per skill to improve match rate on conversational prompts. Some
 of those keywords are common English words that appear outside any
-Blueprint-related context. A dry-run test showed 5 false positives
-out of 6 adversarial prompts:
+Blueprint-related context. A dry-run test showed 4 false positives
+out of 5 adversarial prompts:
 
 - `"my kid has a test at school"` - correctly nomatches (narrow keyword)
 - `"debug my thinking"` - falsely triggers `debug` (word appears)
 - `"when did napoleon deploy his cavalry"` - falsely triggers `deployment`
 - `"baroque architecture"` - falsely triggers `critical-thinker`
 - `"when should I start my diet"` - falsely triggers `start`
-- `"new work assignment from my boss"` - falsely triggers `coursework`
 
 **Fix (for you, when analyzing data).** Treat telemetry counts for
 these skills as an upper bound. The signal is still useful for

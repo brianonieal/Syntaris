@@ -102,12 +102,12 @@ else
   fail "settings.json missing: $settings"
 fi
 
-# 17 skills
+# 16 skills
 required_skills=(
   start build-rules global-rules critical-thinker
   testing security deployment costs performance
   debug research freelance-billing handoff
-  health onboard coursework rollback
+  health onboard rollback
 )
 missing_skills=0
 for s in "${required_skills[@]}"; do

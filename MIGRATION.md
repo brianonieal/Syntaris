@@ -24,7 +24,7 @@ explicit confirmation (or `--yes` / `-Force` to skip the prompt).
 
 Everything under these paths is deleted before the new version is copied:
 
-- `~/.claude/skills/` (all 17 skills)
+- `~/.claude/skills/` (all 16 skills)
 - `~/.claude/hooks/` (all hook `.sh` and `.ps1` files plus wrappers)
 - `~/.claude/agents/` (all 3 subagents)
 
@@ -37,7 +37,7 @@ needed.
 These are never touched by the installer:
 
 - **Foundation templates** at `~/Blueprint-v11/foundation/`. These are
-  the 23 starter files for new projects. Your edits here survive
+  the 22 starter files for new projects. Your edits here survive
   re-install.
 - **Source copies** at `~/Blueprint-v11/claude-skills/`. Used by the
   bundle builder for claude.ai uploads.

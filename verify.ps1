@@ -81,12 +81,12 @@ if (Test-Path $settingsPath) {
     Fail "settings.json missing: $settingsPath"
 }
 
-# 17 skills
+# 16 skills
 $requiredSkills = @(
     "start", "build-rules", "global-rules", "critical-thinker",
     "testing", "security", "deployment", "costs", "performance",
     "debug", "research", "freelance-billing", "handoff",
-    "health", "onboard", "coursework", "rollback"
+    "health", "onboard", "rollback"
 )
 foreach ($s in $requiredSkills) {
     $path = Join-Path $InstallRoot "skills\$s\SKILL.md"

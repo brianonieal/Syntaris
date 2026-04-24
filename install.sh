@@ -311,7 +311,7 @@ required_skills=(
   "start" "build-rules" "global-rules" "critical-thinker"
   "testing" "security" "deployment" "costs" "performance"
   "debug" "research" "freelance-billing" "handoff"
-  "health" "onboard" "coursework" "rollback"
+  "health" "onboard" "rollback"
 )
 for skill in "${required_skills[@]}"; do
   if [[ -f "$INSTALL_ROOT/skills/$skill/SKILL.md" ]]; then
@@ -390,11 +390,11 @@ info "============================================"
 if $all_ok; then
   printf "${C_GREEN}  Blueprint v11 installed successfully!${C_RESET}\n"
   echo ""
-  echo "  Skills:     $INSTALL_ROOT/skills/ (17 skills)"
+  echo "  Skills:     $INSTALL_ROOT/skills/ (16 skills)"
   echo "  Hooks:      $INSTALL_ROOT/hooks/ (9 hooks + 1 wrapper, bash + PowerShell)"
   echo "  Agents:     $INSTALL_ROOT/agents/ (3 subagents)"
   echo "  Settings:   $INSTALL_ROOT/settings.json"
-  echo "  Foundation: $BLUEPRINT_ROOT/foundation/ (23 templates)"
+  echo "  Foundation: $BLUEPRINT_ROOT/foundation/ (22 templates)"
   echo ""
   info "  Next steps:"
   echo "  1. Configure git identity for your project"
