@@ -4,6 +4,29 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.3.0-post] - 2026-05-06 - Post-release polish
+
+Changes made after v0.3.0 shipped, before v0.4.0.
+
+### Fixed
+
+- **CRLF line endings breaking bash syntax checks on Windows.** `git clone` with `core.autocrlf=true` converted `.sh` files to CRLF, causing `bash -n` to fail via WSL. Three-layer fix: `.gitattributes` forces `*.sh` to LF, `install.ps1` strips CRLF during hook copy, `verify.ps1` creates LF temp copies before testing.
+- **Stale v0.2.0 references.** v0.2.0 was never publicly released. Fixed references across SUBAGENTS.md, README.md, TROUBLESHOOTING.md, EXAMPLES.md, WHY.md.
+- **Foundation file count.** README and docs said 22 templates; actual count was 23 (CLIENTS.md.template added in v0.3.0).
+- **Em-dash and double-hyphen inconsistencies** across documentation files.
+
+### Changed
+
+- **`/start` skill rewritten.** Removed "New to Syntaris?" question and ONBOARDING_MODE. New flow: detect runtime, check if resuming, ask "what do you want to build?" (open-ended memory dump), competitive landscape + stack recommendation, personal/client logistics last. Conversational tone throughout.
+- **`/research` skill: added competitive landscape mode.** New Mode A finds top 5 similar products for an app idea, surfaces differentiation opportunities, recommends MVP priorities and what to skip. Original targeted research preserved as Mode B.
+- **`research-agent` subagent updated** with structured output format for competitive landscape analysis.
+- **README install section simplified.** Replaced 75-line two-path explanation with 25-line section leading with one-command plugin install (`/plugin install syn@brianonieal`).
+- **ONBOARDING_MODE removed** from CONTRACT.md template, migration script, and all references. Syntaris now always explains concepts naturally rather than toggling between concise and standard modes.
+- **Diagnostic delta in calibration.** `session-start` hook now snapshots the `ERR-` count from `ERRORS.md` at session start into `.syntaris/errors-at-gate-open.count`. `gate-close-calibration` reads that snapshot and includes `errors_open` and `errors_close` in the ESTIMATION line, tracking whether a gate reduced or grew the project's error surface.
+- **Spec-to-test traceability.** `COMPONENT_REGISTRY.md` now has a `Test File` column. The `test-writer` agent registers test file paths when it writes tests. The `testing` skill checks for spec drift at gate close: if FRONTEND_SPEC.md changed for a component, it flags the associated test files for review. The `spec-reviewer` agent also flags untested components.
+
+---
+
 ## [0.3.0] - 2026-05-05 - Multi-Runtime + Personal/Client + Compilation-Stage Reframe
 
 This is the largest release since the public v0.1.0 reset. Three major thrusts:
@@ -28,7 +51,7 @@ Adapter validation status: Claude Code (complete), Cursor and Windsurf (install 
 
 The three v0.2.0 extension skills (`freelance-billing`, `onboard`, `handoff`) have been consolidated into a single `billing` core skill driven by the `PROJECT_TYPE` flag. Old extension is archived at `archive/v0.2-extensions/syntaris-freelance/` for reference and migration support. Existing v0.2.0 client-work projects can run `scripts/migrate-billing-v0.2-to-v0.3.sh` to convert.
 
-The `/start` skill also gained casual-coder onboarding scaffolding via a new "New to Syntaris?" branch that activates concise mode (2-3 sentence explanations at gate transitions). Full interactive tutorial mode deferred to v0.4.0.
+The `/start` skill was subsequently rewritten (post-release) to remove the "New to Syntaris?" question and lead with a conversational "what are you building?" flow, competitive landscape analysis, and stack recommendations. The concise/standard onboarding mode was removed in favor of always explaining concepts naturally.
 
 ### Vocabulary reframe: compilation-stage knowledge layer + harness engineering
 
@@ -92,9 +115,11 @@ BENCHMARK_PILOT.md                        - pilot benchmark spec
 
 ### Files modified in v0.3.0
 
-- `.claude/skills/start/SKILL.md` - fully rewritten (harness detection, personal/client branch, casual mode, recipe funnel)
+- `.claude/skills/start/SKILL.md` - fully rewritten (harness detection, memory dump, competitive landscape, stack recommendation, personal/client)
+- `.claude/skills/research/SKILL.md` - added Mode A competitive landscape (top 5 similar products, differentiation, build recommendations)
+- `.claude/agents/research-agent.md` - added competitive landscape output format
 - `.claude/skills/build-rules/SKILL.md` - invokes billing skill at gate close (when PROJECT_TYPE: client)
-- `foundation/CONTRACT.md` - added PROJECT_TYPE, CLIENT_REF, RECIPE, ONBOARDING_MODE, RUNTIME_TIER fields
+- `foundation/CONTRACT.md` - added PROJECT_TYPE, CLIENT_REF, RECIPE, RUNTIME_TIER fields
 - `install.sh` and `install.ps1` - added `--target` flag with Tier 2/3 routing
 - `verify.sh` and `verify.ps1` - added target-aware checks
 - `README.md` - major rewrite for vocabulary reframe + multi-runtime + new install flow
@@ -111,7 +136,6 @@ BENCHMARK_PILOT.md                        - pilot benchmark spec
 - Plugin marketplace formal submission (v0.4.0)
 - Full 30-task benchmark with audited task selection (v0.5.0)
 - Cost telemetry (v0.6.0)
-- Interactive tutorial mode (v0.4.0)
 - Validation of Tier 2/3 adapters against live runtimes (BUILD_NEXT.md tasks for Claude Code)
 
 ---
@@ -125,8 +149,9 @@ Multi-runtime + personal/client + skill consolidation + vocabulary reframe. Larg
 - **Multi-runtime support across 8 targets.** Tier 1 (Claude Code, full enforcement) is the reference. Tier 2 (Cursor, Windsurf) gets partial enforcement via auto-applied rules. Tier 3 (Codex CLI, Gemini CLI, Aider, Kiro, OpenCode) gets advisory-only methodology load. The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of truth on what's enforced where.
 - **Personal vs client branch in `/start`.** First-class question at session start: personal project or client work? Client path collects billing info upfront and writes `foundation/CLIENTS.md` with 12 fields (name, contact, rate, payment terms, invoice cadence, project code, etc.). The `PROJECT_TYPE` flag in `CONTRACT.md` drives downstream skill behavior.
 - **New consolidated `billing` skill.** Replaces three v0.2.0 extension skills (`freelance-billing`, `onboard`, `handoff`). Activates conditionally based on `PROJECT_TYPE: client`. Generates invoices at gate close using actual hours from `MEMORY_CORRECTIONS.md`. At v1.0.0 produces three handoff documents (non-technical summary, technical handoff, final invoice). Never auto-sends; user reviews everything.
-- **Casual coder onboarding mode.** Second `/start` question: new to Syntaris? If yes, all skills run in concise mode with 2-3 sentence explanations of what each gate does. Mode is sticky (recorded in CLAUDE.md), so future sessions remember.
-- **Stack-flexible recipe funnel.** Replaced "pick a recipe" with "what are you building?" funnel: web app, API, CLI, mobile, other. Web app has React/Vue/Svelte/Plain sub-recipes; React has three populated stack variants (Next.js + Supabase, Next.js + FastAPI + Supabase = Brian's reference stack, Vite + Express).
+- **Conversational `/start` flow with competitive landscape.** `/start` leads with "what do you want to build?" then researches the top 5 similar products, suggests differentiation opportunities, recommends a tech stack with trade-offs, and handles personal/client logistics last.
+- **`/research` Mode A: Competitive landscape analysis.** New mode finds top 5 similar products for an app idea, surfaces real user complaints, identifies differentiation opportunities, and recommends MVP priorities.
+- **Stack-flexible recipe system.** Six recipe families: web-app-starter (React/Vue/Svelte/Plain), api-starter (TypeScript/Python/Go), python-cli, mobile-starter, bring-your-own, and a template for new recipes.
 - **Vocabulary reframe.** Syntaris repositioned as "compilation-stage knowledge layer" + "harness engineering implementation" to align with current academic and practitioner terminology (Anthropic agent harness, OpenAI harness engineering, Karpathy compound loop, VentureBeat compilation-stage layer).
 - **Runtime detection scripts.** `.claude/lib/detect-runtime.sh` and `.ps1` probe environment variables, parent process names, and known config files to identify which of the 8 supported harnesses Syntaris is running inside.
 - **`--target` flag on install.sh and install.ps1.** Routes to Tier 1 full install (default) or Tier 2/3 adapter logic. Auto-detects via runtime script when omitted.
@@ -136,8 +161,8 @@ Multi-runtime + personal/client + skill consolidation + vocabulary reframe. Larg
 
 ### Changed
 
-- **`/start` skill substantially rewritten.** Five-step orchestration: harness detection, new-vs-continuing, personal-vs-client, new-to-Syntaris, what-are-you-building. Concise mode is its own behavioral branch.
-- **`CONTRACT.md` template.** Replaced `CLIENT_TYPE` and `CLIENT_CODE` fields with `PROJECT_TYPE` (personal or client) and `CLIENT_REF` (link to CLIENTS.md). Added `RECIPE`, `ONBOARDING_MODE`, `RUNTIME_TIER` fields.
+- **`/start` skill substantially rewritten.** Five-step orchestration: harness detection, new-vs-resuming, what-are-you-building (memory dump), competitive landscape + stack recommendation, personal-vs-client.
+- **`CONTRACT.md` template.** Replaced `CLIENT_TYPE` and `CLIENT_CODE` fields with `PROJECT_TYPE` (personal or client) and `CLIENT_REF` (link to CLIENTS.md). Added `RECIPE`, `RUNTIME_TIER` fields.
 - **README.** Major rewrite for the multi-runtime + tier model + vocabulary reframe. Install instructions now lead with the `--target` flag.
 - **Install path documentation.** All three install methods (clone, zip, plugin) now show the target flag.
 
@@ -163,7 +188,7 @@ Multi-runtime + personal/client + skill consolidation + vocabulary reframe. Larg
 - Plugin marketplace formal submission → v0.4.0
 - Full benchmark with 30 tasks, audited task selection → v0.5.0
 - Telemetry → v0.6.0
-- Interactive tutorial mode (full casual-coder walkthrough) → v0.4.0
+- Diagnostic delta in reflexion (error count at gate open vs close) → v0.4.0
 - Calibration evidence (auto-generated learning curve chart, populated MEMORY_CORRECTIONS.md example) → v0.7.0
 - Memory path migration to `.syntaris/` → v0.9.0
 

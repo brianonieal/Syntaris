@@ -36,9 +36,9 @@ This means every hook is reachable from every supported platform without forcing
 ### `session-start`
 
 **Fires on:** Claude Code `SessionStart` event (start of a new chat or after `/clear`).
-**Job:** reset the per-session turn counter, ensure the state directory exists, prep the session record. Lightweight bookkeeping.
+**Job:** reset the per-session turn counter, ensure the state directory exists, prep the session record. Also snapshots the current error count from `ERRORS.md` into `.syntaris/errors-at-gate-open.count` so the `gate-close-calibration` hook can compute the diagnostic delta at gate close.
 **Can block:** no. Always exits 0.
-**State touched:** writes to `~/.claude/state/turns-<session_id>.count` and similar bookkeeping files.
+**State touched:** writes to `~/.claude/state/turns-<session_id>.count`, `.syntaris/errors-at-gate-open.count`, and similar bookkeeping files.
 
 ---
 
@@ -106,11 +106,11 @@ This means every hook is reachable from every supported platform without forcing
 ### `gate-close-calibration`
 
 **Fires on:** triggered by the build-rules skill at every gate close (not by Claude Code event).
-**Job:** read the predicted hours from `VERSION_ROADMAP.md` and the actual hours from `TIMELOG.md`. Compute variance. Append an `ESTIMATION` entry to `MEMORY_CORRECTIONS.md`. If variance exceeds 30%, print a heads-up so Claude knows to write a deeper REFLEXION explaining the gap.
+**Job:** read the predicted hours from `VERSION_ROADMAP.md` and the actual hours from `TIMELOG.md`. Compute variance. Count `ERR-` entries in `ERRORS.md` and compare to the snapshot taken by `session-start` at gate open. Append an `ESTIMATION` entry to `MEMORY_CORRECTIONS.md` including both time variance and error delta (`errors_open`, `errors_close`). If time variance exceeds 30%, print a heads-up so Claude knows to write a deeper REFLEXION explaining the gap.
 **Can block:** no.
-**State touched:** appends to project-local `foundation/MEMORY_CORRECTIONS.md`.
+**State touched:** reads `.syntaris/errors-at-gate-open.count`; appends to project-local `foundation/MEMORY_CORRECTIONS.md`.
 
-This is the calibration loop. Across enough gates, the variance entries become training data for the build-rules skill's estimation prompts.
+This is the calibration loop. Across enough gates, the variance entries become training data for the build-rules skill's estimation prompts. The error delta tracks whether a gate reduced or increased the project's error surface.
 
 ---
 

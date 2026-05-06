@@ -21,13 +21,13 @@ When modifying an existing component:
 
 ## GLOBAL COMPONENTS
 
-| Component | Owner | File | Gate | Status | Verified | Screenshot |
-|-----------|-------|------|------|--------|----------|------------|
+| Component | Owner | File | Test File | Gate | Status | Verified | Screenshot |
+|-----------|-------|------|-----------|------|--------|----------|------------|
 
 ## SCREEN COMPONENTS
 
-| Component | Owner | File | Gate | Status | Verified | Screenshot |
-|-----------|-------|------|------|--------|----------|------------|
+| Component | Owner | File | Test File | Gate | Status | Verified | Screenshot |
+|-----------|-------|------|-----------|------|--------|----------|------------|
 
 ## STATUS VALUES
 

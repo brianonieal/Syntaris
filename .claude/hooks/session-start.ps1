@@ -37,6 +37,18 @@ if (Test-Path $episodicPath) {
     }
 }
 
+# Snapshot error count for diagnostic delta at gate close.
+# Counts ERR- entries in ERRORS.md and writes to .syntaris/errors-at-gate-open.count.
+# The gate-close-calibration hook reads this to compute the delta.
+$errorsPath = Join-Path $projectDir "ERRORS.md"
+$errCount = 0
+if (Test-Path $errorsPath) {
+    $errCount = @(Select-String -Path $errorsPath -Pattern "^(###?\s+)?ERR-" -ErrorAction SilentlyContinue).Count
+}
+$syntarisState = Join-Path $projectDir ".syntaris"
+if (-not (Test-Path $syntarisState)) { New-Item -ItemType Directory -Path $syntarisState -Force | Out-Null }
+Set-Content -Path (Join-Path $syntarisState "errors-at-gate-open.count") -Value $errCount -NoNewline -ErrorAction SilentlyContinue
+
 # Output as JSON per Anthropic SessionStart hook spec
 # Format: {"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}
 $escapedContext = $context -replace '"', '\"'

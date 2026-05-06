@@ -26,3 +26,11 @@ Report findings as:
 
 Be specific. Quote the spec line and the implementation line.
 Do not suggest improvements. Only report compliance.
+
+## Traceability check
+
+After the compliance review, check COMPONENT_REGISTRY.md for any component
+that has a `File` entry but no `Test File` entry. Report these as:
+- UNTESTED: component exists but has no registered test file.
+
+This helps the testing skill identify gaps before gate close.

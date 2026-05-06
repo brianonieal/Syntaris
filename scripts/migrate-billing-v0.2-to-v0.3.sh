@@ -7,7 +7,7 @@
 #   2. Renames CLIENT_TYPE: CLIENT -> PROJECT_TYPE: client in CONTRACT.md
 #   3. Renames CLIENT_TYPE: PERSONAL -> PROJECT_TYPE: personal in CONTRACT.md
 #   4. Renames CLIENT_CODE: ... -> CLIENT_REF: foundation/CLIENTS.md (or N/A)
-#   5. Adds new fields: RECIPE, ONBOARDING_MODE, RUNTIME_TIER (with defaults)
+#   5. Adds new fields: RECIPE, RUNTIME_TIER (with defaults)
 #   6. If client project and CLIENTS.md missing, prompts to create from CLIENTS.md.template
 #   7. Detects legacy INVOICES.md format and converts to v0.3.0 schema if needed
 #
@@ -73,11 +73,10 @@ if [[ "$ALREADY_MIGRATED" == "false" ]]; then
     if grep -q "^CLIENT_REF:" "$CONTRACT"; then
       sed -i.tmp '/^CLIENT_REF:/a\
 RECIPE:                bring-your-own\
-ONBOARDING_MODE:       standard\
 RUNTIME_TIER:          1
 ' "$CONTRACT"
       rm -f "$CONTRACT.tmp"
-      echo "  [OK] Added RECIPE, ONBOARDING_MODE, RUNTIME_TIER fields"
+      echo "  [OK] Added RECIPE, RUNTIME_TIER fields"
     fi
   fi
 fi

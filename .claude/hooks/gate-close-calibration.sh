@@ -173,6 +173,26 @@ if [[ -z "$ACTUAL" ]]; then
   exit 1
 fi
 
+# --- Diagnostic delta: error count at gate open vs gate close ---
+#
+# The session-start hook snapshots the ERR- count in ERRORS.md to
+# .syntaris/errors-at-gate-open.count. We read that snapshot here
+# and count the current ERR- entries to compute the delta.
+
+ERRORS_FILE="$PROJ_DIR/ERRORS.md"
+GATE_OPEN_COUNT_FILE="$PROJ_DIR/.syntaris/errors-at-gate-open.count"
+
+ERRORS_CLOSE=0
+if [[ -f "$ERRORS_FILE" ]]; then
+  ERRORS_CLOSE=$(grep -cE "^(###?\s+)?ERR-" "$ERRORS_FILE" 2>/dev/null || echo "0")
+fi
+
+ERRORS_OPEN=0
+if [[ -f "$GATE_OPEN_COUNT_FILE" ]]; then
+  ERRORS_OPEN=$(cat "$GATE_OPEN_COUNT_FILE" 2>/dev/null | tr -dc '0-9')
+  ERRORS_OPEN="${ERRORS_OPEN:-0}"
+fi
+
 # --- Compute variance and write entry ---
 
 VARIANCE=$(awk -v est="$ESTIMATED" -v act="$ACTUAL" '
@@ -193,7 +213,7 @@ VARIANCE_ABS=$(awk -v est="$ESTIMATED" -v act="$ACTUAL" '
 
 TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-ENTRY="ESTIMATION: gate=${VERSION} estimated=${ESTIMATED}h actual=${ACTUAL}h variance=${VARIANCE} source=${ACTUAL_SOURCE} date=${TIMESTAMP}"
+ENTRY="ESTIMATION: gate=${VERSION} estimated=${ESTIMATED}h actual=${ACTUAL}h variance=${VARIANCE} source=${ACTUAL_SOURCE} errors_open=${ERRORS_OPEN} errors_close=${ERRORS_CLOSE} date=${TIMESTAMP}"
 
 if [[ ! -f "$CORRECTIONS" ]]; then
   # File doesn't exist; create it with standard header

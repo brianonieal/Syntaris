@@ -21,7 +21,7 @@ Your answers become the foundation of CONTRACT.md.
 
 ## When NOT to use
 
-- You're a casual coder who isn't sure what stack you want - pick `web-app-starter` or `python-cli` instead
+- You're not sure what stack you want yet - pick `web-app-starter` or `python-cli` instead and let `/start` recommend a stack
 - You want to validate your stack against community-tested recipes - pick a populated recipe and override what you need
 
 ## Time to first gate

@@ -69,6 +69,52 @@ Before marking any gate as COMPLETE:
 3. No test count regression from prior gate
 4. Coverage on new code: minimum 80% line coverage
 
+## SPEC-TO-TEST TRACEABILITY
+
+When a component's spec changes in FRONTEND_SPEC.md, the tests that cover it
+need review. This traceability check runs at gate close and when /testing is
+invoked.
+
+### How it works
+
+1. COMPONENT_REGISTRY.md has a `Test File` column for every registered component.
+2. When the test-writer agent writes tests for a component, it fills in the
+   `Test File` column in COMPONENT_REGISTRY.md.
+3. At gate close (or when /testing is invoked with the `--trace` flag), this
+   skill checks for spec drift:
+   - Read FRONTEND_SPEC.md. For each component section, hash the content.
+   - Compare to the last known hashes in `.syntaris/spec-hashes.json`.
+   - If a component's spec changed, look up its `Test File` in
+     COMPONENT_REGISTRY.md.
+   - Flag those test files as NEEDS REVIEW and list them.
+4. After review, re-run /testing to update the hashes.
+
+### Traceability check protocol
+
+When you detect spec changes that affect existing tests:
+
+```
+SPEC DRIFT DETECTED - tests may need updates:
+
+| Component | Spec Change | Test File | Action |
+|-----------|-------------|-----------|--------|
+| DashboardChart | Props added: `showLegend` | src/.../DashboardChart.test.tsx | REVIEW |
+| BudgetCard | Variant removed: `compact` | src/.../BudgetCard.test.tsx | REVIEW |
+```
+
+Do NOT auto-rewrite tests. Present the drift table to the user and ask:
+- "Should I update these tests to match the new spec?"
+- "Should I mark them as reviewed (spec change is cosmetic, tests still valid)?"
+
+### When COMPONENT_REGISTRY has no Test File entry
+
+If a component has no test file registered, flag it:
+```
+UNTESTED COMPONENT: [ComponentName] at [file path]
+  Spec exists in FRONTEND_SPEC.md but no test file registered.
+  Run /testing to generate tests, or register manually.
+```
+
 ## TESTS.MD FORMAT
 
 | Gate | Backend | Frontend | E2E | Total | Target | Status |

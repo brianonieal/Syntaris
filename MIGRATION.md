@@ -19,7 +19,7 @@ The v0.3.0 release is mostly additive (new multi-runtime layer, new recipes, new
 - New `recipes/` hierarchy with starter recipes. Doesn't affect existing projects.
 - `docs/COMPATIBILITY.md`. New documentation only.
 - Vocabulary reframe in README. No behavioral change.
-- Casual coder onboarding mode. Existing projects keep `ONBOARDING_MODE: standard`; only new projects can opt into concise mode.
+- Conversational `/start` flow with competitive landscape analysis and stack recommendations.
 
 ### What requires action: `billing` skill consolidation
 
@@ -57,11 +57,10 @@ These are replaced in v0.3.0 with:
 PROJECT_TYPE:          personal | client
 CLIENT_REF:            [link to foundation/CLIENTS.md] | N/A
 RECIPE:                [recipe path]
-ONBOARDING_MODE:       concise | standard
 RUNTIME_TIER:          1 | 2 | 3
 ```
 
-The migration script handles `CLIENT_TYPE`/`CLIENT_CODE` automatically. The new fields (`RECIPE`, `ONBOARDING_MODE`, `RUNTIME_TIER`) get sensible defaults based on the existing project (`RECIPE: bring-your-own`, `ONBOARDING_MODE: standard`, `RUNTIME_TIER: 1`). You can override after migration.
+The migration script handles `CLIENT_TYPE`/`CLIENT_CODE` automatically. The new fields (`RECIPE`, `RUNTIME_TIER`) get sensible defaults based on the existing project (`RECIPE: bring-your-own`, `RUNTIME_TIER: 1`). You can override after migration.
 
 ### Verifying the upgrade
 

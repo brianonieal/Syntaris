@@ -128,13 +128,33 @@ if (-not $actual) {
     exit 1
 }
 
+# --- Diagnostic delta: error count at gate open vs gate close ---
+#
+# The session-start hook snapshots the ERR- count in ERRORS.md to
+# .syntaris/errors-at-gate-open.count. We read that snapshot here
+# and count the current ERR- entries to compute the delta.
+
+$errorsFile = Join-Path $projDir "ERRORS.md"
+$gateOpenCountFile = Join-Path $projDir ".syntaris" "errors-at-gate-open.count"
+
+$errorsClose = 0
+if (Test-Path $errorsFile) {
+    $errorsClose = @(Select-String -Path $errorsFile -Pattern "^(###?\s+)?ERR-" -ErrorAction SilentlyContinue).Count
+}
+
+$errorsOpen = 0
+if (Test-Path $gateOpenCountFile) {
+    $rawCount = (Get-Content $gateOpenCountFile -ErrorAction SilentlyContinue) -replace '[^0-9]', ''
+    if ($rawCount -match '^\d+$') { $errorsOpen = [int]$rawCount }
+}
+
 $varPct = (([double]$actual - [double]$estimated) / [double]$estimated) * 100
 $variance = "{0:+#;-#;0}%" -f [math]::Round($varPct)
 $varianceAbs = [math]::Abs([math]::Round($varPct))
 
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
-$entry = "ESTIMATION: gate=$Version estimated=${estimated}h actual=${actual}h variance=$variance source=$actualSource date=$timestamp"
+$entry = "ESTIMATION: gate=$Version estimated=${estimated}h actual=${actual}h variance=$variance source=$actualSource errors_open=$errorsOpen errors_close=$errorsClose date=$timestamp"
 
 if (-not (Test-Path $corrections)) {
     $header = @(

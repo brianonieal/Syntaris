@@ -15,7 +15,6 @@ FINAL_VERSION:         v1.0 Production Live | v1.0 Internal GA | v0.X Prototype 
 PROJECT_TYPE:          personal | client
 CLIENT_REF:            [If PROJECT_TYPE: client, link to foundation/CLIENTS.md] | N/A
 RECIPE:                [Recipe name from /start, e.g. web-app-starter/react/nextjs-supabase]
-ONBOARDING_MODE:       concise | standard
 RUNTIME_TIER:          1 | 2 | 3 (set by /start based on detected harness)
 TEAM_MODE:             false | true (activates TEAM.md)
 START_DATE:            [date]

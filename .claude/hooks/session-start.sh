@@ -37,6 +37,18 @@ if [ -f "$PROJECT_DIR/CONTRACT.md" ]; then
       CONTEXT="$CONTEXT WARNING: Unclosed STOP EVENT found. Read PLANS.md to resume."
     fi
   fi
+
+  # Snapshot error count for diagnostic delta at gate close.
+  # Counts ERR- entries in ERRORS.md and writes to .syntaris/errors-at-gate-open.count.
+  # The gate-close-calibration hook reads this to compute the delta.
+  if [ -f "$PROJECT_DIR/ERRORS.md" ]; then
+    ERR_COUNT=$(grep -cE "^(###?\s+)?ERR-" "$PROJECT_DIR/ERRORS.md" 2>/dev/null || echo "0")
+  else
+    ERR_COUNT=0
+  fi
+  SYNTARIS_STATE="$PROJECT_DIR/.syntaris"
+  mkdir -p "$SYNTARIS_STATE" 2>/dev/null
+  printf '%s' "$ERR_COUNT" > "$SYNTARIS_STATE/errors-at-gate-open.count" 2>/dev/null
 fi
 
 # Output as JSON per Anthropic SessionStart hook spec

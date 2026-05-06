@@ -28,3 +28,13 @@ Test naming: test_[action]_[condition]_[expected_result]
 After writing tests, run them. They should FAIL (red phase of TDD).
 Report which tests pass and which fail.
 The main agent then implements code to make them pass (green phase).
+
+## Traceability registration
+
+After writing a test file for a frontend component, update COMPONENT_REGISTRY.md:
+- Find the component's row in the registry.
+- Fill in the `Test File` column with the relative path to the test file.
+- If the component isn't in the registry yet, add a row.
+
+This enables spec-to-test traceability: when FRONTEND_SPEC.md changes for a
+component, the testing skill can look up which test files need review.
