@@ -135,7 +135,7 @@ if (-not $actual) {
 # and count the current ERR- entries to compute the delta.
 
 $errorsFile = Join-Path $projDir "ERRORS.md"
-$gateOpenCountFile = Join-Path $projDir ".syntaris" "errors-at-gate-open.count"
+$gateOpenCountFile = Join-Path (Join-Path $projDir ".syntaris") "errors-at-gate-open.count"
 
 $errorsClose = 0
 if (Test-Path $errorsFile) {

@@ -184,7 +184,8 @@ GATE_OPEN_COUNT_FILE="$PROJ_DIR/.syntaris/errors-at-gate-open.count"
 
 ERRORS_CLOSE=0
 if [[ -f "$ERRORS_FILE" ]]; then
-  ERRORS_CLOSE=$(grep -cE "^(###?\s+)?ERR-" "$ERRORS_FILE" 2>/dev/null || echo "0")
+  ERRORS_CLOSE=$(grep -cE "^(###?\s+)?ERR-" "$ERRORS_FILE" 2>/dev/null) || true
+  ERRORS_CLOSE="${ERRORS_CLOSE:-0}"
 fi
 
 ERRORS_OPEN=0
