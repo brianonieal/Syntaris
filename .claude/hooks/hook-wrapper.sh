@@ -1,6 +1,6 @@
 #!/bin/bash
 # hook-wrapper.sh
-# Blueprint v11: Unified hook invocation with cross-platform fallback and diagnostics.
+# Syntaris: Unified hook invocation with cross-platform fallback and diagnostics.
 #
 # Usage:
 #   bash hook-wrapper.sh <hook-name>
@@ -17,7 +17,7 @@
 #      does NOT try fallbacks if the hook intentionally blocked.
 #
 # Diagnostic mode:
-#   Set BLUEPRINT_DEBUG=1 to always surface stderr, even on successful runs.
+#   Set SYNTARIS_DEBUG=1 to always surface stderr, even on successful runs.
 #
 # Error log path:
 #   Per-session when $CLAUDE_SESSION_ID is set, otherwise a generic path.
@@ -92,10 +92,10 @@ if [ "$RESULT" -eq 2 ]; then
   exit 2
 fi
 
-if [ "${BLUEPRINT_DEBUG:-0}" = "1" ] || [ "$RESULT" = 127 ]; then
+if [ "${SYNTARIS_DEBUG:-0}" = "1" ] || [ "$RESULT" = 127 ]; then
   # 127 = no hook was found on any path; tell the user.
   if [ "$RESULT" = 127 ]; then
-    echo "BLUEPRINT v11: hook '$HOOK_NAME' not found on any fallback path" >&2
+    echo "hook '$HOOK_NAME' not found on any fallback path" >&2
     echo "  Tried: \$CLAUDE_PROJECT_DIR/.claude/hooks/$HOOK_NAME.sh" >&2
     echo "         \$HOME/.claude/hooks/$HOOK_NAME.sh" >&2
     [ -n "$USERPROFILE" ] && echo "         \$USERPROFILE\\.claude\\hooks\\$HOOK_NAME.ps1" >&2

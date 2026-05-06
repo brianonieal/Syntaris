@@ -1,11 +1,19 @@
 # WHY.md
-# Blueprint v11 | The Reasoning Behind Every Major Decision
+# Syntaris v0.3.0 | The Reasoning Behind Every Major Decision
 # Read this before questioning the methodology
 # Stack-specific: Next.js + FastAPI + Supabase + LangGraph + Plaid
+#
+# STACK-SPECIFIC FILE
+# Some sections below justify decisions that are specific to the v0.2.0 stack
+# (Voyage AI embeddings for finance, Plaid as the data integration, asyncpg
+# connection strategy). The methodological reasoning - why gates, why memory,
+# why Reflexion, why /clear over /compact - is universal. The stack-specific
+# justifications are not. If you adapt Syntaris to a different stack, replace
+# the stack-specific WHY entries with your own.
 
 ---
 
-## WHY BLUEPRINT EXISTS
+## WHY SYNTARIS EXISTS
 
 In early 2025, a complex desktop app called Forge Genesis was built using an early
 version of this methodology. Over 30 iterations, the same failures kept recurring:
@@ -14,7 +22,7 @@ storage key drift, invented API model IDs, disappearing required headers.
 Each rebuild started fresh. Each rebuild re-made the same mistakes.
 The root cause: no memory, no spec, no gate structure. Just prompting.
 
-Blueprint was built to solve this. Not to make Claude Code faster -- to make it
+Syntaris was built to solve this. Not to make Claude Code faster - to make it
 accurate across multiple sessions and multiple projects.
 
 ---
@@ -62,7 +70,7 @@ do not work reliably in serverless Next.js functions.
 
 Serverless functions have execution time limits (typically 10-60 seconds).
 LangGraph agent pipelines routinely exceed these limits.
-SSE streaming requires persistent connections -- serverless can't do this.
+SSE streaming requires persistent connections - serverless can't do this.
 
 FastAPI with Uvicorn on Render gives:
 - Unlimited execution time
@@ -77,10 +85,10 @@ The cost: one more deployment. The benefit: agents actually work.
 ## WHY SUPABASE AND NOT PLAIN POSTGRES
 
 Supabase is Postgres with:
-- Authentication (Google OAuth, magic link) -- eliminates 3+ days of auth work
-- Row Level Security -- user data isolation is handled at database level
-- pgvector extension -- semantic search without a separate vector database
-- Real-time subscriptions -- if needed for live updates
+- Authentication (Google OAuth, magic link) - eliminates 3+ days of auth work
+- Row Level Security - user data isolation is handled at database level
+- pgvector extension - semantic search without a separate vector database
+- Real-time subscriptions - if needed for live updates
 - Dashboard for direct DB access during development
 
 The alternative (plain Postgres on Render) requires building auth from scratch,
@@ -88,7 +96,7 @@ implementing data isolation in application code (error-prone), and adding a
 separate vector database for embeddings.
 
 Supabase free tier handles most MVP-scale projects.
-The database is still Postgres -- migrations, SQLAlchemy, and Alembic work normally.
+The database is still Postgres - migrations, SQLAlchemy, and Alembic work normally.
 
 ---
 
@@ -117,7 +125,7 @@ merchant names, and financial categories than general-purpose models.
 
 OpenAI embeddings are general-purpose. They work, but they miss domain nuance.
 "Uber" and "Lyft" are semantically similar for general text.
-For a personal finance app, they're the same category -- transportation.
+For a personal finance app, they're the same category - transportation.
 Voyage Finance gets this right. General models often don't.
 
 Cost is comparable. Quality for financial semantic search is meaningfully better.
@@ -131,7 +139,7 @@ Claude Code's reliable instruction-following limit is approximately 150-200 inst
 Claude Code's system prompt already uses ~50 slots.
 That leaves 100-150 slots for CLAUDE.md content.
 
-Past the 200-line threshold, compliance degrades uniformly -- every rule added
+Past the 200-line threshold, compliance degrades uniformly - every rule added
 dilutes every other rule proportionally. A 683-line BUILD_RULES.md has the same
 compliance probability per rule as a 50-line file, but 13x the dilution.
 

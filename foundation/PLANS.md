@@ -1,5 +1,5 @@
 # PLANS.md
-# Blueprint v11 | Context Save State
+# Syntaris v0.3.0 | Context Save State
 # Written before /clear to preserve progress across context resets.
 # Read at session resume (/start option 2) to reconstruct state.
 

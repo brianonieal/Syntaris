@@ -1,7 +1,16 @@
 # DEPLOYMENT_CONFIG.md
-# Blueprint v11 | External Service Configuration Checklist
+# Syntaris v0.3.0 | External Service Configuration Checklist
 # Run this checklist before every production deployment
 # Invoke: /deploy --configure
+#
+# STACK-SPECIFIC FILE
+# This checklist is written for the Syntaris v0.3.0 stack: Next.js + FastAPI +
+# Supabase + LangGraph + Plaid + Voyage AI, deploying to Vercel (frontend) and
+# Render (backend). The Plaid, Voyage AI, and Sentry sections are specific to
+# fintech projects. If you are on a different stack, copy this file into your
+# project's foundation/ directory and edit the env vars and dashboard sections
+# to match your services. The structure (env vars, dashboards, smoke tests,
+# common failure modes) carries over even when the specific services do not.
 
 ---
 
@@ -36,7 +45,7 @@ Dashboard: supabase.com -> [Project] -> Project Settings -> API
 
 - [ ] NEXT_PUBLIC_SUPABASE_URL copied (Project URL)
 - [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY copied (anon / public key)
-- [ ] SUPABASE_SERVICE_ROLE_KEY copied (service_role secret -- NEVER expose client-side)
+- [ ] SUPABASE_SERVICE_ROLE_KEY copied (service_role secret - NEVER expose client-side)
 - [ ] SUPABASE_JWT_SECRET copied (Settings -> API -> JWT Settings)
 - [ ] DATABASE_URL copied and prefix changed (see note below)
 
@@ -67,7 +76,7 @@ Auth configuration:
 
 Email (for magic links):
 - [ ] SMTP configured (Authentication -> SMTP Settings)
-  - Recommended: Resend (resend.com -- free tier, easy setup)
+  - Recommended: Resend (resend.com - free tier, easy setup)
   - SMTP host: smtp.resend.com | Port: 465 | Username: resend
 
 ### GOOGLE CLOUD CONSOLE (for OAuth)
@@ -106,7 +115,7 @@ Project settings:
 Dashboard: dashboard.render.com -> [Service] -> Environment
 
 Required environment variables (13):
-- [ ] DATABASE_URL (postgresql+asyncpg:// format, port 6543)
+- [ ] DATABASE_URL (postgresql+asyncpg:// format, port 5432 for MVP, or 6543 with statement_cache_size=0 for scale - see DEC-003)
 - [ ] SUPABASE_URL
 - [ ] SUPABASE_SERVICE_ROLE_KEY
 - [ ] SUPABASE_JWT_SECRET
@@ -169,7 +178,7 @@ Dashboard: dashboard.stripe.com -> Developers -> API Keys
 | Failure | Symptom | Fix |
 |---------|---------|-----|
 | Co-Authored-By blocks Vercel | "GitHub could not associate committer" | Run strip-coauthor.sh hook |
-| DATABASE_URL wrong prefix | SQLAlchemy connection error on startup | Change postgres:// to postgresql+asyncpg://, port to 6543 |
+| DATABASE_URL wrong prefix | SQLAlchemy connection error on startup | Change postgres:// to postgresql+asyncpg://; use port 5432 for MVP, or port 6543 with statement_cache_size=0 for scale (see DEC-003 and EXAMPLES.md connect_args) |
 | NEXT_PUBLIC_API_URL = localhost | Frontend loads, API calls fail in production | Update to real Render URL after backend deploys |
 | Google OAuth redirect mismatch | OAuth error after login | Add all three redirect URIs to Google Cloud Console |
 | Render port conflict | Service fails health check | Use $PORT not a hardcoded port in start command |

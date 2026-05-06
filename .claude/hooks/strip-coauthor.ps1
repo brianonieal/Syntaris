@@ -1,5 +1,5 @@
 # strip-coauthor.ps1
-# Blueprint v11: Strip Co-Authored-By trailers from git commits
+# Syntaris: Strip Co-Authored-By trailers from git commits
 # PowerShell version for Windows
 
 $gitDir = git rev-parse --git-dir 2>$null
@@ -8,7 +8,7 @@ if (-not $gitDir) { exit 0 }
 $hookPath = Join-Path $gitDir "hooks\commit-msg"
 $hookContent = @'
 #!/bin/bash
-# Blueprint v11: Strip Co-Authored-By trailers
+# Syntaris: Strip Co-Authored-By trailers
 COMMIT_FILE="$1"
 if [ -f "$COMMIT_FILE" ]; then
   grep -v "^Co-Authored-By:" "$COMMIT_FILE" | \

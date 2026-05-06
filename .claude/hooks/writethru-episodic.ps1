@@ -1,5 +1,5 @@
 # writethru-episodic.ps1
-# Blueprint v11: Write-through to MEMORY_EPISODIC.md on session stop
+# Syntaris: Write-through to MEMORY_EPISODIC.md on session stop
 # Runs as Stop hook
 
 $ErrorActionPreference = "SilentlyContinue"

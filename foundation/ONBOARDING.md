@@ -1,12 +1,12 @@
 # ONBOARDING.md
-# Blueprint v11 | First-Time User Guide
-# For: researchers, collaborators, or anyone new to Blueprint
+# Syntaris v0.3.0 | First-Time User Guide
+# For: researchers, collaborators, or anyone new to Syntaris
 
 ---
 
-## WHAT IS BLUEPRINT V11?
+## WHAT IS SYNTARIS?
 
-Blueprint v11 is an AI app building methodology for Claude Code.
+Syntaris is an AI app building methodology for Claude Code.
 It is not a library. It is not a plugin. It is a set of files that tell
 Claude Code how to behave when building software.
 
@@ -14,7 +14,7 @@ It solves one problem: AI coding tools are fast but inconsistent.
 They forget decisions between sessions, skip tests, ignore architectural rules,
 and produce work that regresses without warning.
 
-Blueprint v11 fixes this with:
+Syntaris fixes this with:
 - Memory that persists across sessions and projects
 - Gate-by-gate structure that prevents regressions
 - Enforced quality checks (tests, security, visual verification)
@@ -26,7 +26,7 @@ The result: consistent, production-quality software with near-zero manual fricti
 
 ## PREREQUISITES
 
-Before installing Blueprint v11:
+Before installing Syntaris:
 
 - [ ] Claude Code subscription (Pro or Max plan at claude.ai)
 - [ ] GitHub account
@@ -36,10 +36,10 @@ Before installing Blueprint v11:
 - [ ] PowerShell 7+ (Windows) or bash (Mac/Linux)
 
 For the default stack you will also need accounts at:
-- Supabase (supabase.com) -- free tier sufficient for development
-- Vercel (vercel.com) -- free Hobby tier sufficient
-- Render (render.com) -- free tier sufficient
-- Anthropic (console.anthropic.com) -- API key for AI features
+- Supabase (supabase.com) - free tier sufficient for development
+- Vercel (vercel.com) - free Hobby tier sufficient
+- Render (render.com) - free tier sufficient
+- Anthropic (console.anthropic.com) - API key for AI features
 
 ---
 
@@ -49,26 +49,26 @@ For the default stack you will also need accounts at:
 
 ```powershell
 # Download and run installer
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/.../install-blueprint-v11.ps1" -OutFile "install-blueprint-v11.ps1"
-powershell.exe -ExecutionPolicy Bypass -File "install-blueprint-v11.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/.../install-syntaris.ps1" -OutFile "install-syntaris.ps1"
+powershell.exe -ExecutionPolicy Bypass -File "install-syntaris.ps1"
 ```
 
 ### Option B: Manual
 
-1. Download blueprint-v11-COMPLETE.zip
+1. Clone the repo or download `syntaris-v0.3.0.zip`
 2. Extract to a temporary folder
-3. Copy the .claude/ folder to your home directory:
-   - Windows: C:\Users\[username]\.claude\
-   - Mac/Linux: ~/.claude/
-4. The foundation/ folder contains templates -- use these when starting projects
+3. Run `bash install.sh` (Mac/Linux) or `./install.ps1` (Windows)
+4. The installer copies `.claude/skills/`, `.claude/hooks/`, and `.claude/agents/` to `~/.claude/`, and copies the foundation templates to `~/Syntaris/foundation/`
 
 Verify installation:
 ```bash
-ls ~/.claude/Skills/
-# Should show: start.md, build-rules.md, global-rules.md, etc.
+ls ~/.claude/skills/
+# Should show 16 directories: start, build-rules, global-rules, critical-thinker, etc.
 
 ls ~/.claude/hooks/
-# Should show: strip-coauthor.sh, enforce-tests.sh, etc.
+# Should show 20 files: hook-wrapper.sh, hook-wrapper.ps1, strip-coauthor.sh, ...
+
+bash ~/.claude/skills/../verify.sh   # or run verify.sh from the repo root
 ```
 
 ---
@@ -91,7 +91,7 @@ Claude Code will read the memory files (empty at first), then ask you to describ
 
 ### Step 3: Answer the interrogation questions
 
-Blueprint v11 asks 3-20 questions depending on what it already knows.
+Syntaris asks 3-20 questions depending on what it already knows.
 For your first project: expect about 15-20 questions covering your app idea,
 tech stack, users, monetization, and AI requirements.
 
@@ -130,7 +130,7 @@ Everything else is autonomous.
 
 ## THE APPROVAL WORDS
 
-Blueprint v11 uses five specific words as approval gates:
+Syntaris uses five specific words as approval gates:
 
 | Word | Meaning |
 |------|---------|
@@ -140,7 +140,7 @@ Blueprint v11 uses five specific words as approval gates:
 | GO | Build this gate |
 
 These exact words trigger gate advancement. Nothing else does.
-If you type "ok" or "looks good" -- Claude Code waits for the real approval word.
+If you type "ok" or "looks good" - Claude Code waits for the real approval word.
 
 ---
 
@@ -157,12 +157,12 @@ Wait for the gate close checklist before asking questions.
 **Mistake: Not installing the Co-Authored-By hook**
 Every commit from Claude Code adds a "Co-Authored-By: Anthropic" trailer.
 This blocks Vercel deployments on the free Hobby plan.
-The hook fixes this automatically -- but it needs to be installed first.
+The hook fixes this automatically - but it needs to be installed first.
 Run: bash ~/.claude/hooks/strip-coauthor.sh in your project directory.
 
 **Mistake: Using /compact instead of /clear**
-/compact summarizes the context (lossy -- loses 70% of details).
-/clear wipes the context (lossless -- save to PLANS.md first).
+/compact summarizes the context (lossy - loses 70% of details).
+/clear wipes the context (lossless - save to PLANS.md first).
 Always use /clear for context resets.
 
 **Mistake: Ignoring the 40% context warning**
@@ -173,7 +173,7 @@ Don't try to finish the task first. The quality drop is real and immediate.
 
 ## READING THE MEMORY FILES
 
-After your first project, Blueprint v11 has learned from your build.
+After your first project, Syntaris has learned from your build.
 Check what it learned:
 
 ```bash
@@ -181,23 +181,23 @@ cat MEMORY_CORRECTIONS.md
 # Shows REFLEXION entries: what was estimated vs actual hours
 
 cat MEMORY_SEMANTIC.md
-# Shows patterns: what Blueprint knows about your stack and preferences
+# Shows patterns: what Syntaris knows about your stack and preferences
 
 cat MEMORY_EPISODIC.md
 # Shows the session log: what was built, when, what gate outcomes were
 ```
 
-By project 3-4, Blueprint pre-fills most interrogation questions automatically.
+By project 3-4, Syntaris pre-fills most interrogation questions automatically.
 The methodology gets faster with each project.
 
 ---
 
 ## GETTING HELP
 
-ERRORS.md -- check this first for any error you encounter
-WHY.md -- explains the reasoning behind every major decision
-EXAMPLES.md -- real code patterns for the default stack
-DEPLOYMENT_CONFIG.md -- external service configuration checklists
+ERRORS.md - check this first for any error you encounter
+WHY.md - explains the reasoning behind every major decision
+EXAMPLES.md - real code patterns for the default stack
+DEPLOYMENT_CONFIG.md - external service configuration checklists
 
 For issues not covered by the foundation files:
 The Claude Code community at github.com/anthropics/claude-code/issues

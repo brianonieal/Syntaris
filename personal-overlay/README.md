@@ -1,7 +1,7 @@
 # Personal Overlay
 
 This directory contains owner-specific configuration that personalizes
-the Blueprint v11 foundation templates. The core Blueprint methodology
+the Syntaris foundation templates. The core Syntaris methodology
 (skills, hooks, foundation structure) is generic; this overlay is where
 your individual identity lives.
 
@@ -49,11 +49,11 @@ The installer substitutes `{{VARIABLE}}` placeholders in these files:
 
 - `foundation/DECISIONS.md` - `{{OWNER_NAME}}` in the decision log ownership fields
 - `foundation/TEAM.md` - `{{OWNER_NAME}}` in solo-mode defaults
-- Any skill file under `claude-skills/` that references owner variables
+- Any skill file under `.claude/skills/` that references owner variables
 
 ## Skipping personalization
 
-If you just want to try Blueprint without personalizing it, run the
+If you just want to try Syntaris without personalizing it, run the
 installer without `-PersonalConfig`. You'll see literal `{{OWNER_NAME}}`
 strings in a few places, and the installer warns about the count of
 unreplaced placeholders. Re-run with `-PersonalConfig` whenever you're

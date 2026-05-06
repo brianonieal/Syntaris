@@ -3,7 +3,7 @@ name: testing
 description: "This skill manages test strategy, test writing, and test enforcement for all app builds. Use when writing tests, checking test coverage, setting up test infrastructure, or at gate close. Covers Pytest, Vitest, React Testing Library, and Playwright."
 ---
 
-# TESTING SKILL -- Blueprint v11
+# TESTING SKILL - Syntaris v0.3.0
 # Invoke: /testing
 
 ## TEST STRATEGY BY GATE
@@ -23,8 +23,8 @@ Framework: pytest + pytest-asyncio + httpx (async client)
 
 File structure:
   apps/api/tests/
-    conftest.py          -- fixtures: test_client, test_db, test_user
-    test_[feature].py    -- one file per domain
+    conftest.py          - fixtures: test_client, test_db, test_user
+    test_[feature].py    - one file per domain
 
 Test naming: test_[action]_[condition]_[expected_result]
 

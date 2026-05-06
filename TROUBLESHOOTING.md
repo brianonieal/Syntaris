@@ -1,4 +1,4 @@
-# Blueprint v11 Troubleshooting
+# Syntaris Troubleshooting
 
 This document contains specific failure modes and their fixes.
 
@@ -30,7 +30,7 @@ problem because PowerShell's parser gives up at the first unknown token
 and reports the next structural mismatch.
 
 **Cause.** Windows 10 and Windows 11 ship with Windows PowerShell 5.1 by
-default. Blueprint hooks target PS 5.1 for maximum compatibility. Any
+default. Syntaris hooks target PS 5.1 for maximum compatibility. Any
 PowerShell 7-only operator in a hook causes the entire script to fail to
 parse. The common culprits are:
 
@@ -73,7 +73,7 @@ distribution. If WSL is not installed, `bash.exe` errors out with a
 non-zero exit, and any tool that expected "bash exists, therefore bash
 can run .sh files" treats this as a script-level failure.
 
-**Fix (quickest).** Use the PowerShell versions of the hooks. Blueprint
+**Fix (quickest).** Use the PowerShell versions of the hooks. Syntaris
 ships `.sh` and `.ps1` for every hook; on native Windows you only need
 the `.ps1` versions, and Claude Code invokes the right ones based on
 platform.
@@ -89,7 +89,7 @@ probe `bash -c "echo ok"` before trusting `bash -n`, and will work
 correctly against Windows paths translated to `/c/Users/...` or
 `/mnt/c/Users/...`.
 
-**Prevention.** v11.2's verify.ps1 added a bash probe that differentiates
+**Prevention.** verify.ps1 added a bash probe that differentiates
 "bash is on PATH" from "bash can actually execute a trivial command."
 You should not see this as a FAIL anymore; it downgrades to a WARN with
 a "bash couldn't read the file" message.
@@ -99,7 +99,7 @@ a "bash couldn't read the file" message.
 ## OBSERVED: PowerShell scripts blocked by execution policy
 
 **Symptom.** When running `install.ps1` or any other `.ps1` script from
-Blueprint:
+Syntaris:
 
 ```
 File C:\...\install.ps1 cannot be loaded because running scripts is
@@ -166,7 +166,7 @@ If you hit it, please open an issue with the output of
 re-ran `install.sh` and accepted the clobber prompt. Your customization
 is gone.
 
-**Cause.** Blueprint's install flow is clobber-by-design. Any user-edited
+**Cause.** Syntaris' install flow is clobber-by-design. Any user-edited
 file in `~/.claude/skills/`, `~/.claude/hooks/`, or `~/.claude/agents/`
 is overwritten without warning on a re-install.
 
@@ -190,7 +190,7 @@ invocation counts for skills like `debug`, `deployment`, `start`, and
 **Cause.** The telemetry hook uses a curated natural-language keyword
 map per skill to improve match rate on conversational prompts. Some
 of those keywords are common English words that appear outside any
-Blueprint-related context. A dry-run test showed 4 false positives
+Syntaris-related context. A dry-run test showed 4 false positives
 out of 5 adversarial prompts:
 
 - `"my kid has a test at school"` - correctly nomatches (narrow keyword)
@@ -204,12 +204,12 @@ these skills as an upper bound. The signal is still useful for
 identifying dead skills (any skill that has zero invocations over 30
 days is genuinely unused), but usage rankings should be calibrated
 for the ambiguity. Skills with highly distinctive keywords (`rollback`,
-`testing`, `freelance-billing`, `handoff`) have near-zero false
+`testing`, `billing`) have near-zero false
 positive rates.
 
-**Fix (for v11.5, if this becomes a real problem).** Tighten keyword
+**Fix (for a future release if this becomes a real problem).** Tighten keyword
 patterns with phrase-context windows (e.g., `debug` requires nearby
-words like `error`, `code`, `failing`). Not prioritized for v11.4
+words like `error`, `code`, `failing`). Not prioritized for v0.3.0
 because the current data is good enough for dead-skill identification,
 which is the primary use case.
 
@@ -219,10 +219,64 @@ distributions may produce different rates.
 
 ---
 
+## Plugin install path issues (v0.2.0+)
+
+### Plugin install fails with "manifest not found"
+
+If `/plugin install syn@brianonieal` reports it cannot find the manifest:
+
+1. Confirm the repo's default branch contains `.claude-plugin/plugin.json` at the repo root, not nested deeper.
+2. Run `claude --plugin-dir /path/to/local/Syntaris` to test the manifest locally first. This bypasses the marketplace lookup and reads the manifest from disk.
+3. Validate the JSON: `python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"`. The most common failure is a trailing comma or unescaped quote in the description field.
+
+### Plugin commands not appearing in autocomplete
+
+After install, slash commands from the plugin should appear in the `/` menu under the namespace prefix. If they don't:
+
+1. Run `/reload-plugins` to force Claude Code to re-read the plugin without restarting.
+2. Check the init message when Claude Code starts. It lists loaded plugins and their detected slash commands. If your plugin appears but with zero commands, the skill directory was not detected. Verify `.claude-plugin/plugin.json` has the `"skills": "./.claude/skills"` custom path set.
+3. Plugin commands use the namespaced format `<plugin-name>:<skill-name>`. Type the full name (e.g., `/syn:start`) at least once before autocomplete recognizes it.
+
+### Both install paths active, behavior differs
+
+If you have both `bash install.sh` and `/plugin install` active, you'll have access to both `/start` (from install.sh) and `/syn:start` (from plugin). They run the same skill content. If you observe behavior differences:
+
+1. Edit one and not the other. The plugin reads `.claude/skills/` from the plugin's install location (cached at `~/.claude/plugins/cache/`); install.sh reads from `~/.claude/skills/`. Local edits to either source don't propagate to the other.
+2. The plugin form's hooks (declared in `hooks.json`) and the install.sh form's hooks (declared in `settings.json`) are independent. If you customized one, the other won't see the change.
+
+If the behavior difference is unexpected, compare the actual hook config (`cat ~/.claude/settings.json`) against the plugin's `hooks.json` (in the plugin cache).
+
+---
+
+## Subagent issues (v0.2.0+)
+
+### Subagent invocation hangs or times out
+
+If `/research`, `/debug`, `/health`, or `/critical-thinker` hangs after starting:
+
+1. The subagent may be waiting for a tool that's not in its allowed-tools list. The subagents have explicit `tools:` frontmatter (Read, Grep, Glob, plus WebFetch/WebSearch for `research-agent`). If your project requires a tool not on this list, the subagent will silently fail to call it.
+2. Check `~/.claude/state/skill-log.jsonl` for the most recent skill invocation. The telemetry hook logs subagent dispatches. If the skill fired but the subagent never returned, the agent system itself is the failure point, not the parent skill.
+
+### Subagent returns empty or malformed structured output
+
+The subagents are instructed to return output in specific formats (`TARGET:`, `DIAGNOSIS:`, `STRONGEST_OBJECTIONS:`, etc.). If a subagent returns prose instead:
+
+1. The Sonnet model occasionally drifts from rigid output formats. The parent skill is written to handle this: it should re-invoke the subagent with an explicit reminder of the format. If you see the parent fail without retrying, that's a parent-skill bug; please open an issue.
+2. If the subagent returns `STATUS: NEEDS_NARROWING`, that's not a malfunction. The subagent is asking the parent to clarify the request. The parent skill should ask you the narrowing questions.
+
+### Subagent did write to memory files
+
+The architectural rule is: subagents return structured output, parent skills write to memory files. If you observe a subagent directly writing to `RESEARCH.md`, `ERRORS.md`, `MEMORY_*`, or `DECISIONS.md`:
+
+1. That's a regression. Subagents in v0.2.0 are read-only with respect to memory files. The parent skill is responsible for the write.
+2. Open an issue with the diagnostic bundle. Include the subagent name and the file that was written. This is the kind of bug that erodes the calibration loop's coherence and needs to be fixed quickly.
+
+---
+
 ## How to report something not in this list
 
 1. Run `collect-diagnostics.sh` or `collect-diagnostics.ps1` in the
-   directory where you installed Blueprint.
+   directory where you installed Syntaris.
 2. Review the resulting `bp-diagnostics-<timestamp>.txt` file. Remove
    anything you do not want to share publicly (typically: path segments
    that reveal your username).

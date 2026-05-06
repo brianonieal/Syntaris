@@ -1,6 +1,6 @@
 #!/bin/bash
 # writethru-episodic.sh
-# Blueprint v11: Write-through to MEMORY_EPISODIC.md on session stop
+# Syntaris: Write-through to MEMORY_EPISODIC.md on session stop
 # Runs as Stop hook. Fires when session ends or crashes.
 # Preserves last-known state across sessions.
 

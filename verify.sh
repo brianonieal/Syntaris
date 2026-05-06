@@ -1,6 +1,6 @@
 #!/bin/bash
 # verify.sh
-# Blueprint v11 installation verification
+# Syntaris installation verification
 #
 # Runs automatically at the end of install.sh, but can also be run standalone:
 #   ./verify.sh
@@ -21,18 +21,21 @@ set -u  # treat unset variables as errors
 
 INSTALL_ROOT="${HOME}/.claude"
 VERBOSE=false
+TARGET=""  # if non-Tier-1, skip hook/agent/skill checks
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --install-root) INSTALL_ROOT="$2"; shift 2 ;;
     --verbose|-v)   VERBOSE=true; shift ;;
+    --target)       TARGET="$2"; shift 2 ;;
     -h|--help)
       cat <<EOF
-Blueprint v11 Verification
+Syntaris Verification
 
 Usage:
-  ./verify.sh                           # verify default install location
+  ./verify.sh                           # verify default install location (claude-code)
   ./verify.sh --install-root DIR        # verify a specific install
+  ./verify.sh --target cursor           # verify a Tier 2/3 target install
   ./verify.sh --verbose                 # show detail for every check
 
 Exit codes:
@@ -43,6 +46,44 @@ EOF
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
+
+# Tier 2/3 verification differs from Tier 1. Non-claude-code targets don't have
+# hooks or agents installed at INSTALL_ROOT; they have target-native config in
+# the project directory.
+if [[ -n "$TARGET" && "$TARGET" != "claude-code" ]]; then
+  echo ""
+  echo "Verifying Syntaris install for target: $TARGET"
+  echo ""
+  case "$TARGET" in
+    cursor)
+      [[ -f ".cursor/rules/syntaris-core.mdc" ]] && echo "  [OK] .cursor/rules/syntaris-core.mdc present" || echo "  [MISSING] .cursor/rules/syntaris-core.mdc"
+      ;;
+    windsurf)
+      [[ -f ".windsurf/rules/syntaris-core.md" ]] && echo "  [OK] .windsurf/rules/syntaris-core.md present" || echo "  [MISSING] .windsurf/rules/syntaris-core.md"
+      ;;
+    codex-cli)
+      [[ -f "AGENTS.md" ]] && echo "  [OK] AGENTS.md present" || echo "  [MISSING] AGENTS.md"
+      ;;
+    gemini-cli)
+      [[ -f ".gemini/GEMINI.md" ]] && echo "  [OK] .gemini/GEMINI.md present" || echo "  [MISSING] .gemini/GEMINI.md"
+      ;;
+    aider)
+      [[ -f ".aider.syntaris.md" ]] && echo "  [OK] .aider.syntaris.md present" || echo "  [MISSING] .aider.syntaris.md"
+      ;;
+    kiro)
+      [[ -f ".kiro/specs/syntaris-methodology.md" ]] && echo "  [OK] .kiro/specs/syntaris-methodology.md present" || echo "  [MISSING] .kiro/specs/syntaris-methodology.md"
+      ;;
+    opencode)
+      [[ -f ".opencode/instructions/INSTRUCTIONS.md" ]] && echo "  [OK] .opencode/instructions/INSTRUCTIONS.md present" || echo "  [MISSING] .opencode/instructions/INSTRUCTIONS.md"
+      ;;
+  esac
+  [[ -d "foundation" ]] && echo "  [OK] foundation/ directory present" || echo "  [MISSING] foundation/ directory"
+  echo ""
+  echo "Tier 2/3 verification is minimal. See docs/COMPATIBILITY.md for what's enforced."
+  echo "BUILD_NEXT.md tracks pending validation work for this target."
+  echo ""
+  exit 0
+fi
 
 # == Color helpers ===========================================================
 
@@ -77,7 +118,7 @@ section() {
 
 echo ""
 printf "${C_CYAN}============================================${C_RESET}\n"
-printf "${C_CYAN}  Blueprint v11 - Verification${C_RESET}\n"
+printf "${C_CYAN}  Syntaris - Verification${C_RESET}\n"
 printf "${C_CYAN}  Install root: %s${C_RESET}\n" "$INSTALL_ROOT"
 printf "${C_CYAN}============================================${C_RESET}\n"
 
@@ -102,12 +143,12 @@ else
   fail "settings.json missing: $settings"
 fi
 
-# 16 skills
+# 14 skills
 required_skills=(
   start build-rules global-rules critical-thinker
   testing security deployment costs performance
-  debug research freelance-billing handoff
-  health onboard rollback
+  debug research billing
+  health rollback
 )
 missing_skills=0
 for s in "${required_skills[@]}"; do
@@ -119,7 +160,7 @@ for s in "${required_skills[@]}"; do
   fi
 done
 
-# 16 hook scripts
+# 20 hook scripts (10 bash + 10 PowerShell)
 required_hooks=(
   hook-wrapper.sh hook-wrapper.ps1
   session-start.sh session-start.ps1
@@ -129,6 +170,8 @@ required_hooks=(
   context-check.sh context-check.ps1
   pre-compact.sh pre-compact.ps1
   writethru-episodic.sh writethru-episodic.ps1
+  gate-close-calibration.sh gate-close-calibration.ps1
+  skill-telemetry.sh skill-telemetry.ps1
 )
 for h in "${required_hooks[@]}"; do
   if [[ -f "$INSTALL_ROOT/hooks/$h" ]]; then
@@ -138,8 +181,9 @@ for h in "${required_hooks[@]}"; do
   fi
 done
 
-# 3 agents
-for a in spec-reviewer.md test-writer.md security-auditor.md; do
+# 7 agents
+for a in spec-reviewer.md test-writer.md security-auditor.md \
+         research-agent.md debug-agent.md health-agent.md critical-thinker-agent.md; do
   if [[ -f "$INSTALL_ROOT/agents/$a" ]]; then
     pass "agent: $a"
   else
@@ -214,13 +258,15 @@ for s in "${required_skills[@]}"; do
   validate_frontmatter "$INSTALL_ROOT/skills/$s/SKILL.md" "skill/$s"
 done
 
-for a in spec-reviewer test-writer security-auditor; do
+for a in spec-reviewer test-writer security-auditor \
+         research-agent debug-agent health-agent critical-thinker-agent; do
   validate_frontmatter "$INSTALL_ROOT/agents/${a}.md" "agent/$a"
 done
 
 # Bash hooks pass syntax check
 for h in session-start strip-coauthor enforce-tests block-dangerous \
-         context-check pre-compact writethru-episodic hook-wrapper; do
+         context-check pre-compact writethru-episodic hook-wrapper \
+         gate-close-calibration skill-telemetry; do
   path="$INSTALL_ROOT/hooks/$h.sh"
   if [[ -f "$path" ]]; then
     if bash -n "$path" 2>/dev/null; then
@@ -234,7 +280,8 @@ done
 # PowerShell hooks parse (if pwsh is available - rare on Mac/Linux)
 if command -v pwsh >/dev/null 2>&1; then
   for h in session-start strip-coauthor enforce-tests block-dangerous \
-           context-check pre-compact writethru-episodic hook-wrapper; do
+           context-check pre-compact writethru-episodic hook-wrapper \
+           gate-close-calibration skill-telemetry; do
     path="$INSTALL_ROOT/hooks/$h.ps1"
     if [[ -f "$path" ]]; then
       if pwsh -NoProfile -Command "
@@ -261,7 +308,8 @@ section "Layer 3: Execution readiness"
 
 # Hook scripts executable
 for h in session-start strip-coauthor enforce-tests block-dangerous \
-         context-check pre-compact writethru-episodic hook-wrapper; do
+         context-check pre-compact writethru-episodic hook-wrapper \
+         gate-close-calibration skill-telemetry; do
   path="$INSTALL_ROOT/hooks/$h.sh"
   if [[ -f "$path" ]]; then
     if [[ -x "$path" ]]; then
@@ -365,14 +413,14 @@ try:
     hso = d['hookSpecificOutput']
     assert hso.get('hookEventName') == 'SessionStart', f'wrong hookEventName: {hso.get(\"hookEventName\")}'
     assert 'additionalContext' in hso, 'missing additionalContext'
-    assert 'Blueprint v11' in hso['additionalContext'], 'context does not mention Blueprint v11'
+    assert 'Syntaris' in hso['additionalContext'], 'context does not mention Syntaris'
 except Exception as e:
     print(f'Validation failed: {e}', file=sys.stderr)
     sys.exit(1)
 " "$ss_output" 2>/dev/null; then
       pass "SessionStart: valid JSON with hookSpecificOutput wrapper"
     else
-      fail "SessionStart: output is not valid Blueprint JSON"
+      fail "SessionStart: output is not valid Syntaris JSON"
       $VERBOSE && printf "${C_GRAY}    got: %s${C_RESET}\n" "$ss_output"
     fi
   else
@@ -437,17 +485,17 @@ if [[ -x "$smoke_root/.claude/hooks/hook-wrapper.sh" ]]; then
   fi
 fi
 
-# Smoke test 5: missing hook in BLUEPRINT_DEBUG mode surfaces diagnostic
+# Smoke test 5: missing hook in SYNTARIS_DEBUG mode surfaces diagnostic
 if [[ -x "$smoke_root/.claude/hooks/hook-wrapper.sh" ]]; then
   dbg_output=$(echo '{}' | \
-    BLUEPRINT_DEBUG=1 \
+    SYNTARIS_DEBUG=1 \
     CLAUDE_PROJECT_DIR="$smoke_root" \
     bash "$smoke_root/.claude/hooks/hook-wrapper.sh" nonexistent-hook 2>&1)
   dbg_exit=$?
 
   if [[ $dbg_exit -eq 0 ]]; then
     if echo "$dbg_output" | grep -q "not found on any fallback path"; then
-      pass "missing hook: diagnostic surfaces in BLUEPRINT_DEBUG mode"
+      pass "missing hook: diagnostic surfaces in SYNTARIS_DEBUG mode"
     else
       warn "missing hook: exit 0 but no diagnostic message"
     fi
@@ -476,14 +524,14 @@ if [[ $fail_count -gt 0 ]]; then
     printf "  - %s\n" "$msg"
   done
   echo ""
-  printf "${C_YELLOW}Blueprint v11 install has problems. See failures above.${C_RESET}\n"
+  printf "${C_YELLOW}Syntaris install has problems. See failures above.${C_RESET}\n"
   printf "${C_YELLOW}Re-run install.sh, or fix the specific items listed.${C_RESET}\n"
   echo ""
   exit 1
 fi
 
 echo ""
-printf "${C_GREEN}All verification layers passed. Blueprint v11 is ready to use.${C_RESET}\n"
+printf "${C_GREEN}All verification layers passed. Syntaris is ready to use.${C_RESET}\n"
 printf "  * Files: present and structurally valid\n"
 printf "  * Hooks: executable and dependencies available\n"
 printf "  * Smoke tests: SessionStart produces valid JSON; dangerous commands block correctly\n"

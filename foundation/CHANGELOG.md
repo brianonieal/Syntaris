@@ -1,5 +1,5 @@
 # CHANGELOG.md
-# Blueprint v11 | Gate-by-Gate Change Log
+# Syntaris v0.3.0 | Gate-by-Gate Change Log
 # Updated at every gate close.
 
 ## CHANGELOG

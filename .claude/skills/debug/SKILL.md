@@ -1,115 +1,77 @@
 ---
 name: debug
-description: "Structured root cause analysis with a circuit-breaker rule. Use after 3 consecutive failures on the same problem, when the user types /debug, or when diagnosing any persistent error."
+description: "Structured root cause analysis with a circuit-breaker rule. Use after 3 consecutive failures on the same problem, when the user types /debug, or when diagnosing any persistent error. Heavy reading happens in an isolated subagent."
 ---
 
-# DEBUG SKILL - Blueprint v11
+# DEBUG SKILL - Syntaris v0.3.0
 # Invoke: /debug or auto-triggered after 3 consecutive failures
 
 ## TONE
 
-Debugging is frustrating for the user. The easygoing SME slows down,
-works the problem methodically, doesn't blame the user, and doesn't
-pretend to know what they don't know. When a fix works, move on without
-celebration. When a hypothesis fails, say so and try the next one.
+Debugging is frustrating for the user. The easygoing SME slows down, works the problem methodically, doesn't blame the user, and doesn't pretend to know what they don't know. When a fix works, move on without celebration. When a hypothesis fails, say so and try the next one.
 
 ## CIRCUIT BREAKER
 
-Three consecutive failures on the same problem means stop and run this
-protocol. Do not attempt a fourth variation without going through the
-steps below. Spraying fixes at an undiagnosed problem wastes time and
-hides the real cause.
+Three consecutive failures on the same problem means stop and run this protocol. Do not attempt a fourth variation without going through the steps below. Spraying fixes at an undiagnosed problem wastes time and hides the real cause.
 
-## STEP 1 - check ERRORS.md first
+## STEP 1 - GATHER THE PROBLEM STATEMENT
 
-Before anything else, read ERRORS.md. Search for the exact error message
-or the pattern you are seeing. If there is a match, apply the documented
-fix. Do not re-diagnose a problem someone already solved.
+Ask the user to share what's broken. You need at minimum:
+- What they expected to happen
+- What actually happened (error message, stack trace, log output, observed behavior)
+- When it started (after what change, if known)
 
-## STEP 2 - diagnose root cause
+If they paste a long log or stack trace, that's fine. Do not summarize it before delegating; the subagent will read it.
 
-Read the full error output. Not the first line; the full output. Many
-errors have the real cause two or three stack frames down.
+## STEP 2 - DELEGATE TO DEBUG-AGENT
 
-Classify the error into one of:
-- Code error (bug in the source)
-- Config error (env var, missing file, wrong path)
-- Environment error (wrong versions, missing system dependency)
-- Integration error (two parts that used to work are out of sync)
+Invoke the debug-agent subagent. Pass it:
+- The problem statement from Step 1
+- The full error output / stack trace / log content the user provided
+- The relevant files the user named (if any)
 
-Common patterns worth checking:
-- Async/sync mix, missing `await`, wrong import path
-- Wrong env var name or format (e.g., `CORS_ORIGINS` expects JSON array,
-  not comma-separated string)
-- Missing dependency in requirements.txt or package.json
-- Migration out of sync with models
-- A recent change in one file that broke an assumption in another
+The subagent will:
+- Check `foundation/ERRORS.md` for prior diagnoses of similar errors
+- Grep the codebase, read implicated files, check recent git history
+- Form a root-cause hypothesis with confidence rating
+- Return a structured diagnosis
 
-## STEP 3 - verify the diagnosis before fixing
+Wait for its response. The intermediate file reads and grep output stay inside the subagent; you only receive the final diagnosis.
 
-A fix applied to the wrong diagnosis is noise. Verify cheaply:
+## STEP 3 - VERIFY THE DIAGNOSIS BEFORE FIXING
 
-```bash
-cat error.log | tail -50
-python --version && node --version
-printenv | grep <relevant_prefix>
-alembic current && alembic history   # if using alembic
+A fix applied to the wrong diagnosis is noise. The subagent will return a confidence level (HIGH | MEDIUM | LOW). Apply this rule:
+
+- **HIGH confidence**: present the diagnosis to the user, propose the recommended fix, ask permission, apply it, run the test that demonstrates the fix.
+- **MEDIUM confidence**: present the diagnosis, explain the alternative hypotheses the subagent listed, ask the user which they think is most likely given context the subagent doesn't have, then proceed.
+- **LOW confidence**: do not propose a code change yet. Surface the evidence gaps to the user. Gather the missing data (running a specific command, reading a specific file the subagent didn't have access to, asking the user a specific question), then re-invoke the debug-agent with the new evidence.
+
+## STEP 4 - APPLY THE FIX
+
+After the user approves the fix:
+1. Make the change.
+2. Run the test that demonstrates the bug, verify it now passes.
+3. Run the full test suite, verify no regressions.
+4. If a test does not exist for the bug yet, write one before considering the fix complete.
+
+## STEP 5 - WRITE THE NEW ERR ENTRY
+
+If the bug was novel (subagent returned `PRIOR_ENTRY: none`), write the new entry to `foundation/ERRORS.md`. The subagent returns a draft `NEW_ERRORS_ENTRY` block; you append it as `ERR-NNN`. Format:
+
+```
+## ERR-NNN: <one-line title>
+Date: <today>
+Symptom: <how it appeared>
+Root cause: <what was actually wrong>
+Fix: <what was changed>
+Prevention: <if a pattern, what would prevent it next time>
 ```
 
-Only apply a fix once you have evidence for the root cause, not just
-a hypothesis.
-
-## STEP 4 - fix and validate
-
-Apply exactly one fix. Run the failing test or command immediately to
-verify. Do not apply multiple fixes at once - if something works, you
-need to know which change caused it.
-
-If the fix works: move to step 5.
-If the fix fails: document what you tried, say so plainly, move to the
-next hypothesis.
-
-## STEP 5 - document in ERRORS.md
-
-```markdown
-## ERR-[NNN]: [Short title]
-Date: [date]
-Gate: [vX.X.X]
-Symptom: [What the user saw]
-Root cause: [What actually caused it]
-Fix applied: [Exact fix]
-Attempts that failed: [What did not work and why]
-Prevention: [How to avoid in future]
-```
-
-The "Attempts that failed" field matters. Future sessions will thank
-you for documenting the wrong paths as well as the right one.
-
-## KNOWN STACK ERRORS
-
-Seed these into ERRORS.md at project start so the first hit is already
-covered:
-
-- **ERR-001: ModuleNotFoundError: No module named 'jose'**
-  Fix: Add `python-jose[cryptography]` to requirements.txt.
-
-- **ERR-002: DATABASE_URL asyncpg prefix wrong**
-  Fix: Change `postgres://` to `postgresql+asyncpg://`.
-
-- **ERR-003: Co-Authored-By blocks hosting deploy on Hobby plan**
-  Fix: The strip-coauthor hook installs a commit-msg hook that removes
-  the line automatically. If it's not installed, run
-  `bash ~/.claude/hooks/strip-coauthor.sh` once.
-
-- **ERR-004: Alembic autogenerate produces wrong migration**
-  Fix: Never use autogenerate without reading the output. Write
-  migrations manually and review.
+Do not let the subagent write to ERRORS.md. You write it.
 
 ## RULES
 
-- Never attempt a fourth fix variation without running this protocol
-- Never skim error output; read it all
-- Never apply two fixes at once
-- Never skip logging to ERRORS.md; the next session inherits the pain
-  otherwise
-- Never blame the user for the bug; blame the situation
+- Always check ERRORS.md (via the subagent) before guessing. Re-diagnosing a solved problem wastes time.
+- Never let the subagent run write-mode bash commands (no `rm`, no migrations, no installers). The subagent's tools should already be restricted, but verify if its returned EVIDENCE references state changes.
+- If the subagent's confidence is LOW, do not pressure it to commit. Gather more evidence and re-invoke.
+- If the user wants to skip this protocol and "just try X," remind them of the circuit breaker. Three failures already happened. The fourth variation has no better odds than the first three.

@@ -1,5 +1,5 @@
 # pre-compact.ps1
-# Blueprint v11: Save state before lossy auto-compaction
+# Syntaris: Save state before lossy auto-compaction
 # Runs as PreCompact hook
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -41,5 +41,5 @@ Last git state: $lastCommit
     Add-Content -Path $plansPath -Value $entry
 }
 
-[Console]::Error.WriteLine("Blueprint v11: Pre-compaction backup saved to .claude/backups/")
+[Console]::Error.WriteLine("Syntaris: Pre-compaction backup saved to .claude/backups/")
 exit 0

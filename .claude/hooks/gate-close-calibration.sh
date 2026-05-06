@@ -1,6 +1,6 @@
 #!/bin/bash
 # gate-close-calibration.sh
-# Blueprint v11.3: Write ESTIMATION entries to MEMORY_CORRECTIONS.md at gate close.
+# Syntaris.3: Write ESTIMATION entries to MEMORY_CORRECTIONS.md at gate close.
 #
 # Triggered manually from the gate-close protocol, or from a git hook.
 # Reads:
@@ -133,7 +133,7 @@ if [[ -z "$ACTUAL" ]] && command -v git >/dev/null 2>&1 \
 
   if [[ -z "$COMMIT_TIMES" ]]; then
     # Fall back to "commits since the previous gate tag"
-    PREV_TAG=$(git -C "$PROJ_DIR" tag --list 'blueprint-gate-*' \
+    PREV_TAG=$(git -C "$PROJ_DIR" tag --list 'syntaris-gate-*' 'blueprint-gate-*' \
                --sort=-version:refname 2>/dev/null | head -2 | tail -1)
     if [[ -n "$PREV_TAG" ]]; then
       COMMIT_TIMES=$(git -C "$PROJ_DIR" log "${PREV_TAG}..HEAD" \
@@ -199,7 +199,7 @@ if [[ ! -f "$CORRECTIONS" ]]; then
   # File doesn't exist; create it with standard header
   {
     echo "# MEMORY_CORRECTIONS.md"
-    echo "# Blueprint v11 | Calibration data and reflexion entries"
+    echo "# Syntaris | Calibration data and reflexion entries"
     echo ""
     echo "## REFLEXION LOG"
     echo ""

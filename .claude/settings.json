@@ -86,8 +86,14 @@
     ],
     "deny": [
       "Bash(rm -rf /)", "Bash(rm -rf ~)", "Bash(rm -rf .)", "Bash(rm -rf *)",
+      "Bash(rm -fr /)", "Bash(rm -fr ~)", "Bash(rm -fr .)", "Bash(rm -fr *)",
+      "Bash(rm -r -f /)", "Bash(rm -f -r /)",
+      "Bash(rm --recursive --force /)", "Bash(rm --force --recursive /)",
+      "Bash(rm -rf /home)", "Bash(rm -rf /usr)", "Bash(rm -rf /etc)",
+      "Bash(rm -rf /var)", "Bash(rm -rf /opt)", "Bash(rm -rf /System)",
       "Bash(git push --force * main)", "Bash(git push --force * master)",
-      "Bash(git push -f * main)", "Bash(git push -f * master)"
+      "Bash(git push -f * main)", "Bash(git push -f * master)",
+      "Bash(git push --force-with-lease * main)", "Bash(git push --force-with-lease * master)"
     ]
   },
 
@@ -106,7 +112,7 @@
   },
 
   "env": {
-    "BLUEPRINT_VERSION": "v11",
+    "SYNTARIS_VERSION": "v0.2.0",
     "CONTEXT_WARN_TURNS": "80",
     "CONTEXT_HARD_TURNS": "120"
   }

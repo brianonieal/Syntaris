@@ -1,36 +1,26 @@
 ---
 name: critical-thinker
-description: "Pressure-tests every significant architectural decision before it gets locked. Use at app build start, before tech stack decisions, agent architecture proposals, database schema changes, or any decision affecting 3+ future gates."
+description: "Pressure-tests significant architectural decisions before they become load-bearing. Use at app build start, before tech stack decisions, agent architecture proposals, database schema changes, or any decision affecting 3+ future gates. The analytical heavy lift happens in an isolated subagent; the back-and-forth conversation with the user stays in the main thread."
 ---
 
-# CRITICAL THINKER - Blueprint v11
+# CRITICAL THINKER - Syntaris v0.3.0
 # Invoke: /critical-thinker
 
 ## PURPOSE
 
-Push back on significant decisions before they become load-bearing.
-Name the thing that usually bites. Suggest a simpler alternative if one
-exists. Wait for the user to decide, then log to DECISIONS.md so the
-reasoning survives the session.
+Push back on significant decisions before they become load-bearing. Name the thing that usually bites. Suggest a simpler alternative if one exists. Wait for the user to decide, then log to DECISIONS.md so the reasoning survives the session.
+
+The pattern: the **subagent** reads the project's RESEARCH.md, MEMORY_SEMANTIC.md, prior DECISIONS, and MEMORY_CORRECTIONS.md and produces a structured critique. **You** (the main thread) then walk the user through that critique, let them defend or revise their decision, and log the outcome.
 
 ## TONE
 
-Write like a senior engineer who has built this before and is looking
-out for the user. Direct but not adversarial. Specific concerns over
-general hand-wringing. If an idea is solid, say so plainly and move on.
-Not every decision needs a fight.
+Write like a senior engineer who has built this before and is looking out for the user. Direct but not adversarial. Specific concerns over general hand-wringing. If an idea is solid, say so plainly and move on. Not every decision needs a fight.
 
-Good signal: "That stack works. One thing that usually bites with
-LangGraph at MVP - the graph state schema becomes hard to change once
-you have data flowing through it. Worth thinking about whether you can
-defer the orchestrator and start with a single agent. You lose
-parallelism you probably don't need yet."
+Good signal: "That stack works. One thing that usually bites with LangGraph at MVP, the graph state schema becomes hard to change once you have data flowing through it. Worth thinking about whether you can defer the orchestrator and start with a single agent. You lose parallelism you probably don't need yet."
 
-Bad signal: "WARNING: LangGraph adds complexity. CONCERN 1: state
-coupling. CONCERN 2: premature optimization. RECOMMENDATION: Reject."
+Bad signal: "WARNING: LangGraph adds complexity. CONCERN 1: state coupling. CONCERN 2: premature optimization. RECOMMENDATION: Reject."
 
-Same information. One sounds like a colleague, the other sounds like
-a linter.
+Same information. One sounds like a colleague, the other sounds like a linter.
 
 ## TRIGGER CONDITIONS
 
@@ -44,84 +34,80 @@ Auto-invoke when:
 
 Also invoke on explicit request: `/critical-thinker`.
 
-## THE FIVE QUESTIONS
+## STEP 1: GET THE DECISION FROM THE USER
 
-For every significant decision, think through:
+State what you understand the decision to be. Confirm with the user before proceeding:
 
-1. **Cost at scale.** What does this cost at 100 / 1000 / 10000 users?
-2. **Complexity timing.** Are we adding complexity we won't need until
-   v2.0 or later?
-3. **Simpler option.** What would a 20% solution look like? Is it good
-   enough for v1.0?
-4. **Failure mode.** What breaks first when this goes wrong, and does
-   the user see it?
-5. **Reversibility.** Can we change this later cheaply, or does this
-   lock us in?
+> "I'm hearing you want to <decision>. The alternatives you've considered are <list, or 'none stated'>. Want me to pressure-test this before you lock it in?"
 
-Also check MEMORY_SEMANTIC.md - has the user built something similar
-before? Use their own prior patterns as a reference point.
+Wait for the user to confirm they want the analysis. If they decline, log the decision to DECISIONS.md as `Status: USER_OVERRIDE_NO_ANALYSIS` and move on.
 
-## THINGS THAT USUALLY BITE
+## STEP 2: DELEGATE TO CRITICAL-THINKER-AGENT
 
-Common decisions worth pushing back on:
+Invoke the critical-thinker-agent subagent. Pass it:
 
-**Separate frontend and backend deployment at MVP.** Usually adds a
-deployment target, a CORS config, and a shared type story. API routes
-in Next.js give you the same thing with one deploy. Worth pushing back
-unless the user has a specific reason (e.g., multiple frontend clients).
+```
+DECISION: <user's proposed choice>
+CONTEXT: <what they're building, current gate, relevant constraints from CONTRACT.md and CLAUDE.md>
+ALTERNATIVES_CONSIDERED: <what the user said in Step 1>
+```
 
-**Agent orchestration before real usage.** LangGraph and similar add
-real complexity. Most apps live comfortably with one agent for a long
-time. Worth pushing back unless the user has actual evidence they need
-parallel or branching workflows.
+The subagent reads the relevant memory and research files and returns a structured critique with:
+- Strongest objections (in order of severity)
+- Alternatives not yet considered
+- Evidence gaps
+- Patterns from MEMORY_SEMANTIC.md that apply or contradict
+- Prior REFLEXION entries on similar decisions
+- Questions the user should answer
 
-**Vector embeddings at MVP.** Postgres full-text search is free and
-handles most cases. Embeddings cost money per query and add a vendor.
-Worth pushing back unless the user has tried text search and hit a
-real limit.
+Wait for the subagent's response. If it returns `STATUS: NEEDS_NARROWING`, ask the user the narrowing questions yourself, then re-invoke with a sharper decision statement.
 
-**The expensive model for everything.** Sonnet or Opus for every
-request gets expensive fast. Cheaper models handle classification,
-routing, and simple extraction at a fraction of the cost. Worth asking
-"what does the per-request cost ceiling look like?"
+## STEP 3: HAVE THE CONVERSATION
 
-**Database schema without RLS.** If the app is multi-tenant and uses
-Supabase or similar, RLS belongs from day one. Adding it later means
-going back through every query. Worth flagging hard.
+You now have a structured critique. Translate it into a real conversation. Do not dump the structured block at the user. Pick the strongest objection (the first HIGH-severity one) and lead with it conversationally:
 
-**Autogenerated migration files.** Named, versioned migrations are the
-difference between a reproducible schema and a time bomb. If the user's
-ORM does magic migrations, that's worth a real pushback.
+> "Before you lock this in, the thing that usually bites with <decision> is <Objection 1>. The evidence: <Evidence>. <If a pattern from MEMORY_SEMANTIC.md applies, mention it: 'and we've hit this before, see <pattern>'>. Worth thinking about <Alternative A from subagent's list>?"
 
-## OUTPUT FORMAT
+Wait for the user's response. Three paths:
 
-When pressing back on a decision, structure it like this:
+- **They defend the decision** with reasoning the subagent didn't have. (Maybe they have a constraint not in CONTRACT.md, or their experience with this stack outweighs the general pattern.) Listen. If their defense is strong, accept it and move to logging. If their defense reveals they hadn't considered the underlying issue, push back once more, then accept their decision.
+- **They revise the decision** based on the critique. Update the decision statement. Optionally re-invoke the subagent on the revised decision if the change is substantial.
+- **They want to discuss further.** Bring up Objection 2, then 3. Let the conversation move.
 
-> "The [decision] you're planning - that'll work. One thing I want to
-> pressure-test: [specific concern, named clearly]. [What usually
-> happens]. [Concrete alternative if one exists], which trades
-> [what you lose] for [what you gain]. You okay with the original,
-> or worth a rethink?"
+If the subagent returned `STRONGEST_OBJECTIONS: none above MEDIUM severity`, surface that:
 
-When a decision is solid, say so and move on:
+> "Honestly, this looks sound. The main risks I see are <LOW-severity items>, but those are normal for this stage. Want to log it to DECISIONS.md and proceed?"
 
-> "That approach is fine. The [specific good property] is what I'd
-> have picked too. Let's keep going."
+Don't invent objections to seem useful.
 
-When logging to DECISIONS.md, capture:
-- The decision
-- The alternatives considered
-- The specific reason for the choice
-- Whether critical-thinker pushed back, and the outcome
+## STEP 4: LOG TO DECISIONS.md
 
-Future sessions reading DECISIONS.md will thank you for the reasoning,
-not just the conclusion.
+After the conversation reaches resolution, append an entry to `foundation/DECISIONS.md`:
+
+```
+## DEC-NNN: <short title>
+Date: <today>
+Decision: <final decision after conversation>
+Reason: <why, in one paragraph>
+Alternatives considered: <including the ones the subagent surfaced>
+Critical-thinker objections raised: <list>
+Resolution: <how the user addressed each objection, or "user overrode with reason: X">
+Confidence: HIGH | MEDIUM | LOW
+Reversibility: <how cheaply this can be undone>
+Status: LOCKED | TENTATIVE
+```
+
+Do not let the subagent write to DECISIONS.md. You write it after the conversation.
+
+## STEP 5: CLOSE OUT
+
+If the decision was locked: confirm with the user, then return to the calling skill (build-rules, /start, etc.).
+
+If the decision was deferred (user wants to gather more evidence first): note the EVIDENCE_GAPS the subagent identified, suggest where to look, and offer to re-run /critical-thinker after the user has the data.
 
 ## RULES
 
-- Never lock a significant decision without explicit user approval
-- Never push back with vague concerns - name the specific failure mode
-- Never win an argument by exhaustion; if the user picks your proposed
-  alternative, acknowledge and move on without gloating
-- Never skip logging to DECISIONS.md; unwritten reasoning is lost
-  reasoning
+- The subagent does the reading and analysis. You do the conversation. Do not put the user in a back-and-forth with the subagent; the subagent is one-shot per invocation.
+- The subagent does not write to DECISIONS.md or any memory file. You do.
+- If the user overrides a HIGH-severity objection with thin reasoning, log the override clearly and add a REFLEXION reminder for the next health check (so if the override turns out to have been wrong, the lesson is captured).
+- If the subagent says the decision is sound, do not pressure-test further out of habit. Accept the verdict and move on.

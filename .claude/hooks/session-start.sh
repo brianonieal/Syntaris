@@ -1,6 +1,6 @@
 #!/bin/bash
 # session-start.sh
-# Blueprint v11: Inject Blueprint mode context at session start
+# Syntaris: Inject Syntaris mode context at session start
 # Runs as SessionStart hook
 # Per Anthropic docs: stdout from SessionStart becomes additionalContext for Claude
 
@@ -15,13 +15,13 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 # Build context injection
 CONTEXT=""
 
-# Check if this is a Blueprint project (has CONTRACT.md)
+# Check if this is a Syntaris project (has CONTRACT.md)
 if [ -f "$PROJECT_DIR/CONTRACT.md" ]; then
   PROJECT_NAME=$(grep "^PROJECT_NAME:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/PROJECT_NAME:[[:space:]]*//')
   CURRENT_VERSION=$(grep "^PROJECT_VERSION:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/PROJECT_VERSION:[[:space:]]*//')
   CLIENT_TYPE=$(grep "^CLIENT_TYPE:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/CLIENT_TYPE:[[:space:]]*//')
 
-  CONTEXT="You are operating under Blueprint v11 methodology."
+  CONTEXT="You are operating under Syntaris methodology."
   CONTEXT="$CONTEXT Project: ${PROJECT_NAME:-unknown} at ${CURRENT_VERSION:-v0.0.0}."
   CONTEXT="$CONTEXT Client type: ${CLIENT_TYPE:-PERSONAL}."
   CONTEXT="$CONTEXT Hard rules: never write code before FRONTEND APPROVED,"

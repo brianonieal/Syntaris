@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Blueprint v11 | Session Rules
+# Syntaris v0.3.0 | Session Rules
 # Read at every session start. Keep under 150 lines.
 
 ---
@@ -75,9 +75,9 @@ At every gate close, do all of this before presenting the checklist:
 8. Check MEMORY_SEMANTIC.md for pattern updates
 9. Run the calibration hook - writes ESTIMATION entry; hook auto-prints
    heads-up if variance > 30%
-10. Snapshot foundation files to `.blueprint/snapshots/<version>/`;
+10. Snapshot foundation files to `.syntaris/snapshots/<version>/`;
     prune to last 10
-11. git add . && git commit && git tag blueprint-gate-<version> &&
+11. git add . && git commit && git tag syntaris-gate-<version> &&
     git push origin main --tags
 12. Present gate close checklist with all items checked
 13. Wait for next gate's GO

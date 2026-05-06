@@ -1,5 +1,5 @@
 # VISUAL_CHECKS.md
-# Blueprint v11 | Visual Verification at Gate Close
+# Syntaris v0.3.0 | Visual Verification at Gate Close
 # Playwright screenshots compared against MOCKUPS.md spec
 
 ---
@@ -32,7 +32,7 @@ curl -s http://localhost:3000 > /dev/null && echo "RUNNING" || echo "OFFLINE"
 ```
 
 If OFFLINE:
-  Print: "Visual verification skipped -- dev server not running.
+  Print: "Visual verification skipped - dev server not running.
           Start server and run /visual-checks manually before typing GO."
   Do NOT block gate close. Log skip in VISUAL_CHECKS.md.
 
@@ -87,9 +87,9 @@ REVIEW: Screenshot differs and fix is ambiguous. Flag for the user's review befo
 
 ```markdown
 # VISUAL CHECKS LOG
-# Blueprint v11
+# Syntaris
 
-## v[X.X.X] -- [Gate Name] -- [date]
+## v[X.X.X] - [Gate Name] - [date]
 
 ### [Screen Name] (/route)
 Screenshot: /mockups/screenshots/v[X.X.X]/[screen].png
@@ -97,13 +97,13 @@ Status: PASS | DRIFT | REVIEW | SKIPPED
 
 Findings:
   - [PASS] Navigation sidebar present, /dashboard active
-  - [DRIFT] Login button missing from landing page nav -- fixed autonomously
-  - [REVIEW] Color on delta differs from spec -- needs user review
+  - [DRIFT] Login button missing from landing page nav - fixed autonomously
+  - [REVIEW] Color on delta differs from spec - needs user review
 
 ### SKIPPED GATES
 | Gate | Reason | Manual Check Done? |
 |------|--------|-------------------|
-| v0.1.0 | Dev server offline | YES -- User confirmed 2026-04-09 |
+| v0.1.0 | Dev server offline | YES - User confirmed 2026-04-09 |
 ```
 
 ---
@@ -127,7 +127,7 @@ Findings:
 ```
 
 Screenshots committed to git. They serve as the visual regression baseline
-for future gates -- if a later gate breaks a prior screen, the diff is visible.
+for future gates - if a later gate breaks a prior screen, the diff is visible.
 
 ---
 

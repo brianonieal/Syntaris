@@ -1,5 +1,5 @@
 # CONTEXT_BUDGET.md
-# Blueprint v11 | Context Budget Management
+# Syntaris v0.3.0 | Context Budget Management
 # Read this when context warning fires or session feels slow
 
 ---
@@ -11,29 +11,29 @@ A fresh session costs ~20,000 tokens before you type anything
 (system prompt + tool definitions + CLAUDE.md load).
 
 Quality degrades at 20-40% capacity (~40,000-80,000 tokens used).
-Auto-compaction fires at ~83.5% and is LOSSY -- retains only 20-30% of details.
+Auto-compaction fires at ~83.5% and is LOSSY - retains only 20-30% of details.
 One developer lost 3 hours of refactoring work when compaction erased migration decisions.
 
-Blueprint v11 loads 22 foundation files at session start by default.
+Syntaris loads 22 foundation files at session start by default.
 This is too heavy. The ALWAYS vs ON DEMAND split fixes this.
 
 ---
 
 ## FILE LOADING STRATEGY
 
-### ALWAYS LOAD (5 files -- load every session)
+### ALWAYS LOAD (5 files - load every session)
 
 These 5 files are small, critical, and needed for every decision:
 
-1. CLAUDE.md -- rules, identity, coding standards
-2. CONTRACT.md -- project constraints, tech stack, banned list
-3. SPEC.md -- current gate, active tasks
-4. ERRORS.md -- known failure patterns (prevent re-diagnosing solved problems)
-5. MEMORY_SEMANTIC.md -- patterns and pre-fills (already read at /start)
+1. CLAUDE.md - rules, identity, coding standards
+2. CONTRACT.md - project constraints, tech stack, banned list
+3. SPEC.md - current gate, active tasks
+4. ERRORS.md - known failure patterns (prevent re-diagnosing solved problems)
+5. MEMORY_SEMANTIC.md - patterns and pre-fills (already read at /start)
 
 Total token cost: ~3,000-5,000 tokens. Acceptable.
 
-### ON DEMAND (17 files -- load only when that domain is active)
+### ON DEMAND (17 files - load only when that domain is active)
 
 Load these only when Claude Code is actively working in that domain:
 
@@ -73,7 +73,7 @@ Loading ON DEMAND files reduces session start cost by ~60%.
   - Do NOT continue building past 50% without resetting
 
 83.5% (~167,000 tokens): AUTO-COMPACT (avoid this)
-  - Lossy -- 70-80% of details are lost
+  - Lossy - 70-80% of details are lost
   - Never let it get here
 
 ---
@@ -104,7 +104,7 @@ Errors encountered:
 
 ```bash
 git add .
-git commit -m "wip: v[X.X.X] context save -- [brief description]"
+git commit -m "wip: v[X.X.X] context save - [brief description]"
 git push origin main
 ```
 
@@ -165,7 +165,7 @@ The following block is parsed by `.claude/hooks/context-check.sh` and
 when the warnings fire for this specific project. Keep the format exactly
 as shown: a bare `KEY: value` line, one per line, case-sensitive keys.
 
-```blueprint-context-thresholds
+```syntaris-context-thresholds
 WARN_TURNS: 80
 HARD_TURNS: 120
 ```

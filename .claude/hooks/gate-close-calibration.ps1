@@ -1,5 +1,5 @@
 ﻿# gate-close-calibration.ps1
-# Blueprint v11.3: Write ESTIMATION entries to MEMORY_CORRECTIONS.md at gate close.
+# Syntaris.3: Write ESTIMATION entries to MEMORY_CORRECTIONS.md at gate close.
 #
 # Reads:
 #   - VERSION_ROADMAP.md for estimated hours of the gate being closed
@@ -95,7 +95,7 @@ if (-not $actual -and (Get-Command git -ErrorAction SilentlyContinue)) {
         $commitTimes = & git -C $projDir log --all --grep=$Version --format="%ct" --reverse 2>$null
 
         if (-not $commitTimes) {
-            $tags = & git -C $projDir tag --list 'blueprint-gate-*' --sort=-version:refname 2>$null
+            $tags = & git -C $projDir tag --list 'syntaris-gate-*' 'blueprint-gate-*' --sort=-version:refname 2>$null
             if ($tags -and $tags.Count -ge 2) {
                 $prevTag = $tags[1]
                 $commitTimes = & git -C $projDir log "${prevTag}..HEAD" --format="%ct" --reverse 2>$null
@@ -139,7 +139,7 @@ $entry = "ESTIMATION: gate=$Version estimated=${estimated}h actual=${actual}h va
 if (-not (Test-Path $corrections)) {
     $header = @(
         "# MEMORY_CORRECTIONS.md"
-        "# Blueprint v11 | Calibration data and reflexion entries"
+        "# Syntaris | Calibration data and reflexion entries"
         ""
         "## REFLEXION LOG"
         ""

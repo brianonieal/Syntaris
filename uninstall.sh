@@ -1,6 +1,6 @@
 #!/bin/bash
 # uninstall.sh
-# Blueprint v11.3: Remove Blueprint-owned files from this machine.
+# Syntaris v0.3.0: Remove Syntaris-owned files from this machine.
 #
 # What this REMOVES:
 #   - $INSTALL_ROOT/skills/   (all skills)
@@ -10,8 +10,8 @@
 #   - $INSTALL_ROOT/state/skill-log.jsonl (telemetry log)
 #
 # What this PRESERVES:
-#   - $BLUEPRINT_ROOT/foundation/ (template files; may have project-side edits)
-#   - $BLUEPRINT_ROOT/claude-skills/ (source copies for bundle builds)
+#   - $SYNTARIS_ROOT/foundation/ (template files; may have project-side edits)
+#   - $SYNTARIS_ROOT/foundation/ (template files)
 #   - Any per-project foundation files (CONTRACT.md etc inside real projects)
 #   - personal-overlay/owner-config.md (your personal config)
 #   - Hook error logs in $TMPDIR (they auto-expire)
@@ -22,38 +22,39 @@
 #   ./uninstall.sh --yes          # skip confirmation
 #   ./uninstall.sh --dry-run      # show what would be removed
 #
-# Platform note: this removes the Blueprint install on the side of the
+# Platform note: this removes the Syntaris install on the side of the
 # filesystem it's run from. If you installed on both Windows and WSL,
 # run the appropriate uninstaller on each side.
 
 set -u
 
 INSTALL_ROOT="${HOME}/.claude"
-BLUEPRINT_ROOT="${HOME}/Blueprint-v11"
+SYNTARIS_ROOT="${HOME}/Syntaris"
 ASSUME_YES=false
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --install-root) INSTALL_ROOT="$2"; shift 2 ;;
-    --blueprint-root) BLUEPRINT_ROOT="$2"; shift 2 ;;
+    --syntaris-root) SYNTARIS_ROOT="$2"; shift 2 ;;
+    --blueprint-root) SYNTARIS_ROOT="$2"; shift 2 ;;  # back-compat alias
     --yes|-y) ASSUME_YES=true; shift ;;
     --dry-run) DRY_RUN=true; shift ;;
     -h|--help)
       cat <<EOF
-Blueprint v11 Uninstaller
+Syntaris Uninstaller
 
 Usage:
   ./uninstall.sh [options]
 
 Options:
   --install-root DIR     Claude Code config dir (default: ~/.claude)
-  --blueprint-root DIR   Foundation templates dir (default: ~/Blueprint-v11)
+  --syntaris-root DIR    Foundation templates dir (default: ~/Syntaris). Alias: --blueprint-root
   --yes, -y              Skip confirmation prompt
   --dry-run              Show what would be removed without removing it
 
-This removes Blueprint-owned files only. Your personal overlay, foundation
-templates, and per-project Blueprint files are preserved. Hook error logs
+This removes Syntaris-owned files only. Your personal overlay, foundation
+templates, and per-project Syntaris files are preserved. Hook error logs
 in \$TMPDIR auto-expire.
 EOF
       exit 0 ;;
@@ -70,7 +71,7 @@ fi
 
 echo ""
 printf "${C_CYAN}============================================${C_RESET}\n"
-printf "${C_CYAN}  Blueprint v11 Uninstaller${C_RESET}\n"
+printf "${C_CYAN}  Syntaris Uninstaller${C_RESET}\n"
 printf "${C_CYAN}============================================${C_RESET}\n"
 
 # --- Enumerate what will be removed ---
@@ -86,7 +87,7 @@ if [[ -d "$INSTALL_ROOT/state" ]]; then to_remove+=("$INSTALL_ROOT/state"); fi
 if [[ -f "$INSTALL_ROOT/settings.json.bak" ]]; then to_restore="$INSTALL_ROOT/settings.json.bak"; fi
 
 if [[ ${#to_remove[@]} -eq 0 && -z "$to_restore" ]]; then
-  printf "${C_YELLOW}Nothing to remove. Blueprint does not appear to be installed at:${C_RESET}\n"
+  printf "${C_YELLOW}Nothing to remove. Syntaris does not appear to be installed at:${C_RESET}\n"
   printf "  $INSTALL_ROOT\n"
   exit 0
 fi
@@ -100,10 +101,9 @@ done
 
 echo ""
 echo "The following will be PRESERVED:"
-printf "  - $BLUEPRINT_ROOT/foundation/   (template files)\n"
-printf "  - $BLUEPRINT_ROOT/claude-skills/ (source copies)\n"
+printf "  - $SYNTARIS_ROOT/foundation/   (template files)\n"
 printf "  - personal-overlay/owner-config.md (your personal config, if any)\n"
-printf "  - Any project-side Blueprint files (CONTRACT.md etc in your projects)\n"
+printf "  - Any project-side Syntaris files (CONTRACT.md etc in your projects)\n"
 
 if [[ -n "$to_restore" ]]; then
   echo ""
@@ -142,8 +142,8 @@ if [[ -n "$to_restore" ]]; then
 fi
 
 echo ""
-printf "${C_GREEN}Blueprint v11 uninstalled from: $INSTALL_ROOT${C_RESET}\n"
+printf "${C_GREEN}Syntaris uninstalled from: $INSTALL_ROOT${C_RESET}\n"
 echo ""
-printf "${C_YELLOW}If you installed Blueprint on both Windows and WSL sides of this${C_RESET}\n"
+printf "${C_YELLOW}If you installed Syntaris on both Windows and WSL sides of this${C_RESET}\n"
 printf "${C_YELLOW}machine, run the uninstaller on the other side as well.${C_RESET}\n"
 echo ""

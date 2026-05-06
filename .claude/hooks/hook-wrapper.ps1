@@ -1,10 +1,10 @@
 ﻿# hook-wrapper.ps1
-# Blueprint v11: Unified hook invocation for native Windows PowerShell.
+# Syntaris: Unified hook invocation for native Windows PowerShell.
 # Mirrors hook-wrapper.sh behavior:
 #   1. Try $env:CLAUDE_PROJECT_DIR\.claude\hooks\<hook>.ps1
 #   2. Fall back to $env:USERPROFILE\.claude\hooks\<hook>.ps1
 #   3. Preserve exit 2 (blocking) from the first successful run.
-#   4. Surface stderr when BLUEPRINT_DEBUG=1 or when all paths fail.
+#   4. Surface stderr when SYNTARIS_DEBUG=1 or when all paths fail.
 #
 # Usage:
 #   powershell.exe -File hook-wrapper.ps1 <hook-name>
@@ -121,9 +121,9 @@ if ($result -eq 2) {
     exit 2
 }
 
-if ($env:BLUEPRINT_DEBUG -eq "1" -or $result -eq 127) {
+if ($env:SYNTARIS_DEBUG -eq "1" -or $result -eq 127) {
     if ($result -eq 127) {
-        [Console]::Error.WriteLine("BLUEPRINT v11: hook '$HookName' not found on any fallback path")
+        [Console]::Error.WriteLine("hook '$HookName' not found on any fallback path")
         [Console]::Error.WriteLine("  Tried: `$CLAUDE_PROJECT_DIR\.claude\hooks\$HookName.ps1")
         [Console]::Error.WriteLine("         `$USERPROFILE\.claude\hooks\$HookName.ps1")
     }

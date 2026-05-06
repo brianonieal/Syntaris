@@ -1,5 +1,5 @@
 ﻿# uninstall.ps1
-# Blueprint v11.3: Remove Blueprint-owned files from this machine.
+# Syntaris v0.3.0: Remove Syntaris-owned files from this machine.
 #
 # Removes: $InstallRoot\skills, hooks, agents, settings.json, state
 # Restores: settings.json.bak if present
@@ -13,7 +13,7 @@
 
 param(
     [string]$InstallRoot = "$env:USERPROFILE\.claude",
-    [string]$BlueprintRoot = "$env:USERPROFILE\Blueprint-v11",
+    [string]$SyntarisRoot = "$env:USERPROFILE\Syntaris",
     [switch]$Force,
     [switch]$DryRun
 )
@@ -22,7 +22,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  Blueprint v11 Uninstaller" -ForegroundColor Cyan
+Write-Host "  Syntaris Uninstaller" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 $toRemove = @()
@@ -43,7 +43,7 @@ if (Test-Path $statePath) { $toRemove += $statePath }
 if (Test-Path $bakPath) { $toRestore = $bakPath }
 
 if ($toRemove.Count -eq 0 -and -not $toRestore) {
-    Write-Host "Nothing to remove. Blueprint does not appear to be installed at:" -ForegroundColor Yellow
+    Write-Host "Nothing to remove. Syntaris does not appear to be installed at:" -ForegroundColor Yellow
     Write-Host "  $InstallRoot"
     exit 0
 }
@@ -63,10 +63,9 @@ foreach ($path in $toRemove) {
 
 Write-Host ""
 Write-Host "The following will be PRESERVED:"
-Write-Host "  - $BlueprintRoot\foundation\   (template files)"
-Write-Host "  - $BlueprintRoot\claude-skills\ (source copies)"
+Write-Host "  - $SyntarisRoot\foundation\   (template files)"
 Write-Host "  - personal-overlay\owner-config.md (your personal config, if any)"
-Write-Host "  - Any project-side Blueprint files (CONTRACT.md etc in your projects)"
+Write-Host "  - Any project-side Syntaris files (CONTRACT.md etc in your projects)"
 
 if ($toRestore) {
     Write-Host ""
@@ -108,8 +107,8 @@ if ($toRestore) {
 }
 
 Write-Host ""
-Write-Host "Blueprint v11 uninstalled from: $InstallRoot" -ForegroundColor Green
+Write-Host "Syntaris uninstalled from: $InstallRoot" -ForegroundColor Green
 Write-Host ""
-Write-Host "If you installed Blueprint on both Windows and WSL sides of this" -ForegroundColor Yellow
+Write-Host "If you installed Syntaris on both Windows and WSL sides of this" -ForegroundColor Yellow
 Write-Host "machine, run the uninstaller on the other side as well." -ForegroundColor Yellow
 Write-Host ""

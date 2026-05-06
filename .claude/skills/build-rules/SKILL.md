@@ -3,7 +3,7 @@ name: build-rules
 description: "Invokes the five-phase planning and approval process before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Blueprint v11
+# BUILD RULES - Syntaris v0.3.0
 # Invoke: /build-rules or auto-triggered at new project start
 
 ## THE FIVE PHASES
@@ -254,11 +254,11 @@ When a gate's work is done:
 10. Snapshot foundation files for rollback safety (runs AFTER
     calibration):
     ```bash
-    mkdir -p .blueprint/snapshots/<version>
+    mkdir -p .syntaris/snapshots/<version>
     cp CONTRACT.md DECISIONS.md VERSION_ROADMAP.md PLANS.md TESTS.md \
        TIMELOG.md MEMORY_SEMANTIC.md MEMORY_EPISODIC.md \
        MEMORY_CORRECTIONS.md COMPONENT_REGISTRY.md \
-       .blueprint/snapshots/<version>/ 2>/dev/null
+       .syntaris/snapshots/<version>/ 2>/dev/null
     ```
     TIMELOG.md is snapshotted alongside MEMORY_CORRECTIONS.md so that a
     rollback restores both sources of calibration data together. Omitting
@@ -266,13 +266,19 @@ When a gate's work is done:
     the actual-hours sum if those gates are re-done.
     Prune snapshots older than the 10 most recent by mtime:
     ```bash
-    ls -1t .blueprint/snapshots/ 2>/dev/null | tail -n +11 | \
-      xargs -I{} rm -rf .blueprint/snapshots/{}
+    ls -1t .syntaris/snapshots/ 2>/dev/null | tail -n +11 | \
+      xargs -I{} rm -rf .syntaris/snapshots/{}
     ```
-11. git add . && git commit && git tag blueprint-gate-<version> &&
+11. git add . && git commit && git tag syntaris-gate-<version> &&
     git push origin main --tags
-12. Present gate close checklist with all items checked
-13. Wait for next gate's **GO**
+12. **Invoke billing skill if PROJECT_TYPE is client.** Read foundation/CONTRACT.md.
+    If `PROJECT_TYPE: client`, hand off to the billing skill (core/skills/billing/SKILL.md).
+    The billing skill reads MEMORY_CORRECTIONS.md actual hours, computes invoice line item,
+    and prompts the user for invoice generation. If `PROJECT_TYPE: personal`, skip this step.
+    If the just-closed gate is the v1.0.0 final gate AND PROJECT_TYPE is client, the billing
+    skill also produces three handoff documents in foundation/HANDOFF/.
+13. Present gate close checklist with all items checked
+14. Wait for next gate's **GO**
 
 ## HARD RULES
 

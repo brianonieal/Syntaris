@@ -1,7 +1,7 @@
 ﻿# context-check.ps1
-# Blueprint v11 (IMPROVED): Warn when context approaches dangerous fill level
+# Syntaris v0.3.0: Warn when context approaches dangerous fill level
 # Runs as PostToolUse hook. Turn-count proxy stored per session.
-# PowerShell counterpart added in v11 improved package.
+# PowerShell counterpart for the cross-platform install.
 
 $ErrorActionPreference = "SilentlyContinue"
 

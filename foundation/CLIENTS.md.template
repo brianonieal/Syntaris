@@ -1,0 +1,38 @@
+# CLIENTS.md
+# Created when /start collects client info (PROJECT_TYPE: client).
+# This file holds the full client record. CONTRACT.md links to it via PROJECT_TYPE flag.
+
+## Client Record
+
+CLIENT_NAME:        {{CLIENT_NAME}}
+PRIMARY_CONTACT:    {{PRIMARY_CONTACT}}
+CONTACT_EMAIL:      {{CONTACT_EMAIL}}
+CONTACT_PHONE:      {{CONTACT_PHONE}}
+ADDRESS:            {{ADDRESS}}
+TAX_ID:             {{TAX_ID}}
+
+PROJECT_CODE:       {{PROJECT_CODE}}
+HOURLY_RATE:        {{HOURLY_RATE}}
+PAYMENT_TERMS:      {{PAYMENT_TERMS}}
+INVOICE_CADENCE:    {{INVOICE_CADENCE}}
+
+CONTRACT_DATE:      {{CONTRACT_DATE}}
+CONTRACT_DOCUMENT:  {{CONTRACT_DOCUMENT}}
+
+NOTES:              {{NOTES}}
+
+---
+
+## Schema reference
+
+See `core/skills/billing/SKILL.md` for the schema that this file follows. The `billing` skill reads this file at every gate close (when PROJECT_TYPE: client) to compute invoices.
+
+## Related files
+
+- `foundation/CONTRACT.md` - has PROJECT_TYPE flag pointing here
+- `foundation/INVOICES.md` - append-only ledger of invoices generated against this client
+- `foundation/HANDOFF/` - created at v1.0.0 final gate
+
+## Privacy
+
+This file is committed to the project's git repo. If you don't want client info in the repo, add `foundation/CLIENTS.md` to `.gitignore` and keep client data outside source control. The `billing` skill will still read from disk; only the file's git-tracked status changes.

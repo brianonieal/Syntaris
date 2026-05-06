@@ -1,6 +1,6 @@
 # TEAM.md
-# Blueprint v11 | Multi-Developer Collaboration Layer
-# OPTIONAL -- activate only on multi-developer projects
+# Syntaris v0.3.0 | Multi-Developer Collaboration Layer
+# OPTIONAL - activate only on multi-developer projects
 # Solo projects do not use this file
 
 ---
@@ -17,18 +17,18 @@ Multi-developer projects: TEAM_MODE = true
 
 ## ONBOARDING A SECOND DEVELOPER
 
-When a second developer joins a Blueprint v11 project:
+When a second developer joins a Syntaris project:
 
 ### Step 1: Share access
 
 - [ ] Add developer as collaborator on GitHub repo
 - [ ] Share Supabase project access (Dashboard -> Project Settings -> Members)
-- [ ] Share .env.local file securely (NOT via git -- use 1Password or similar)
+- [ ] Share .env.local file securely (NOT via git - use 1Password or similar)
 - [ ] Share DEPLOYMENT_CONFIG.md so they can configure locally
 
 ### Step 2: Brief them on foundation files
 
-Send them ONBOARDING.md and WHY.md from the Blueprint v11 docs.
+Send them ONBOARDING.md and WHY.md from the Syntaris docs.
 Have them read CONTRACT.md and VERSION_ROADMAP.md for this project.
 Have them read DECISIONS.md to understand locked decisions.
 
@@ -37,8 +37,8 @@ both developers agreeing and creating a new DEC-NNN entry that supersedes it.
 
 ### Step 3: Assign ownership
 
-Update COMPONENT_REGISTRY.md -- every component gets an owner field.
-Update DECISIONS.md -- every future decision gets an owner field.
+Update COMPONENT_REGISTRY.md - every component gets an owner field.
+Update DECISIONS.md - every future decision gets an owner field.
 Owner = the developer responsible for that component/decision.
 
 ---
@@ -47,8 +47,8 @@ Owner = the developer responsible for that component/decision.
 
 ### Branch strategy
 
-main: production only -- never commit directly
-develop: integration branch -- both developers merge here
+main: production only - never commit directly
+develop: integration branch - both developers merge here
 feature/[dev-name]/[feature]: individual feature branches
 
 ```bash
@@ -83,7 +83,7 @@ All architectural decisions require both developers to confirm.
 
 DECISIONS.md entry format on team projects:
 ```markdown
-## DEC-[NNN] -- [Decision title]
+## DEC-[NNN] - [Decision title]
 Date: [date]
 Gate: [vX.X.X]
 Owner: [lead developer or other developer]

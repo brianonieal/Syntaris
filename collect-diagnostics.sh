@@ -1,6 +1,6 @@
 #!/bin/bash
 # collect-diagnostics.sh
-# Blueprint v11: gather everything needed to report a bug
+# Syntaris: gather everything needed to report a bug
 #
 # Produces a single bp-diagnostics-<timestamp>.txt file you can send to
 # whoever you're asking for help. No secrets are collected. Review the
@@ -9,19 +9,20 @@
 set -u
 
 INSTALL_ROOT="${HOME}/.claude"
-BLUEPRINT_ROOT="${HOME}/Blueprint-v11"
+SYNTARIS_ROOT="${HOME}/Syntaris"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --install-root) INSTALL_ROOT="$2"; shift 2 ;;
-    --blueprint-root) BLUEPRINT_ROOT="$2"; shift 2 ;;
+    --syntaris-root) SYNTARIS_ROOT="$2"; shift 2 ;;
+    --blueprint-root) SYNTARIS_ROOT="$2"; shift 2 ;;  # back-compat alias
     -h|--help)
       cat <<EOF
-Blueprint v11 diagnostic collector
+Syntaris diagnostic collector
 
 Usage:
   ./collect-diagnostics.sh
-  ./collect-diagnostics.sh --install-root DIR --blueprint-root DIR
+  ./collect-diagnostics.sh --install-root DIR --syntaris-root DIR
 
 Produces a text file named bp-diagnostics-<timestamp>.txt in the current
 directory. Send that file when asking for help.
@@ -36,7 +37,7 @@ OUT="bp-diagnostics-${TS}.txt"
 
 {
   echo "============================================"
-  echo "  Blueprint v11 Diagnostics"
+  echo "  Syntaris Diagnostics"
   echo "  Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "============================================"
 
@@ -57,9 +58,9 @@ OUT="bp-diagnostics-${TS}.txt"
   echo "## INSTALL PATHS"
   echo ""
   echo "INSTALL_ROOT: $INSTALL_ROOT"
-  echo "BLUEPRINT_ROOT: $BLUEPRINT_ROOT"
+  echo "SYNTARIS_ROOT: $SYNTARIS_ROOT"
   echo "Install root exists: $([ -d "$INSTALL_ROOT" ] && echo yes || echo NO)"
-  echo "Blueprint root exists: $([ -d "$BLUEPRINT_ROOT" ] && echo yes || echo NO)"
+  echo "Syntaris root exists: $([ -d "$SYNTARIS_ROOT" ] && echo yes || echo NO)"
 
   echo ""
   echo "## INSTALL CONTENTS"
@@ -76,17 +77,17 @@ OUT="bp-diagnostics-${TS}.txt"
     echo ""
     echo "settings.json size: $([ -f "$INSTALL_ROOT/settings.json" ] && wc -c < "$INSTALL_ROOT/settings.json" | tr -d ' ' || echo MISSING) bytes"
   else
-    echo "(install root does not exist - Blueprint not installed at this location)"
+    echo "(install root does not exist - Syntaris not installed at this location)"
   fi
 
   echo ""
   echo "## FOUNDATION FILES"
   echo ""
-  if [ -d "$BLUEPRINT_ROOT/foundation" ]; then
-    echo "Foundation files: $(ls "$BLUEPRINT_ROOT/foundation" 2>/dev/null | wc -l | tr -d ' ')"
-    ls "$BLUEPRINT_ROOT/foundation" 2>/dev/null | sed 's/^/  /'
+  if [ -d "$SYNTARIS_ROOT/foundation" ]; then
+    echo "Foundation files: $(ls "$SYNTARIS_ROOT/foundation" 2>/dev/null | wc -l | tr -d ' ')"
+    ls "$SYNTARIS_ROOT/foundation" 2>/dev/null | sed 's/^/  /'
   else
-    echo "(foundation directory not found at $BLUEPRINT_ROOT/foundation)"
+    echo "(foundation directory not found at $SYNTARIS_ROOT/foundation)"
   fi
 
   echo ""

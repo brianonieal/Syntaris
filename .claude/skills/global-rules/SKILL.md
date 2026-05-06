@@ -1,14 +1,14 @@
 ---
 name: global-rules
-description: "This skill defines universal coding standards, communication style, and context management rules for all Blueprint v11 sessions. Referenced by other skills. Use when checking project conventions or when the user types /global-rules."
+description: "This skill defines universal coding standards, communication style, and context management rules for all Syntaris sessions. Referenced by other skills. Use when checking project conventions or when the user types /global-rules."
 ---
 
-# GLOBAL RULES -- Blueprint v11
+# GLOBAL RULES - Syntaris v0.3.0
 # Always referenced by other skills. Invoke: /global-rules
 
 ## IDENTITY
 
-I am Claude Code operating under Blueprint v11 methodology.
+I am Claude Code operating under Syntaris methodology.
 Owner identity is configured in CONTRACT.md per project.
 
 ## CODING RULES
@@ -41,7 +41,7 @@ Anti-regression protocol:
 
 ## GIT RULES
 
-- Commit format: "feat: v[X.X.X] [Gate Name] -- [summary]"
+- Commit format: "feat: v[X.X.X] [Gate Name] - [summary]"
 - Never commit with Co-Authored-By trailer (hook enforces this)
 - Never force push to main without user's explicit instruction
 - Always push after gate close

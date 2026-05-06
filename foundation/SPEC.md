@@ -1,5 +1,5 @@
 # SPEC.md
-# Blueprint v11 | Project Specification
+# Syntaris v0.3.0 | Project Specification
 # Written during SCOPE CONFIRMED phase. Updated at each gate close.
 
 ## PROJECT

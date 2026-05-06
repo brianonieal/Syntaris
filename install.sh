@@ -1,12 +1,12 @@
 #!/bin/bash
 # install.sh
-# Blueprint v11 Installer for macOS and Linux
+# Syntaris Installer for macOS and Linux
 #
 # Usage:
 #   ./install.sh
 #   ./install.sh --personal-config ./personal-overlay/owner-config.md
-#   ./install.sh --install-root ~/.claude --blueprint-root ~/Blueprint-v11
-#   ./install.sh --zip /path/to/blueprint-v11.zip
+#   ./install.sh --install-root ~/.claude --syntaris-root ~/Syntaris
+#   ./install.sh --zip /path/to/syntaris-v0.3.0.zip
 #
 # Supports two source modes:
 #   A) Cloned from GitHub: run from repo root, no zip.
@@ -16,11 +16,12 @@ set -e  # exit on error
 
 # == Defaults ================================================================
 
-ZIP_PATH="./blueprint-v11.zip"
+ZIP_PATH="./syntaris-v0.3.0.zip"
 INSTALL_ROOT="$HOME/.claude"
-BLUEPRINT_ROOT="$HOME/Blueprint-v11"
+SYNTARIS_ROOT="$HOME/Syntaris"
 PERSONAL_CONFIG=""
 ASSUME_YES=false
+TARGET=""              # If empty, auto-detect via .claude/lib/detect-runtime.sh
 
 # == Parse args ==============================================================
 
@@ -28,25 +29,37 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --zip)              ZIP_PATH="$2"; shift 2 ;;
     --install-root)     INSTALL_ROOT="$2"; shift 2 ;;
-    --blueprint-root)   BLUEPRINT_ROOT="$2"; shift 2 ;;
+    --syntaris-root)    SYNTARIS_ROOT="$2"; shift 2 ;;
+    --blueprint-root)   SYNTARIS_ROOT="$2"; shift 2 ;;  # back-compat alias
     --personal-config)  PERSONAL_CONFIG="$2"; shift 2 ;;
+    --target)           TARGET="$2"; shift 2 ;;
     --yes|-y)           ASSUME_YES=true; shift ;;
     -h|--help)
       cat <<EOF
-Blueprint v11 Installer (macOS / Linux / WSL)
+Syntaris Installer (macOS / Linux / WSL)
 
 Options:
-  --zip <path>              Path to blueprint-v11.zip (default: ./blueprint-v11.zip)
+  --zip <path>              Path to syntaris-v0.3.0.zip (default: ./syntaris-v0.3.0.zip)
   --install-root <dir>      Claude Code config dir (default: ~/.claude)
-  --blueprint-root <dir>    Foundation templates dir (default: ~/Blueprint-v11)
+  --syntaris-root <dir>     Foundation templates dir (default: ~/Syntaris). Alias: --blueprint-root
   --personal-config <file>  Path to owner-config.md for variable substitution
+  --target <name>           Runtime target. One of:
+                              claude-code  (Tier 1, full enforcement, default if Claude Code detected)
+                              cursor       (Tier 2, partial enforcement)
+                              windsurf     (Tier 2, partial enforcement)
+                              codex-cli    (Tier 3, advisory only)
+                              gemini-cli   (Tier 3, advisory only)
+                              aider        (Tier 3, advisory only)
+                              kiro         (Tier 3, advisory only)
+                              opencode     (Tier 3, advisory only)
+                            If omitted, auto-detect via .claude/lib/detect-runtime.sh.
   --yes, -y                 Skip the pre-install confirmation prompt
 
 If you cloned this repo from GitHub, run this script from the repo root.
 If you have a distributable zip, point --zip at it.
 
-This installer CLOBBERS any existing Blueprint install at --install-root.
-If you have personally edited Blueprint skills or settings.json, back them
+This installer CLOBBERS any existing Syntaris install at --install-root.
+If you have personally edited Syntaris skills or settings.json, back them
 up before running.
 EOF
       exit 0 ;;
@@ -69,11 +82,59 @@ warn()  { printf "  ${C_YELLOW}[WARN]${C_RESET} %s\n" "$*"; }
 err()   { printf "  ${C_RED}[ERROR]${C_RESET} %s\n" "$*"; }
 miss()  { printf "  ${C_RED}[MISSING]${C_RESET} %s\n" "$*"; }
 
+# == Target detection and tier mapping ======================================
+
+# If TARGET wasn't passed on command line, try to auto-detect from environment.
+# detect-runtime.sh lives inside the source dir, so we may need to delay this
+# until we know SCRIPT_DIR. For now, do a lightweight inline detection.
+
+if [[ -z "$TARGET" ]]; then
+  if [[ -n "${CLAUDE_CODE:-}" ]] || [[ -n "${ANTHROPIC_CLAUDE_CODE:-}" ]]; then
+    TARGET="claude-code"
+  elif [[ -n "${CURSOR_USER:-}" ]] || [[ -d ".cursor" ]] || [[ -f ".cursorrules" ]]; then
+    TARGET="cursor"
+  elif [[ -n "${WINDSURF_USER:-}" ]] || [[ -d ".windsurf" ]]; then
+    TARGET="windsurf"
+  elif [[ -f ".codex/config.toml" ]] || [[ -n "${CODEX_HOME:-}" ]]; then
+    TARGET="codex-cli"
+  elif [[ -d ".gemini" ]]; then
+    TARGET="gemini-cli"
+  elif [[ -n "${AIDER_MODEL:-}" ]] || [[ -f ".aider.conf.yml" ]]; then
+    TARGET="aider"
+  elif [[ -n "${KIRO_HOME:-}" ]] || [[ -d ".kiro" ]]; then
+    TARGET="kiro"
+  elif [[ -d ".opencode" ]] || [[ -f "opencode.json" ]]; then
+    TARGET="opencode"
+  else
+    TARGET="claude-code"  # default if nothing detected
+    AUTO_DETECT_FALLBACK=true
+  fi
+fi
+
+# Map target to tier for downstream logic
+case "$TARGET" in
+  claude-code)              TIER=1 ;;
+  cursor|windsurf)          TIER=2 ;;
+  codex-cli|gemini-cli|aider|kiro|opencode)  TIER=3 ;;
+  *) echo "Unknown target: $TARGET. Use --help to see valid targets." >&2; exit 1 ;;
+esac
+
 echo ""
 info "============================================"
-info "  Blueprint v11 Installer (macOS / Linux)"
+info "  Syntaris Installer (macOS / Linux)"
 info "  AI App Building Methodology"
 info "============================================"
+echo ""
+info "  Target:  $TARGET (Tier $TIER)"
+case "$TIER" in
+  1) info "  Mode:    Full enforcement (hooks, skills, agents, memory)" ;;
+  2) info "  Mode:    Partial enforcement (rules + auto-applied context, no hooks)" ;;
+  3) info "  Mode:    Advisory only (methodology as text, honor system)" ;;
+esac
+if [[ "${AUTO_DETECT_FALLBACK:-false}" == "true" ]]; then
+  warn "Could not detect harness from environment. Defaulting to claude-code."
+  warn "Override with --target if you're using a different runtime."
+fi
 echo ""
 
 # == Step 1: Locate source (clone or zip) ===================================
@@ -85,7 +146,7 @@ if [[ -d "$SCRIPT_DIR/.claude" ]]; then
   SRC_ROOT="$SCRIPT_DIR"
   printf "${C_GREEN}Installing from cloned repo at: %s${C_RESET}\n" "$SRC_ROOT"
 elif [[ -f "$ZIP_PATH" ]]; then
-  TMP_DIR="$(mktemp -d -t blueprint-v11-install.XXXXXX)"
+  TMP_DIR="$(mktemp -d -t syntaris-install.XXXXXX)"
   printf "${C_GRAY}Extracting: %s${C_RESET}\n" "$ZIP_PATH"
   unzip -q "$ZIP_PATH" -d "$TMP_DIR"
 
@@ -99,15 +160,124 @@ elif [[ -f "$ZIP_PATH" ]]; then
   printf "${C_GREEN}Extracted to: %s${C_RESET}\n" "$SRC_ROOT"
   USED_ZIP=true
 else
-  err "Cannot locate Blueprint source."
+  err "Cannot locate Syntaris source."
   echo "Expected one of:" >&2
   echo "  - A .claude/ directory next to this installer (clone mode)" >&2
-  echo "  - A blueprint-v11.zip at: $ZIP_PATH (zip mode)" >&2
+  echo "  - A syntaris-v0.3.0.zip at: $ZIP_PATH (zip mode)" >&2
   echo "" >&2
   echo "If you cloned from GitHub, run this installer from the repo root." >&2
-  echo "If you have a zip, specify: --zip /path/to/blueprint-v11.zip" >&2
+  echo "If you have a zip, specify: --zip /path/to/syntaris-v0.3.0.zip" >&2
   exit 1
 fi
+
+# == Step 1.5: Tier 2/3 install branch ======================================
+# Tier 1 (Claude Code) continues to the full install. Tier 2/3 take a separate
+# path that emits target-native config and exits.
+
+if [[ "$TIER" != "1" ]]; then
+  TARGET_DIR="$SRC_ROOT/targets/$TARGET"
+  if [[ ! -d "$TARGET_DIR" ]]; then
+    err "Target directory not found: $TARGET_DIR"
+    err "This installer ships v0.3.0 with scaffold READMEs for Tier 2/3 targets."
+    err "Per BUILD_NEXT.md, full adapter logic for $TARGET is pending validation."
+    exit 1
+  fi
+
+  info "Step 1.5: Installing Tier $TIER adapter for $TARGET"
+  echo ""
+
+  # All tiers get foundation templates copied to project root
+  if [[ -d "$SRC_ROOT/foundation" ]]; then
+    cp -r "$SRC_ROOT/foundation" ./
+    ok "Copied foundation/ to project root"
+  fi
+
+  case "$TARGET" in
+    cursor)
+      mkdir -p .cursor/rules
+      # In v0.3.0, this writes a placeholder. Claude Code on the user's machine
+      # populates the full rules translation per BUILD_NEXT.md.
+      cat > .cursor/rules/syntaris-core.mdc << 'CURSOR_EOF'
+---
+description: Syntaris methodology rules
+alwaysApply: true
+---
+
+# Syntaris (Tier 2 - Cursor)
+
+Foundation files at foundation/ define the project contract, decisions, errors,
+and memory. Read them before any non-trivial edit.
+
+The five approval words gate work: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED,
+FRONTEND APPROVED, GO. Do not advance phases without an explicit approval word
+in the chat.
+
+Skills documented in .claude/skills/*/SKILL.md describe phase-specific behavior.
+This Cursor adapter loads the canonical SKILL.md contents as advisory rules.
+Full rules translation is pending per BUILD_NEXT.md.
+CURSOR_EOF
+      ok "Wrote .cursor/rules/syntaris-core.mdc placeholder"
+      warn "Full rules translation pending. See BUILD_NEXT.md task: 'Populate Cursor rules'"
+      ;;
+    windsurf)
+      mkdir -p .windsurf/rules
+      echo "# Syntaris (Tier 2 - Windsurf) - placeholder, see BUILD_NEXT.md" > .windsurf/rules/syntaris-core.md
+      ok "Wrote .windsurf/rules/syntaris-core.md placeholder"
+      warn "Full rules translation pending"
+      ;;
+    codex-cli)
+      cat > AGENTS.md << 'AGENTS_EOF'
+# Syntaris Methodology (Tier 3 advisory, Codex CLI)
+
+This project uses the Syntaris methodology. Foundation files in foundation/
+contain the project contract, decisions log, errors log, and memory.
+
+Read foundation/CONTRACT.md before any non-trivial edit. Respect the five
+approval words: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED, FRONTEND APPROVED,
+GO. These gate phase advancement.
+
+Full Syntaris methodology is documented at github.com/brianonieal/Syntaris.
+This file is an advisory summary; for the full skill set, see .claude/skills/.
+AGENTS_EOF
+      ok "Wrote AGENTS.md for Codex CLI"
+      ;;
+    gemini-cli)
+      mkdir -p .gemini
+      echo "# Syntaris (Tier 3 advisory, Gemini CLI) - see foundation/ and .claude/skills/" > .gemini/GEMINI.md
+      ok "Wrote .gemini/GEMINI.md"
+      ;;
+    aider)
+      cat > .aider.syntaris.md << 'AIDER_EOF'
+# Syntaris Methodology (Tier 3 advisory, Aider)
+
+Foundation files at foundation/ define project contract and memory.
+Read foundation/CONTRACT.md before non-trivial edits.
+Respect the five approval words: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED,
+FRONTEND APPROVED, GO.
+AIDER_EOF
+      ok "Wrote .aider.syntaris.md"
+      warn "Add 'read: .aider.syntaris.md' to your .aider.conf.yml manually"
+      ;;
+    kiro)
+      mkdir -p .kiro/specs
+      echo "# Syntaris Methodology (Tier 3 advisory, Kiro) - see foundation/" > .kiro/specs/syntaris-methodology.md
+      ok "Wrote .kiro/specs/syntaris-methodology.md"
+      ;;
+    opencode)
+      mkdir -p .opencode/instructions
+      echo "# Syntaris Methodology (Tier 3 advisory, OpenCode) - see foundation/" > .opencode/instructions/INSTRUCTIONS.md
+      ok "Wrote .opencode/instructions/INSTRUCTIONS.md"
+      ;;
+  esac
+
+  echo ""
+  info "Tier $TIER install complete for $TARGET."
+  info "See docs/COMPATIBILITY.md for what's enforced vs advisory."
+  info "Full adapter logic for Tier 2/3 targets is pending validation per BUILD_NEXT.md."
+  exit 0
+fi
+
+# Below this line: Tier 1 (Claude Code) full install
 
 # == Step 2: Detect existing install and confirm clobber ====================
 
@@ -119,7 +289,7 @@ fi
 
 if $existing_detected; then
   echo ""
-  warn "Existing Blueprint install detected at: $INSTALL_ROOT"
+  warn "Existing Syntaris install detected at: $INSTALL_ROOT"
   warn "Continuing will CLOBBER:"
   [[ -d "$INSTALL_ROOT/skills" ]] && warn "  - all files under $INSTALL_ROOT/skills/"
   [[ -d "$INSTALL_ROOT/hooks" ]]  && warn "  - all files under $INSTALL_ROOT/hooks/"
@@ -127,7 +297,7 @@ if $existing_detected; then
   [[ -f "$INSTALL_ROOT/settings.json" ]] && warn "  - settings.json (backed up to .bak first)"
   warn "Any files you've personally edited will be overwritten."
   echo ""
-  warn "Preserved: foundation templates at $BLUEPRINT_ROOT, per-project files,"
+  warn "Preserved: foundation templates at $SYNTARIS_ROOT, per-project files,"
   warn "  personal-overlay/owner-config.md, hook error logs in \$TMPDIR."
 
   if ! $ASSUME_YES; then
@@ -140,7 +310,7 @@ if $existing_detected; then
     esac
   fi
 
-  # Clobber cleanly so stale v11.x files don't linger
+  # Clobber cleanly so stale files from prior versions don't linger
   rm -rf "$INSTALL_ROOT/skills" "$INSTALL_ROOT/hooks" "$INSTALL_ROOT/agents"
 fi
 
@@ -190,33 +360,21 @@ fi
 # == Step 3: Install foundation templates ===================================
 
 echo ""
-info "Installing foundation templates to: $BLUEPRINT_ROOT"
-mkdir -p "$BLUEPRINT_ROOT/foundation" "$BLUEPRINT_ROOT/claude-skills"
+info "Installing foundation templates to: $SYNTARIS_ROOT"
+mkdir -p "$SYNTARIS_ROOT/foundation"
 
 for md_file in "$SRC_ROOT/foundation/"*.md; do
   [[ -f "$md_file" ]] || continue
   name="$(basename "$md_file")"
-  cp -f "$md_file" "$BLUEPRINT_ROOT/foundation/$name"
+  cp -f "$md_file" "$SYNTARIS_ROOT/foundation/$name"
   ok "foundation/$name"
 done
 
-# claude-skills (source copies used by bundle builder)
-if [[ -d "$SRC_ROOT/claude-skills" ]]; then
-  for skill_dir in "$SRC_ROOT/claude-skills/"*/; do
-    [[ -d "$skill_dir" ]] || continue
-    name="$(basename "$skill_dir")"
-    dest="$BLUEPRINT_ROOT/claude-skills/$name"
-    mkdir -p "$dest"
-    cp -Rf "$skill_dir"* "$dest/"
-    ok "claude-skills/$name"
-  done
-fi
-
 # Copy meta files
-cp -f "$0" "$BLUEPRINT_ROOT/install.sh" 2>/dev/null || true
-[[ -f "$SRC_ROOT/README.md" ]] && cp -f "$SRC_ROOT/README.md" "$BLUEPRINT_ROOT/"
-[[ -f "$SRC_ROOT/LICENSE" ]] && cp -f "$SRC_ROOT/LICENSE" "$BLUEPRINT_ROOT/"
-[[ -f "$SRC_ROOT/CHANGELOG.md" ]] && cp -f "$SRC_ROOT/CHANGELOG.md" "$BLUEPRINT_ROOT/"
+cp -f "$0" "$SYNTARIS_ROOT/install.sh" 2>/dev/null || true
+[[ -f "$SRC_ROOT/README.md" ]] && cp -f "$SRC_ROOT/README.md" "$SYNTARIS_ROOT/"
+[[ -f "$SRC_ROOT/LICENSE" ]] && cp -f "$SRC_ROOT/LICENSE" "$SYNTARIS_ROOT/"
+[[ -f "$SRC_ROOT/CHANGELOG.md" ]] && cp -f "$SRC_ROOT/CHANGELOG.md" "$SYNTARIS_ROOT/"
 
 # == Step 4: Apply personal configuration (if provided) =====================
 
@@ -241,7 +399,7 @@ if [[ -n "$PERSONAL_CONFIG" && -f "$PERSONAL_CONFIG" ]]; then
   else
     # Walk target dirs and substitute each {{KEY}}
     target_dirs=(
-      "$BLUEPRINT_ROOT/foundation"
+      "$SYNTARIS_ROOT/foundation"
       "$INSTALL_ROOT/skills"
     )
     for dir in "${target_dirs[@]}"; do
@@ -282,8 +440,8 @@ if [[ -n "$PERSONAL_CONFIG" && -f "$PERSONAL_CONFIG" ]]; then
   fi
 else
   # Check for unsubstituted placeholders and print help
-  if [[ -d "$BLUEPRINT_ROOT/foundation" ]]; then
-    ph_count=$(find "$BLUEPRINT_ROOT/foundation" -type f -name "*.md" \
+  if [[ -d "$SYNTARIS_ROOT/foundation" ]]; then
+    ph_count=$(find "$SYNTARIS_ROOT/foundation" -type f -name "*.md" \
                -exec grep -lE '\{\{[A-Z_]+\}\}' {} \; 2>/dev/null | wc -l | tr -d ' ')
     if [[ $ph_count -gt 0 ]]; then
       echo ""
@@ -310,8 +468,8 @@ all_ok=true
 required_skills=(
   "start" "build-rules" "global-rules" "critical-thinker"
   "testing" "security" "deployment" "costs" "performance"
-  "debug" "research" "freelance-billing" "handoff"
-  "health" "onboard" "rollback"
+  "debug" "research" "billing"
+  "health" "rollback"
 )
 for skill in "${required_skills[@]}"; do
   if [[ -f "$INSTALL_ROOT/skills/$skill/SKILL.md" ]]; then
@@ -352,30 +510,6 @@ for agent in spec-reviewer.md test-writer.md security-auditor.md; do
   fi
 done
 
-# Packaging integrity: .claude/skills vs claude-skills drift check
-zip_a="$SRC_ROOT/.claude/skills"
-zip_b="$SRC_ROOT/claude-skills"
-if [[ -d "$zip_a" && -d "$zip_b" ]]; then
-  drift=0
-  for sd in "$zip_a/"*/; do
-    [[ -d "$sd" ]] || continue
-    sn="$(basename "$sd")"
-    sa="$zip_a/$sn/SKILL.md"
-    sb="$zip_b/$sn/SKILL.md"
-    if [[ -f "$sa" && -f "$sb" ]]; then
-      if ! cmp -s "$sa" "$sb"; then
-        warn "skill '$sn' differs between .claude/skills and claude-skills"
-        drift=$((drift + 1))
-      fi
-    fi
-  done
-  if [[ $drift -eq 0 ]]; then
-    ok "skill directories in sync"
-  else
-    warn "$drift skill(s) drifted - packaging integrity issue"
-  fi
-fi
-
 # == Step 7: Clean up =======================================================
 
 if $USED_ZIP && [[ -n "${TMP_DIR:-}" && -d "$TMP_DIR" ]]; then
@@ -388,13 +522,13 @@ echo ""
 info "============================================"
 
 if $all_ok; then
-  printf "${C_GREEN}  Blueprint v11 installed successfully!${C_RESET}\n"
+  printf "${C_GREEN}  Syntaris installed successfully!${C_RESET}\n"
   echo ""
-  echo "  Skills:     $INSTALL_ROOT/skills/ (16 skills)"
-  echo "  Hooks:      $INSTALL_ROOT/hooks/ (9 hooks + 1 wrapper, bash + PowerShell)"
-  echo "  Agents:     $INSTALL_ROOT/agents/ (3 subagents)"
+  echo "  Skills:     $INSTALL_ROOT/skills/ (14 skills)"
+  echo "  Hooks:      $INSTALL_ROOT/hooks/ (10 hooks + 1 wrapper, bash + PowerShell)"
+  echo "  Agents:     $INSTALL_ROOT/agents/ (7 subagents)"
   echo "  Settings:   $INSTALL_ROOT/settings.json"
-  echo "  Foundation: $BLUEPRINT_ROOT/foundation/ (22 templates)"
+  echo "  Foundation: $SYNTARIS_ROOT/foundation/ (22 templates)"
   echo ""
   info "  Next steps:"
   echo "  1. Configure git identity for your project"

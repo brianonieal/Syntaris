@@ -1,4 +1,278 @@
-# Blueprint Changelog
+# Syntaris Changelog
+
+Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 through v11.4) was developed privately and is preserved at the bottom of this file for users migrating from a private install. See `MIGRATION.md` for how to move from a private Syntaris v11.x install to the current public version.
+
+---
+
+## [0.3.0] - 2026-05-05 - Multi-Runtime + Personal/Client + Compilation-Stage Reframe
+
+This is the largest release since the public v0.1.0 reset. Three major thrusts:
+
+### Multi-runtime support (8 targets)
+
+Syntaris now ships adapters for 8 AI coding harnesses, organized into three enforcement tiers:
+
+- **Tier 1 (full enforcement):** Claude Code. Reference runtime. Hooks block, memory writes mechanically, subagents isolate. This is what Syntaris was designed for and where evidence is strongest.
+- **Tier 2 (partial enforcement):** Cursor, Windsurf. Methodology loads as auto-applied rules. No hooks. ~60-70% compliance per HumanLayer research.
+- **Tier 3 (advisory only):** Codex CLI, Gemini CLI, Aider, Kiro, OpenCode. Methodology loads as text via AGENTS.md or runtime-native equivalent. Honor-system enforcement.
+
+The full compatibility matrix lives at `docs/COMPATIBILITY.md`. Honesty about tier limitations is the product, not marketing optimism.
+
+The `install.sh` and `install.ps1` scripts now accept `--target <name>` (or `-Target` on Windows) and auto-detect via `.claude/lib/detect-runtime.sh`. Tier 1 targets get the full install (skills, hooks, agents, foundation, personal overlay). Tier 2 targets get rules-translated output plus foundation. Tier 3 targets get AGENTS.md or equivalent plus foundation.
+
+Adapter validation status: Claude Code (complete), Cursor and Windsurf (install logic shipped, runtime-validation pending), Tier 3 targets (scaffolds shipped, validation pending). Per `BUILD_NEXT.md`, Claude Code on the user's machine validates Tier 2/3 adapters against real runtime instances.
+
+### Personal vs client branching at session start
+
+`/start` now asks "Personal project or client work?" as its first content question (after harness detection). For client work, `/start` collects 12 client information fields upfront and writes them to `foundation/CLIENTS.md`. The `PROJECT_TYPE: client` flag in `CONTRACT.md` activates the consolidated `billing` skill on every gate close.
+
+The three v0.2.0 extension skills (`freelance-billing`, `onboard`, `handoff`) have been consolidated into a single `billing` core skill driven by the `PROJECT_TYPE` flag. Old extension is archived at `archive/v0.2-extensions/syntaris-freelance/` for reference and migration support. Existing v0.2.0 client-work projects can run `scripts/migrate-billing-v0.2-to-v0.3.sh` to convert.
+
+The `/start` skill also gained casual-coder onboarding scaffolding via a new "New to Syntaris?" branch that activates concise mode (2-3 sentence explanations at gate transitions). Full interactive tutorial mode deferred to v0.4.0.
+
+### Vocabulary reframe: compilation-stage knowledge layer + harness engineering
+
+The README, `WHY.md`, and skill descriptions have been reframed to position Syntaris in the language the field now uses. Foundation files are described as a "compilation-stage knowledge layer" (per VentureBeat / Karpathy / Pinecone Nexus framing). The methodology overall is described as a "harness engineering implementation" (per OpenAI / Martin Fowler / arxiv 2603.05344).
+
+This reframe is documentation work, not architectural change. The same files do the same things; the language acknowledges what's now standard vocabulary in the agent harness engineering field.
+
+### Stack-flexible recipe funnel
+
+Recipes now have a parent/sub-recipe structure with project-type questions instead of stack jargon at the entry point:
+
+- `web-app-starter` (parent) → `react/{nextjs-supabase, nextjs-fastapi-supabase, vite-express}` populated, `vue`, `svelte`, `plain` stubs
+- `api-starter` (parent) → `typescript`, `python`, `go` stubs
+- `python-cli` (populated, no sub-recipes)
+- `mobile-starter` (parent) → `swift`, `kotlin`, `react-native`, `flutter` stubs
+- `bring-your-own` (populated, intentionally empty)
+- `_template` (populated skeleton for community contributions)
+
+Casual coders pick "web app" and answer one or two follow-ups. Power users skip the funnel via "specify recipe directly." The `nextjs-fastapi-supabase` recipe is preserved and labeled honestly as "Brian's reference stack."
+
+### Pilot benchmark
+
+The v0.3.0 release includes scaffolding for a pilot benchmark run: ONE task (CLI Todo App), THREE runtimes (Vanilla Claude Code, Syntaris-on-Claude-Code, Syntaris-on-Cursor), ONE day, ONE published result. Documented in `BENCHMARK_PILOT.md`. Execution is a `BUILD_NEXT.md` task for Claude Code on the user's machine because it requires real runtime sessions with token usage tracking.
+
+This is the pilot, not the full benchmark. The full 30-task benchmark with audited task selection ships in v0.5.0.
+
+### Distribution drafts
+
+Three drafts ship in `docs/distribution/` for the user to review and send when ready:
+
+- `show-hn-draft.md` - Show HN post for v0.3.0 release
+- `substack-post-draft.md` - Substack post on the compilation-stage reframe + multi-runtime
+- `jesse-vincent-email-draft.md` - peer review request to Superpowers maintainer
+
+All marked `<!-- DRAFT - DO NOT SEND WITHOUT APPROVAL -->`. Syntaris does not send these. The user decides.
+
+### Honest scope warning
+
+Past audits flagged Brian's tendency to under-estimate. v0.3.0 is realistically 4-8 weeks of focused work after the zip ships. The zip contains everything writeable in chat; runtime validation across 7 Tier 2/3 targets and the pilot benchmark execution happens on the user's machine via Claude Code.
+
+### Files added in v0.3.0
+
+```
+archive/v0.2-extensions/                 - old skills preserved for reference
+.claude/skills/billing/                  - consolidated billing skill
+.claude/lib/detect-runtime.sh            - bash runtime detection
+.claude/lib/detect-runtime.ps1           - PowerShell runtime detection
+targets/                                  - 8 target adapter scaffolds
+targets/README.md                         - multi-runtime architecture explanation
+docs/COMPATIBILITY.md                    - single source of truth tier matrix
+docs/distribution/                       - Show HN, Substack, Jesse Vincent drafts
+recipes/_template/                       - populated skeleton for community recipes
+recipes/web-app-starter/                  - parent recipe + 3 React sub-recipes
+recipes/api-starter/                      - parent recipe + 3 language stubs
+recipes/mobile-starter/                   - parent recipe + 4 platform stubs
+foundation/CLIENTS.md.template           - client info template
+scripts/migrate-billing-v0.2-to-v0.3.sh  - migration script
+BUILD_NEXT.md                             - instructions for Claude Code
+BENCHMARK_PILOT.md                        - pilot benchmark spec
+```
+
+### Files modified in v0.3.0
+
+- `.claude/skills/start/SKILL.md` - fully rewritten (harness detection, personal/client branch, casual mode, recipe funnel)
+- `.claude/skills/build-rules/SKILL.md` - invokes billing skill at gate close (when PROJECT_TYPE: client)
+- `foundation/CONTRACT.md` - added PROJECT_TYPE, CLIENT_REF, RECIPE, ONBOARDING_MODE, RUNTIME_TIER fields
+- `install.sh` and `install.ps1` - added `--target` flag with Tier 2/3 routing
+- `verify.sh` and `verify.ps1` - added target-aware checks
+- `README.md` - major rewrite for vocabulary reframe + multi-runtime + new install flow
+
+### Breaking changes
+
+- The three extension skills `freelance-billing`, `onboard`, `handoff` are no longer loaded. Use the consolidated `billing` skill via `PROJECT_TYPE: client` in CONTRACT.md instead. Migration: `bash scripts/migrate-billing-v0.2-to-v0.3.sh` from project root.
+- The `CLIENT_TYPE` and `CLIENT_CODE` fields in CONTRACT.md were renamed to `PROJECT_TYPE` and `CLIENT_REF` (which points at CLIENTS.md). Migration script updates this automatically.
+
+### What's NOT in v0.3.0 (deferred to later versions)
+
+- Semantic gate cluster: LSP simulation hook, mutation testing, property-based test scaffolding (deferred to v0.4.0)
+- Skills spec compliance migration (v0.4.0)
+- Plugin marketplace formal submission (v0.4.0)
+- Full 30-task benchmark with audited task selection (v0.5.0)
+- Cost telemetry (v0.6.0)
+- Interactive tutorial mode (v0.4.0)
+- Validation of Tier 2/3 adapters against live runtimes (BUILD_NEXT.md tasks for Claude Code)
+
+---
+
+## v0.3.0 - May 5, 2026
+
+Multi-runtime + personal/client + skill consolidation + vocabulary reframe. Largest version since v0.1.0 reset.
+
+### Added
+
+- **Multi-runtime support across 8 targets.** Tier 1 (Claude Code, full enforcement) is the reference. Tier 2 (Cursor, Windsurf) gets partial enforcement via auto-applied rules. Tier 3 (Codex CLI, Gemini CLI, Aider, Kiro, OpenCode) gets advisory-only methodology load. The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of truth on what's enforced where.
+- **Personal vs client branch in `/start`.** First-class question at session start: personal project or client work? Client path collects billing info upfront and writes `foundation/CLIENTS.md` with 12 fields (name, contact, rate, payment terms, invoice cadence, project code, etc.). The `PROJECT_TYPE` flag in `CONTRACT.md` drives downstream skill behavior.
+- **New consolidated `billing` skill.** Replaces three v0.2.0 extension skills (`freelance-billing`, `onboard`, `handoff`). Activates conditionally based on `PROJECT_TYPE: client`. Generates invoices at gate close using actual hours from `MEMORY_CORRECTIONS.md`. At v1.0.0 produces three handoff documents (non-technical summary, technical handoff, final invoice). Never auto-sends; user reviews everything.
+- **Casual coder onboarding mode.** Second `/start` question: new to Syntaris? If yes, all skills run in concise mode with 2-3 sentence explanations of what each gate does. Mode is sticky (recorded in CLAUDE.md), so future sessions remember.
+- **Stack-flexible recipe funnel.** Replaced "pick a recipe" with "what are you building?" funnel: web app, API, CLI, mobile, other. Web app has React/Vue/Svelte/Plain sub-recipes; React has three populated stack variants (Next.js + Supabase, Next.js + FastAPI + Supabase = Brian's reference stack, Vite + Express).
+- **Vocabulary reframe.** Syntaris repositioned as "compilation-stage knowledge layer" + "harness engineering implementation" to align with current academic and practitioner terminology (Anthropic agent harness, OpenAI harness engineering, Karpathy compound loop, VentureBeat compilation-stage layer).
+- **Runtime detection scripts.** `.claude/lib/detect-runtime.sh` and `.ps1` probe environment variables, parent process names, and known config files to identify which of the 8 supported harnesses Syntaris is running inside.
+- **`--target` flag on install.sh and install.ps1.** Routes to Tier 1 full install (default) or Tier 2/3 adapter logic. Auto-detects via runtime script when omitted.
+- **`docs/COMPATIBILITY.md`.** Per-runtime capability matrix. Honest about what works and what doesn't on each tier.
+- **Distribution drafts.** Show HN draft, Substack post draft on the multi-runtime + reframe, Jesse Vincent peer-review email draft. All marked DO NOT SEND, user decides.
+- **Pilot benchmark task.** One task (CLI Todo App), three runtimes (Vanilla Claude Code, Syntaris on Claude Code, Syntaris on Cursor). Per BUILD_NEXT.md, Claude Code on the user's machine runs the benchmark and writes results to `BENCHMARK_PILOT.md`.
+
+### Changed
+
+- **`/start` skill substantially rewritten.** Five-step orchestration: harness detection, new-vs-continuing, personal-vs-client, new-to-Syntaris, what-are-you-building. Concise mode is its own behavioral branch.
+- **`CONTRACT.md` template.** Replaced `CLIENT_TYPE` and `CLIENT_CODE` fields with `PROJECT_TYPE` (personal or client) and `CLIENT_REF` (link to CLIENTS.md). Added `RECIPE`, `ONBOARDING_MODE`, `RUNTIME_TIER` fields.
+- **README.** Major rewrite for the multi-runtime + tier model + vocabulary reframe. Install instructions now lead with the `--target` flag.
+- **Install path documentation.** All three install methods (clone, zip, plugin) now show the target flag.
+
+### Deprecated
+
+- **Old extension skills.** `freelance-billing`, `onboard`, `handoff` from v0.2.0 are archived at `archive/v0.2-extensions/syntaris-freelance/` for reference. They are not loaded by v0.3.0 and should not be reinstalled. The new `billing` skill supersedes them.
+
+### Migration
+
+- **Migration script** at `scripts/migrate-billing-v0.2-to-v0.3.sh` for users upgrading from v0.2.0. It detects legacy invoice formats, prompts for confirmation, and converts to the new schema.
+- See `MIGRATION.md` Path 0 (v0.2.0 → v0.3.0) for the full migration walkthrough.
+
+### Honest scope notes
+
+- Tier 1 (Claude Code) is fully tested. Tier 2 and Tier 3 adapters ship as scaffolds with `verified status: PENDING` per-target. The first BUILD_NEXT.md task is to validate each adapter against a live runtime instance.
+- Mobile sub-recipes (`mobile-starter/{swift,kotlin,react-native,flutter}`) are stubs. Not Brian's primary focus area; community contributions welcome.
+- API sub-recipes are stubs. Will be populated by Claude Code per BUILD_NEXT.md or as project demand arises.
+- The pilot benchmark is genuine but small. The full 30-task benchmark stays planned for v0.5.0.
+
+### What's NOT in v0.3.0
+
+- The semantic gate cluster (LSP simulation, mutation testing, property-based testing) → v0.4.0
+- Plugin marketplace formal submission → v0.4.0
+- Full benchmark with 30 tasks, audited task selection → v0.5.0
+- Telemetry → v0.6.0
+- Interactive tutorial mode (full casual-coder walkthrough) → v0.4.0
+- Calibration evidence (auto-generated learning curve chart, populated MEMORY_CORRECTIONS.md example) → v0.7.0
+- Memory path migration to `.syntaris/` → v0.9.0
+
+### Realistic estimate
+
+This version is realistically 4-8 weeks of focused work between zip release and BUILD_NEXT.md task completion. Past audits flagged a tendency to over-scope and under-estimate; this version is on the heavier end of that pattern. If pace is slower than expected, the cleanest descope is to drop Tier 3 targets to "scaffold only" without validation and ship those in v0.3.5.
+
+## v0.2.0 - May 4, 2026
+
+Subagent migration for the four context-heavy skills, plus a plugin manifest for `/plugin install` distribution. Two new ways the system is better; nothing removed.
+
+### Added
+
+- **4 new subagents** in `.claude/agents/`:
+  - `research-agent` - performs web fetches, RESEARCH.md reads, and competitive synthesis. Returns a structured 600-800 word summary.
+  - `debug-agent` - reads ERRORS.md, greps the codebase, parses logs. Returns a root-cause diagnosis with confidence rating and recommended fix.
+  - `health-agent` - audits all 22 foundation files plus the three memory files plus the strip-coauthor hook installation. Returns a structured health report.
+  - `critical-thinker-agent` - reads RESEARCH.md, MEMORY_SEMANTIC.md, prior DECISIONS, and MEMORY_CORRECTIONS.md. Returns a structured critique of a proposed decision.
+
+- **Plugin manifest** at `.claude-plugin/plugin.json`. Syntaris is now installable via `/plugin install syn@brianonieal` from within Claude Code. Plugin namespace is `syn`, so plugin-installed slash commands are `/syn:start`, `/syn:research`, etc.
+
+- **Plugin-form hook bindings** at `.claude/hooks/hooks.json`. Mirrors the hook configuration in `settings.json` but uses `${CLAUDE_PLUGIN_ROOT}` so the plugin install path can find the hook scripts.
+
+- **Two-way distribution.** README now documents both install paths side-by-side: `install.sh` for personal use (un-namespaced commands), `/plugin install` for client handoffs (namespaced commands). Same source repo, same skills, same hooks.
+
+### Changed
+
+- **`/research` skill rewritten as a subagent delegate.** The skill now asks the user what to research, checks RESEARCH.md for prior coverage, delegates the heavy reading to the `research-agent` subagent, and writes the returned structured summary to RESEARCH.md. The web fetches and multi-source synthesis no longer happen in the main conversation.
+
+- **`/debug` skill rewritten as a subagent delegate.** Skill gathers the problem statement from the user, delegates diagnosis to `debug-agent`, then handles the conversation around confidence-level (HIGH/MEDIUM/LOW), fix application, and ERRORS.md write. The codebase grepping and log parsing no longer happen in the main conversation.
+
+- **`/health` skill rewritten as a subagent delegate.** Skill invokes `health-agent` (which reads up to 22 foundation files), presents the structured report to the user, and offers to address findings. The 22-file read no longer happens in the main conversation.
+
+- **`/critical-thinker` skill rewritten as a hybrid.** The analytical critique runs in the `critical-thinker-agent` subagent (reads research, memory, prior decisions); the conversation with the user (defending the decision, considering alternatives, logging to DECISIONS.md) stays in the main thread. This pattern is documented as the recommended approach for skills that need both analytical depth and human conversation.
+
+### Architectural rule established
+
+**Subagents return structured output. The parent skill writes to memory files.** This rule applies to all four migrated skills and is documented in each subagent's frontmatter and each skill's body. The reflexion-and-calibration loop stays coherent in one place (the main thread), while context-noisy reads happen in isolated subagent contexts.
+
+### Roadmap shift
+
+- v0.2.0 was previously planned as "stack-specific recipes" in the v0.1.0 README. That work is moved to v0.3.0. Subagent migration and plugin manifest were higher-leverage and now-actionable, so they took the slot.
+- v0.4.0 (was v0.3.0): expand the subagent layer beyond the current 7. Specific candidates: a `costs-agent` that reads provider pricing pages and a `deployment-agent` that runs the pre-deploy checklist.
+
+### Preserved as-is
+
+- All 16 skills' file structure unchanged. The four refactored skills kept their names, frontmatter formats, trigger conditions, and tone. Only the implementation pattern changed.
+- All 20 hook scripts unchanged.
+- All 22 foundation files unchanged except for v0.1.0 → v0.2.0 version-string updates in headers.
+- The 3 original subagents (`spec-reviewer`, `test-writer`, `security-auditor`) unchanged.
+- `install.sh` and `install.ps1` paths unchanged. The slash commands you invoke after `bash install.sh` are still `/start`, `/research`, etc. (un-namespaced). The plugin-install path is purely additive.
+
+---
+
+## v0.1.0 - May 4, 2026
+
+First public release. Successor to Syntaris v11.4. Renamed from Syntaris to Syntaris, repositioned as opinionated for the Next.js + FastAPI + Supabase + LangGraph stack, and addressed all findings from the v11.4 audit.
+
+### Renamed
+
+- **Syntaris → Syntaris** across every internal file. README, CHANGELOG, MIGRATION, TROUBLESHOOTING, install/uninstall/verify/diagnostics scripts, settings.json, every skill, every hook, every foundation template, every subagent.
+- **`BLUEPRINT_VERSION` → `SYNTARIS_VERSION`** environment variable.
+- **`BLUEPRINT_DEBUG` → `SYNTARIS_DEBUG`** environment variable.
+- **`~/Syntaris-v11/` → `~/Syntaris/`** default foundation root path.
+- **Stderr messages** in hooks: removed "BLUEPRINT v11 HOOK:" prefixes; replaced with plain conversational language per the easygoing-SME tone established in v11.4.
+
+### Repositioned
+
+- **Dropped the "stack-neutral with recipes" claim.** The README now states explicitly that Syntaris v0.1.0 is opinionated for Next.js + FastAPI + Supabase + LangGraph, that the calibration data comes from one production build (Forge Finance) on this exact stack, and that other stacks need adaptation. The "recipes/" and "extensions/" directories described in the v11.4 README never existed in the repo and have been removed from documentation. Stack-specific recipes are a v0.2.0 roadmap item.
+
+### Removed
+
+- **`claude-skills/` mirror directory.** Was a byte-identical duplicate of `.claude/skills/` intended for an earlier non-Claude-Code distribution scheme. Deleted to prevent silent drift.
+- **`build-skills-bundle.sh` and `build-skills-bundle.ps1`.** Existed solely to populate the now-deleted `claude-skills/` directory.
+
+### Fixed (audit findings)
+
+- **README mismatch with actual repo contents** (FIX-1). README rewritten from scratch. Now accurately describes 16 skills, 20 hooks, 3 subagents, 22 foundation templates, and the actual directory structure. Removed references to non-existent `core/`, `recipes/`, `extensions/`, `syntaris-bench/`, `docs/`, `syntaris-doctor.sh`, `SPEC_GATES.md`, and `strategy` skill.
+- **install.sh and verify.sh count drift** (FIX-2). install.sh summary now correctly reports 10 hooks (not 9). verify.sh `required_hooks` array now includes `gate-close-calibration` and `skill-telemetry`. Without this, install would silently succeed even when those hooks were missing.
+- **DEPLOYMENT_CONFIG.md residual port-6543 contradictions** (FIX-3). Two locations that told users to use port 6543 without `statement_cache_size=0` (which would cause `DuplicatePreparedStatementError` on startup) are corrected to match DEC-003: port 5432 for MVP, port 6543 with cache disable for scale.
+- **Foundation files now openly stack-specific** (FIX-4). DEPLOYMENT_CONFIG.md, EXAMPLES.md, WHY.md, and DECISIONS.md DEC-005 had Plaid, Voyage AI, and finance-specific content that contradicted the (now-dropped) stack-neutral claim. They now state up front: "Stack: Next.js + FastAPI + Supabase + LangGraph + Plaid + Voyage AI. Other stacks require adaptation."
+- **DEC-007 personal-config leakage check** (FIX-5). Generalized any references to specific developer machines or local-port configuration that were tied to a particular contributor's setup.
+- **Phase diagram in start/SKILL.md and CLAUDE.md** (FIX-7). Both already used the v11.4 phase names (`SCOPE CONFIRMED → MOCKUPS APPROVED → FRONTEND APPROVED → TESTS APPROVED → GO`); README updated to match.
+- **start.md hook invocation** (FIX-8). Step 3 now invokes hooks via `hook-wrapper.sh` instead of direct `~/.claude/hooks/strip-coauthor.sh`, so cross-platform fallback works as intended.
+- **health.md pattern-quality criteria** (FIX-9). The vague "flag stale, contradicted, or stuck patterns" instruction now has operational definitions: stale = `last_validated` over 90 days; contradicted = a later REFLEXION disagrees; stuck = confidence below 0.5 after 3+ validations.
+- **HOOKS.md reference document** (FIX-10). New `docs/HOOKS.md` documenting every hook: when it fires, what it does, whether it can block.
+- **Personal-overlay model documented in README** (FIX-11). Quick start now shows the `--personal-config` flow and explains what `{{OWNER_NAME}}` and other placeholders are.
+- **README clone URL** (FIX-12). No more `[your-username]` placeholder; uses real repo URL.
+- **CHANGELOG split** (FIX-13). Public release notes (this v0.1.0 entry) at top; pre-public Syntaris v8-v11.4 history preserved below for historical reference.
+- **settings.json deny patterns** (FIX-14). Expanded to catch common variants (`rm -fr`, `rm -r -f`, `rm --recursive --force`, additional protected paths). The `block-dangerous.sh` regex remains the actual catch-all; settings.json deny is now a stronger first line of defense.
+
+### Preserved as-is (intentionally)
+
+- `gate-close-calibration.sh` / `.ps1` - calibration logic validated against 12 Forge Finance gates. Comments rebranded; logic untouched.
+- `skill-telemetry.sh` / `.ps1` - telemetry logic. Comments rebranded; logic untouched.
+- `build-rules/SKILL.md` - core methodology skill at 289 lines. Branding rebranded; substance preserved.
+
+### Deferred to v0.2.0+
+
+- **Subagent expansion** (FIX-15). The 3 subagents are minimal at 28-38 lines each. Expansion to compete with Superpowers / SuperClaude is a v0.3.0 roadmap item.
+- **Stack-specific recipes.** Once Syntaris has been used on at least one Python CLI project and one non-fintech Next.js project with calibration data, the stack-specific files will be extracted into `recipes/<stack>/` and the foundation files will become genuinely stack-neutral. Targeted for v0.2.0.
+
+---
+
+# Pre-public version history (Syntaris)
+
+The following entries describe the private development line (Syntaris v8 through v11.4) for reference. Users on a public Syntaris install do not need to read this section.
+
+---
 
 ## v11.4 - April 23, 2026
 
@@ -257,7 +531,7 @@ bugs that prevented PS 7 on Linux / macOS from running the scripts.
   `verify.ps1 -VerboseMode` output attached.
 - **PS 5.1 stdin workaround in `hook-wrapper.ps1`** uses
   `cmd.exe /c powershell.exe < stdin > stdout 2> err`. That is
-  intentional — PS 5.1's pipeline-to-stdin is unreliable — but it
+  intentional - PS 5.1's pipeline-to-stdin is unreliable - but it
   means the wrapper's child process always runs under
   `powershell.exe` (5.1) even if the caller is `pwsh.exe` (7+). All
   hooks are written to be PS 5.1 compatible (no ternary, no
@@ -294,10 +568,10 @@ Closes several operational loops left open in v11.2. No breaking changes.
   so match rate is computable. Opt out by touching
   `~/.claude/state/telemetry-off`. No analyzer shipped; raw JSONL only.
 
-- **`uninstall.sh` and `uninstall.ps1`** - removes Blueprint-owned files
+- **`uninstall.sh` and `uninstall.ps1`** - removes Syntaris-owned files
   (skills, hooks, agents, settings.json, state directory) and restores
   `settings.json.bak` if present. Preserves foundation templates,
-  personal overlay, per-project Blueprint files, and rollback snapshots.
+  personal overlay, per-project Syntaris files, and rollback snapshots.
   Flags: `--dry-run`, `--yes` / `-Force`, `--install-root`,
   `--blueprint-root`.
 
@@ -406,7 +680,7 @@ install.sh to pick up the updated skills and hooks.
   may reveal the user's username) and the skill list; the script warns
   the user to skim before sending.
 
-- **`rollback` skill.** Reverts a Blueprint project to the last closed gate,
+- **`rollback` skill.** Reverts a Syntaris project to the last closed gate,
   restoring both code (via `git reset --hard blueprint-gate-<version>`) and
   the foundation memory files (from `.blueprint/snapshots/<version>/`).
   Includes a dry-run preview step, explicit confirmation gate, automatic
@@ -442,7 +716,7 @@ install.sh to pick up the updated skills and hooks.
 
 - **All .md files normalized to ASCII punctuation.** Removed 87 Unicode
   characters (em dashes, en dashes, smart quotes, right arrows, bullets,
-  ellipses) across 10 files per Blueprint's style rule. All scripts were
+  ellipses) across 10 files per Syntaris' style rule. All scripts were
   already ASCII-clean from v11.1-public; this sweep extended that rule
   consistently to the documentation.
 
@@ -458,7 +732,7 @@ install.sh to pick up the updated skills and hooks.
 - `cost-forecast` hook. Cut. Solves a theoretical problem rather than an
   observed one; the `costs` skill at gate close is sufficient for now.
 - External replication data. Getting one independent user to install
-  Blueprint on a real project and report what breaks is the highest-leverage
+  Syntaris on a real project and report what breaks is the highest-leverage
   non-engineering item, and it's in progress as a parallel track.
 
 ---
@@ -498,8 +772,8 @@ First public release on GitHub. Same engineering content as v11.1, plus:
 - Installers now support **both clone mode and zip mode**. Running from a
   GitHub clone requires no zip; running against a packaged `blueprint-v11.zip`
   still works. The installer detects mode automatically.
-- `install.ps1` default `BlueprintRoot` is now `$env:USERPROFILE\Blueprint-v11`
-  (was a hardcoded `D:\Blueprint-v11` specific to the original author).
+- `install.ps1` default `SyntarisRoot` is now `$env:USERPROFILE\Syntaris-v11`
+  (was a hardcoded `D:\Syntaris-v11` specific to the original author).
 - `install-blueprint-v11.ps1` renamed to `install.ps1` for clarity and
   filename symmetry with `install.sh`.
 - `personal-overlay/owner-config.md` removed (contained the original author's
@@ -528,9 +802,9 @@ copy and are not included in the public release.
   `session-start.ps1` now emit the correct
   `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}`
   wrapper format per Claude Code's current hooks spec. Previously the
-  `hookSpecificOutput` wrapper was missing and the injected Blueprint-mode
+  `hookSpecificOutput` wrapper was missing and the injected Syntaris-mode
   context was silently dropped. End-to-end verified: SessionStart now
-  correctly injects Blueprint project identity and hard rules every session.
+  correctly injects Syntaris project identity and hard rules every session.
 
 - **C2: LangGraph `AsyncPostgresSaver` pattern in EXAMPLES.md.** The module-
   level `checkpointer = AsyncPostgresSaver.from_conn_string(...)` assignment
@@ -608,7 +882,7 @@ copy and are not included in the public release.
 
 - Research Question 1's pre-fill accuracy study requires 26+ gate events
   across 2+ projects for baseline measurement. The data-collection vehicle
-  is every real project built on Blueprint - early adopters can contribute
+  is every real project built on Syntaris - early adopters can contribute
   anonymized pre-fill logs back via GitHub issues.
 - No `SessionEnd` hook yet (introduced in Claude Code 1.0.85 per issue
   #6306). Could replace the current `Stop` + `writethru-episodic.sh`

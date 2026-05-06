@@ -1,5 +1,5 @@
 # CONTRACT.md
-# Blueprint v11 | Project Contract
+# Syntaris v0.3.0 | Project Contract
 # Fill this out during SCOPE CONFIRMED phase. Lock all fields before GO.
 # Once LOCKED, fields only change via new DECISIONS.md entry, which
 # also triggers re-doing SCOPE CONFIRMED.
@@ -12,8 +12,11 @@ PROJECT_NAME:          [App name]
 PROJECT_VERSION:       v0.0.0
 BUILD_TYPE:            PRODUCTION | INTERNAL | EXPLORATORY
 FINAL_VERSION:         v1.0 Production Live | v1.0 Internal GA | v0.X Prototype Validated
-CLIENT_TYPE:           PERSONAL | CLIENT
-CLIENT_CODE:           [For billing: e.g., ACME, CLT] | N/A
+PROJECT_TYPE:          personal | client
+CLIENT_REF:            [If PROJECT_TYPE: client, link to foundation/CLIENTS.md] | N/A
+RECIPE:                [Recipe name from /start, e.g. web-app-starter/react/nextjs-supabase]
+ONBOARDING_MODE:       concise | standard
+RUNTIME_TIER:          1 | 2 | 3 (set by /start based on detected harness)
 TEAM_MODE:             false | true (activates TEAM.md)
 START_DATE:            [date]
 TARGET_LAUNCH_DATE:    [date]
@@ -21,6 +24,11 @@ TARGET_LAUNCH_DATE:    [date]
 ---
 
 ## TECH STACK (locked after SCOPE CONFIRMED)
+
+# NOTE: The fields below default to Brian's reference stack (Next.js + FastAPI + Supabase + LangGraph).
+# When you run /start and pick a recipe, the recipe's CONTRACT.snippet.md will override these defaults.
+# For 'bring-your-own' or unrecognized recipes, /build-rules will ask you to fill these in interactively.
+# If you see this section unchanged after /start, your recipe didn't apply - manually edit or re-run /start.
 
 FRONTEND:              Next.js 14+ App Router | TypeScript strict
 STYLING:               Tailwind CSS + CSS custom properties
@@ -48,7 +56,7 @@ FRONTEND_URL:          [vercel-url] | TBD
 BACKEND_URL:           [render-url] | TBD
 FRONTEND_PORT_LOCAL:   3000
 BACKEND_PORT_LOCAL:    8000
-DATABASE_PORT:         5432 (direct) | 6543 (pooled -- use this)
+DATABASE_PORT:         5432 (direct) | 6543 (pooled - use this)
 
 ---
 

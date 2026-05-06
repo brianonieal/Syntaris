@@ -1,5 +1,5 @@
 # MEMORY_EPISODIC.md
-# Blueprint v11 | Session Log and Gate Outcomes
+# Syntaris v0.3.0 | Session Log and Gate Outcomes
 # Appended by writethru-episodic hook on Stop events.
 # Updated at gate close with gate outcome rows.
 

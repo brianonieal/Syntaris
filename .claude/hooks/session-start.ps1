@@ -1,5 +1,5 @@
 # session-start.ps1
-# Blueprint v11: Inject Blueprint mode context at session start
+# Syntaris: Inject Syntaris mode context at session start
 # Runs as SessionStart hook
 # Stdout from SessionStart becomes additionalContext for Claude
 
@@ -19,7 +19,7 @@ $projectName = if ($contractContent -match "PROJECT_NAME:\s*(.+)") { $matches[1]
 $currentVersion = if ($contractContent -match "PROJECT_VERSION:\s*(.+)") { $matches[1].Trim() } else { "v0.0.0" }
 $clientType = if ($contractContent -match "CLIENT_TYPE:\s*(.+)") { $matches[1].Trim() } else { "PERSONAL" }
 
-$context = "You are operating under Blueprint v11 methodology."
+$context = "You are operating under Syntaris methodology."
 $context += " Project: $projectName at $currentVersion."
 $context += " Client type: $clientType."
 $context += " Hard rules: never write code before FRONTEND APPROVED,"

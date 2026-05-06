@@ -1,5 +1,5 @@
 ﻿# skill-telemetry.ps1
-# Blueprint v11.3: Log skill-invocation signals to a jsonl file.
+# Syntaris.3: Log skill-invocation signals to a jsonl file.
 #
 # UserPromptSubmit hook. Scans installed skills' SKILL.md descriptions for
 # trigger phrases, logs matches to ~/.claude/state/skill-log.jsonl.
@@ -88,12 +88,10 @@ Get-ChildItem $skillsDir -Directory -ErrorAction SilentlyContinue | ForEach-Obje
             'performance'      { '(performance|slow|latency|load test|benchmark|profiling|optimize)' }
             'critical-thinker' { '(architectu|design decision|pressure[ -]?test|second opinion|review (this|the) (stack|decision|approach)|tech stack)' }
             'build-rules'      { '(new (project|app|build)|start (a|the) build|plan (a|the) (app|build|project)|build (a|an) (app|tool)|make (a|an) (app|tool))' }
-            'freelance-billing'{ '(invoice|billable hours|hours worked|how many hours|bill (for|the) client|timelog)' }
-            'handoff'          { '(hand[ -]?off|deliver to client|client handoff|project complete)' }
-            'health'           { '(health check|audit blueprint|blueprint audit)' }
+            'billing'          { '(invoice|billable hours|hours worked|how many hours|bill (for|the) client|timelog|hand[ -]?off|deliver to client|client handoff|project complete|new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)' }
+            'health'           { '(health check|audit blueprint|blueprint audit|audit syntaris|syntaris audit)' }
             'research'         { '(competitive (intel|intelligence|analysis)|research (the )?market|look up (the )?competitors?|competitor analysis)' }
             'costs'            { '(how much will (this|it) cost|cost (estimate|projection|forecast)|monthly bill|pricing for)' }
-            'onboard'          { '(new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)' }
             'start'            { '(resume (the|this) project|pick (this|it) up|continue from|where did we leave)' }
             default            { $null }
         }

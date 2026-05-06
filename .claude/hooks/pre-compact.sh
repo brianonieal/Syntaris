@@ -1,6 +1,6 @@
 #!/bin/bash
 # pre-compact.sh
-# Blueprint v11: Save state before lossy auto-compaction
+# Syntaris: Save state before lossy auto-compaction
 # Runs as PreCompact hook
 # Auto-compaction fires at ~83.5% context and loses 70-80% of detail.
 # This hook dumps critical state to PLANS.md and a backup file before that happens.
@@ -36,5 +36,5 @@ Tests: $(cd "$PROJECT_DIR" && python -m pytest --tb=no -q 2>/dev/null | tail -1 
 EOF
 fi
 
-echo "Blueprint v11: Pre-compaction backup saved to .claude/backups/" >&2
+echo "Syntaris: Pre-compaction backup saved to .claude/backups/" >&2
 exit 0

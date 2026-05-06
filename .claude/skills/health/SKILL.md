@@ -1,51 +1,57 @@
 ---
 name: health
-description: "This skill audits Blueprint v11 installation and project foundation files. Use when checking system integrity, after long breaks from a project, or when the user types /health."
+description: "Audits Syntaris installation and project foundation files. Use when checking system integrity, after long breaks from a project, or when the user types /health. The 22-file read happens in an isolated subagent."
 ---
 
-# HEALTH SKILL -- Blueprint v11
+# HEALTH SKILL - Syntaris v0.3.0
 # Invoke: /health
 
-## STEP 1: MEMORY NETWORK AUDIT
+## STEP 1: DELEGATE TO HEALTH-AGENT
 
-| File | Check |
-|------|-------|
-| MEMORY_SEMANTIC.md | Exists, has patterns, none over 90 days stale |
-| MEMORY_EPISODIC.md | Exists, last gate outcome logged, no unclosed STOP EVENTs |
-| MEMORY_CORRECTIONS.md | Exists, reflexion entries present after gate 3+ |
+Invoke the health-agent subagent. It will:
+- Read all three memory files (`MEMORY_SEMANTIC`, `MEMORY_EPISODIC`, `MEMORY_CORRECTIONS`)
+- Check the 22 standard foundation files
+- Audit hook installation (`.git/hooks/commit-msg` for the strip-coauthor content)
+- Apply the operational pattern-quality criteria (stale | contradicted | stuck)
+- Check research staleness
 
-## STEP 2: FOUNDATION FILE AUDIT
+Wait for its structured report.
 
-ALWAYS LOAD (5): CLAUDE.md, CONTRACT.md, SPEC.md, ERRORS.md, MEMORY_SEMANTIC.md
-ON DEMAND (17+): VERSION_ROADMAP.md, PLANS.md, DECISIONS.md, FRONTEND_SPEC.md,
-DESIGN_SYSTEM.md, COMPONENT_REGISTRY.md, TESTS.md, COSTS.md, SECURITY.md,
-PERFORMANCE.md, DEPLOYMENT.md, DEPLOYMENT_CONFIG.md, CONTEXT_BUDGET.md,
-VISUAL_CHECKS.md, CHANGELOG.md, TIMELOG.md, RESEARCH.md
+## STEP 2: PRESENT THE REPORT TO THE USER
 
-Report: [X] foundation files present. Missing files at pre-v0.0.0: expected.
+The subagent returns a formatted health report. Show it to the user as-is, then add one line of summary:
 
-## STEP 3: HOOK INSTALLATION AUDIT
+> "Overall: <HEALTHY | NEEDS_ATTENTION | UNHEALTHY>. <One sentence on what stands out.>"
 
-```bash
-ls .git/hooks/commit-msg 2>/dev/null && echo "INSTALLED" || echo "MISSING"
-grep -q "Co-Authored-By" .git/hooks/commit-msg && echo "CORRECT" || echo "WRONG"
+## STEP 3: HANDLE FINDINGS
+
+If the report is HEALTHY: stop. Move on.
+
+If NEEDS_ATTENTION or UNHEALTHY, ask the user one question:
+
+> "Want to address any of these now, or just log them and continue?"
+
+For each item the user wants to address, do the work yourself (or hand off to the right skill):
+- Stale patterns → ask the user if the pattern still applies; if yes, update `last_validated` in MEMORY_SEMANTIC.md; if no, mark deprecated
+- Contradicted patterns → read the contradicting REFLEXION; ask the user which version is correct; update MEMORY_SEMANTIC.md accordingly
+- Stuck patterns (low confidence) → consider whether the pattern is actually wrong; either revise it or remove it
+- Missing foundation files → create from foundation templates if pre-v0.0.0 expected; investigate if v0.5.0+
+- Hook installation broken → run `bash ~/.claude/hooks/strip-coauthor.sh` (via hook-wrapper) to reinstall
+- Research stale → invoke `/research` to refresh
+
+## STEP 4: WRITE THE OUTCOME
+
+After addressing the items the user picked, append a one-line entry to `MEMORY_EPISODIC.md`:
+
+```
+HEALTH CHECK: <date> - <X items addressed, Y items deferred>
 ```
 
-## STEP 4: PATTERN QUALITY CHECK
+Do not let the subagent write this. You write it.
 
-Review MEMORY_SEMANTIC.md: flag stale, contradicted, or stuck patterns.
+## RULES
 
-## STEP 5: RESEARCH STALENESS
-
-Check RESEARCH.md last updated date. Flag if over 90 days.
-
-## OUTPUT FORMAT
-
-```
-HEALTH CHECK -- [Project Name]
-Memory Network:     [3/3] or [X/3]
-Foundation Files:   [X present]
-Hook Installation:  PASS or FAIL
-Pattern Quality:    [N stale] [N contradicted]
-Research Staleness: CURRENT or STALE
-```
+- The subagent is read-only. It returns findings; you decide whether to act.
+- If the subagent reports something the user disagrees with (e.g., "this pattern is stale" but the user says it's still validated), do not overrule the subagent silently. Update the pattern's `last_validated` date in MEMORY_SEMANTIC.md to reflect the user's confirmation. Next health check will see the fresh date.
+- Never bypass the subagent. Reading 22 files in the main thread is the noise this refactor was designed to eliminate.
+- If the subagent fails or times out, fall back to a minimal manual check: just verify the three memory files exist and the strip-coauthor hook is installed. Tell the user the full audit needs the subagent and propose retry.

@@ -1,13 +1,13 @@
 ---
 name: rollback
-description: Revert a Blueprint project to the last closed gate. Use this skill when a completed gate turns out to be wrong (bad architectural decision, broken code that can't be cleanly fixed forward, lost tests) and you need a clean return to the previous known-good state. Invoke with "/rollback" or phrases like "roll back to v0.2.0", "undo this gate", "revert to the last gate". Do NOT use for small code changes (use git), for aborting in-progress work before gate close (just discard the branch), or for anything outside the Blueprint gate structure.
+description: Revert a Syntaris project to the last closed gate. Use this skill when a completed gate turns out to be wrong (bad architectural decision, broken code that can't be cleanly fixed forward, lost tests) and you need a clean return to the previous known-good state. Invoke with "/rollback" or phrases like "roll back to v0.2.0", "undo this gate", "revert to the last gate". Do NOT use for small code changes (use git), for aborting in-progress work before gate close (just discard the branch), or for anything outside the Syntaris gate structure.
 ---
 
-# Rollback skill
+# ROLLBACK SKILL - Syntaris v0.3.0
 
-## What rollback means in Blueprint
+## What rollback means in Syntaris
 
-A Blueprint gate close commits a combined state change:
+A Syntaris gate close commits a combined state change:
 
 1. Code commits on the current branch
 2. New entries in DECISIONS.md
@@ -23,29 +23,37 @@ the reverted code. This skill does the full reversion atomically.
 
 ## Prerequisites
 
-Rollback only works if gate closes have been tagged. Blueprint's
-gate-close protocol creates a git tag named `blueprint-gate-<version>`
-and snapshots the foundation files to `.blueprint/snapshots/<version>/`
-at each close. If the target gate was closed without these artifacts,
-rollback cannot restore the memory files; in that case, offer to do a
-code-only git reset and warn the user that memory files will be left
-in their current drifted state.
+Rollback only works if gate closes have been tagged. Syntaris's
+gate-close protocol creates a git tag named `syntaris-gate-<version>`
+and snapshots the foundation files to `.syntaris/snapshots/<version>/`
+at each close. Projects that started under Blueprint v11.x will have
+older `blueprint-gate-<version>` tags and `.blueprint/snapshots/`
+directories; rollback supports both prefixes transparently so existing
+projects continue to work after upgrading to Syntaris v0.3.0.
+
+If the target gate was closed without these artifacts, rollback cannot
+restore the memory files; in that case, offer to do a code-only git
+reset and warn the user that memory files will be left in their current
+drifted state.
 
 ## Protocol
 
 **Step 1: confirm target gate.**
-Ask the user "roll back to which version?" and list available tags:
+Ask the user "roll back to which version?" and list available tags from
+both prefixes (newest first):
 ```bash
-git tag --list 'blueprint-gate-*' --sort=-version:refname | head -5
+git tag --list 'syntaris-gate-*' 'blueprint-gate-*' --sort=-version:refname | head -10
 ```
-If the user said "the last gate" interpret that as the most recent tag.
+If the user said "the last gate" interpret that as the most recent tag
+under either prefix.
 
 **Step 2: dry-run preview.**
 Before touching anything, show the user exactly what will be changed:
 
 - The git commits that will be discarded (output of `git log <target>..HEAD --oneline`)
-- The foundation files that will be restored from snapshot (output of
-  `ls .blueprint/snapshots/<version>/`)
+- The foundation files that will be restored from snapshot. Look in
+  `.syntaris/snapshots/<version>/` first; if not present, fall back to
+  `.blueprint/snapshots/<version>/`.
 - The version that VERSION_ROADMAP.md will revert to
 - Any uncommitted local changes that will be lost
 
@@ -61,13 +69,18 @@ Run the three reverts in order. If any fails, stop and report partial state.
    ```bash
    git stash push -u -m "pre-rollback-$(date +%s)"
    ```
-2. **Reset code** to the target tag:
+2. **Reset code** to the target tag (use whichever prefix the tag has):
    ```bash
-   git reset --hard blueprint-gate-<version>
+   git reset --hard <full-tag-name>   # e.g. syntaris-gate-v0.3.0 or blueprint-gate-v0.3.0
    ```
-3. **Restore foundation files** from snapshot:
+3. **Restore foundation files** from snapshot. Try the new path first,
+   fall back to the old:
    ```bash
-   cp -r .blueprint/snapshots/<version>/* .
+   if [ -d .syntaris/snapshots/<version> ]; then
+       cp -r .syntaris/snapshots/<version>/* .
+   else
+       cp -r .blueprint/snapshots/<version>/* .
+   fi
    ```
 
 **Step 4: verify.**
@@ -91,19 +104,20 @@ rollbacks are expensive and the lesson from them should not be lost.
   pulled by teammates, do NOT run a non-interactive reset; instead
   offer a `git revert` path that produces new reverting commits.
 - Rollback cannot recover files outside the repo or outside the
-  `.blueprint/snapshots/` tree (e.g., secrets in `.env`, database
-  migrations applied to a live db, deployed infrastructure). The user
-  is responsible for those domains.
+  snapshot tree (e.g., secrets in `.env`, database migrations applied
+  to a live db, deployed infrastructure). The user is responsible for
+  those domains.
 - The stash created in step 3 is a safety net, not a commitment. It is
   not automatically restored. The user must decide whether to
   `git stash pop` it or discard it.
 
 ## Failure modes
 
-If `.blueprint/snapshots/<version>/` does not exist: the gate was closed
-without the snapshot hook active. Offer code-only reset with an explicit
-warning that memory files will not be reverted, and recommend adding
-the `gate-close` snapshot step to future gate closes.
+If neither `.syntaris/snapshots/<version>/` nor `.blueprint/snapshots/<version>/`
+exists: the gate was closed without the snapshot hook active. Offer
+code-only reset with an explicit warning that memory files will not be
+reverted, and recommend adding the gate-close snapshot step to future
+gate closes.
 
 If `git reset --hard` fails because the working tree has uncommitted
 changes that the stash did not catch (untracked files in the ignore

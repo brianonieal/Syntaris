@@ -1,11 +1,11 @@
 # MEMORY_CORRECTIONS.md
-# Blueprint v11 | Reflexion Entries and Estimation Calibration
+# Syntaris v0.3.0 | Reflexion Entries and Estimation Calibration
 # New entries added ABOVE previous (newest first).
 # Used by build-rules.md to calibrate future estimates.
 
 ## REFLEXION LOG
 # Format per entry:
-# ## REFLEXION: v[X.X.X] -- [Gate Name]
+# ## REFLEXION: v[X.X.X] - [Gate Name]
 # Date: [date]
 # Project: [name]
 # ESTIMATE: Predicted [X] hrs, Actual [X] hrs, Variance [+/-X]%

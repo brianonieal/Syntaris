@@ -1,5 +1,5 @@
 # TESTS.md
-# Blueprint v11 | Permanent Test Registry
+# Syntaris v0.3.0 | Permanent Test Registry
 # Updated at every gate close.
 
 ## TEST REGISTRY

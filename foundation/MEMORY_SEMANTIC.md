@@ -1,5 +1,5 @@
 # MEMORY_SEMANTIC.md
-# Blueprint v11 | Persistent Patterns Across Projects
+# Syntaris v0.3.0 | Persistent Patterns Across Projects
 # Updated at gate close when a pattern is validated or invalidated.
 
 ## PATTERNS

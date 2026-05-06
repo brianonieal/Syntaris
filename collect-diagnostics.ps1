@@ -1,5 +1,5 @@
 ﻿# collect-diagnostics.ps1
-# Blueprint v11: gather everything needed to report a bug
+# Syntaris: gather everything needed to report a bug
 #
 # Produces a single bp-diagnostics-<timestamp>.txt file you can send to
 # whoever you're asking for help. No secrets are collected. Review the
@@ -7,7 +7,7 @@
 
 param(
     [string]$InstallRoot = "$env:USERPROFILE\.claude",
-    [string]$BlueprintRoot = "$env:USERPROFILE\Blueprint-v11"
+    [string]$SyntarisRoot = "$env:USERPROFILE\Syntaris"
 )
 
 $ErrorActionPreference = "Continue"
@@ -23,7 +23,7 @@ function Add-Line {
 }
 
 Add-Line "============================================"
-Add-Line "  Blueprint v11 Diagnostics"
+Add-Line "  Syntaris Diagnostics"
 Add-Line "  Generated: $(Get-Date -Format o)"
 Add-Line "============================================"
 
@@ -57,9 +57,9 @@ Add-Line ""
 Add-Line "## INSTALL PATHS"
 Add-Line ""
 Add-Line "InstallRoot: $InstallRoot"
-Add-Line "BlueprintRoot: $BlueprintRoot"
+Add-Line "SyntarisRoot: $SyntarisRoot"
 Add-Line "InstallRoot exists: $(if (Test-Path $InstallRoot) {'yes'} else {'NO'})"
-Add-Line "BlueprintRoot exists: $(if (Test-Path $BlueprintRoot) {'yes'} else {'NO'})"
+Add-Line "SyntarisRoot exists: $(if (Test-Path $SyntarisRoot) {'yes'} else {'NO'})"
 
 Add-Line ""
 Add-Line "## INSTALL CONTENTS"
@@ -98,13 +98,13 @@ if (Test-Path $InstallRoot) {
         Add-Line "settings.json: MISSING"
     }
 } else {
-    Add-Line "(install root does not exist - Blueprint not installed at this location)"
+    Add-Line "(install root does not exist - Syntaris not installed at this location)"
 }
 
 Add-Line ""
 Add-Line "## FOUNDATION FILES"
 Add-Line ""
-$foundationDir = Join-Path $BlueprintRoot "foundation"
+$foundationDir = Join-Path $SyntarisRoot "foundation"
 if (Test-Path $foundationDir) {
     $foundationFiles = Get-ChildItem $foundationDir -File
     Add-Line "Foundation files: $($foundationFiles.Count)"

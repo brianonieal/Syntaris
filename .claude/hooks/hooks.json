@@ -1,0 +1,72 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" session-start 2>/dev/null || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" session-start 2>$null; exit 0"
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" strip-coauthor 2>/dev/null || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" strip-coauthor 2>$null; exit 0"
+        }
+      ]
+    },
+    {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" enforce-tests || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" enforce-tests"
+        }
+      ]
+    },
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" block-dangerous || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" block-dangerous"
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" context-check 2>/dev/null || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" context-check 2>$null; exit 0"
+        }
+      ]
+    }
+  ],
+  "PreCompact": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" pre-compact 2>/dev/null || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" pre-compact 2>$null; exit 0"
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.sh\" writethru-episodic 2>/dev/null || powershell.exe -File \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/hook-wrapper.ps1\" writethru-episodic 2>$null; exit 0"
+        }
+      ]
+    }
+  ]
+}

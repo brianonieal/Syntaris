@@ -1,0 +1,27 @@
+{
+  "name": "syn",
+  "version": "0.3.0",
+  "description": "Syntaris: a compilation-stage knowledge layer and harness engineering implementation for AI coding agents. Five-phase gate model, three-layer memory, calibration loop, multi-runtime support across 8 harnesses (Tier 1: Claude Code, Tier 2: Cursor/Windsurf, Tier 3: Codex CLI/Gemini CLI/Aider/Kiro/OpenCode), personal/client billing branch.",
+  "author": {
+    "name": "Brian Onieal",
+    "url": "https://github.com/brianonieal"
+  },
+  "homepage": "https://github.com/brianonieal/Syntaris",
+  "repository": "https://github.com/brianonieal/Syntaris",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "methodology",
+    "gates",
+    "memory",
+    "calibration",
+    "harness-engineering",
+    "multi-runtime"
+  ],
+  "skills": "./.claude/skills",
+  "agents": "./.claude/agents",
+  "hooks": "./.claude/hooks/hooks.json"
+}

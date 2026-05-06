@@ -1,6 +1,6 @@
 #!/bin/bash
 # skill-telemetry.sh
-# Blueprint v11.3: Log skill-invocation signals to a jsonl file for later analysis.
+# Syntaris.3: Log skill-invocation signals to a jsonl file for later analysis.
 #
 # Triggered as a UserPromptSubmit hook. Reads the user's prompt, scans each
 # installed skill's SKILL.md description for trigger phrases, and logs any
@@ -136,23 +136,17 @@ for skill_dir in "$SKILLS_DIR"/*/; do
       'build-rules')
         kw='(new (project|app|build)|start (a|the) build|plan (a|the) (app|build|project)|build (a|an) (app|tool)|make (a|an) (app|tool))'
         ;;
-      'freelance-billing'|billing)
-        kw='(invoice|billable hours|hours worked|how many hours|bill (for|the) client|timelog)'
-        ;;
-      handoff)
-        kw='(hand[ -]?off|deliver to client|client handoff|project complete)'
+      billing)
+        kw='(invoice|billable hours|hours worked|how many hours|bill (for|the) client|timelog|hand[ -]?off|deliver to client|client handoff|project complete|new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)'
         ;;
       health)
-        kw='(health check|audit blueprint|blueprint audit)'
+        kw='(health check|audit blueprint|blueprint audit|audit syntaris|syntaris audit)'
         ;;
       research)
         kw='(competitive (intel|intelligence|analysis)|research (the )?market|look up (the )?competitors?|competitor analysis)'
         ;;
       costs|cost)
         kw='(how much will (this|it) cost|cost (estimate|projection|forecast)|monthly bill|pricing for)'
-        ;;
-      onboard)
-        kw='(new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)'
         ;;
       start)
         kw='(resume (the|this) project|pick (this|it) up|continue from|where did we leave)'

@@ -1,5 +1,5 @@
 ﻿# verify.ps1
-# Blueprint v11 installation verification for Windows
+# Syntaris installation verification for Windows
 #
 # Runs automatically at the end of install.ps1, but can also be run standalone:
 #   .\verify.ps1
@@ -18,10 +18,53 @@
 
 param(
     [string]$InstallRoot = "$env:USERPROFILE\.claude",
+    [string]$Target = "",
     [switch]$VerboseMode
 )
 
 $ErrorActionPreference = "Continue"
+
+# Tier 2/3 verification: short branch that checks target-native config files,
+# not Claude Code hooks/agents/skills.
+if ($Target -and $Target -ne "claude-code") {
+    Write-Host ""
+    Write-Host "Verifying Syntaris install for target: $Target" -ForegroundColor Cyan
+    Write-Host ""
+
+    $targetFile = switch ($Target) {
+        "cursor"     { ".cursor/rules/syntaris-core.mdc" }
+        "windsurf"   { ".windsurf/rules/syntaris-core.md" }
+        "codex-cli"  { "AGENTS.md" }
+        "gemini-cli" { ".gemini/GEMINI.md" }
+        "aider"      { ".aider.syntaris.md" }
+        "kiro"       { ".kiro/specs/syntaris-methodology.md" }
+        "opencode"   { ".opencode/instructions/INSTRUCTIONS.md" }
+        default      { $null }
+    }
+
+    if ($targetFile -and (Test-Path $targetFile)) {
+        Write-Host "  [OK] $targetFile present" -ForegroundColor Green
+    } elseif ($targetFile) {
+        Write-Host "  [MISSING] $targetFile" -ForegroundColor Red
+        exit 1
+    } else {
+        Write-Host "  Unknown target: $Target" -ForegroundColor Red
+        exit 1
+    }
+
+    if (Test-Path "foundation") {
+        Write-Host "  [OK] foundation/ directory present" -ForegroundColor Green
+    } else {
+        Write-Host "  [MISSING] foundation/ directory" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host ""
+    Write-Host "Tier 2/3 verification complete." -ForegroundColor Cyan
+    Write-Host "Note: hook checks skipped for non-claude-code targets." -ForegroundColor Yellow
+    Write-Host "See docs/COMPATIBILITY.md for what's enforced at this tier." -ForegroundColor Yellow
+    exit 0
+}
 
 $passCount = 0
 $failCount = 0
@@ -55,7 +98,7 @@ function Section {
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  Blueprint v11 -- Verification" -ForegroundColor Cyan
+Write-Host "  Syntaris -- Verification" -ForegroundColor Cyan
 Write-Host "  Install root: $InstallRoot" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
@@ -81,19 +124,19 @@ if (Test-Path $settingsPath) {
     Fail "settings.json missing: $settingsPath"
 }
 
-# 16 skills
+# 14 skills
 $requiredSkills = @(
     "start", "build-rules", "global-rules", "critical-thinker",
     "testing", "security", "deployment", "costs", "performance",
-    "debug", "research", "freelance-billing", "handoff",
-    "health", "onboard", "rollback"
+    "debug", "research", "billing",
+    "health", "rollback"
 )
 foreach ($s in $requiredSkills) {
     $path = Join-Path $InstallRoot "skills\$s\SKILL.md"
     if (Test-Path $path) { Pass "skill: $s" } else { Fail "skill missing: $s\SKILL.md" }
 }
 
-# 16 hook scripts
+# 20 hook scripts (10 bash + 10 PowerShell)
 $requiredHooks = @(
     "hook-wrapper.sh", "hook-wrapper.ps1",
     "session-start.sh", "session-start.ps1",
@@ -102,15 +145,19 @@ $requiredHooks = @(
     "block-dangerous.sh", "block-dangerous.ps1",
     "context-check.sh", "context-check.ps1",
     "pre-compact.sh", "pre-compact.ps1",
-    "writethru-episodic.sh", "writethru-episodic.ps1"
+    "writethru-episodic.sh", "writethru-episodic.ps1",
+    "gate-close-calibration.sh", "gate-close-calibration.ps1",
+    "skill-telemetry.sh", "skill-telemetry.ps1"
 )
 foreach ($h in $requiredHooks) {
     $path = Join-Path $InstallRoot "hooks\$h"
     if (Test-Path $path) { Pass "hook: $h" } else { Fail "hook missing: $h" }
 }
 
-# 3 agents
-foreach ($a in @("spec-reviewer.md", "test-writer.md", "security-auditor.md")) {
+# 7 agents
+foreach ($a in @("spec-reviewer.md", "test-writer.md", "security-auditor.md",
+                 "research-agent.md", "debug-agent.md", "health-agent.md",
+                 "critical-thinker-agent.md")) {
     $path = Join-Path $InstallRoot "agents\$a"
     if (Test-Path $path) { Pass "agent: $a" } else { Fail "agent missing: $a" }
 }
@@ -174,14 +221,17 @@ function Test-Frontmatter {
 foreach ($s in $requiredSkills) {
     Test-Frontmatter (Join-Path $InstallRoot "skills\$s\SKILL.md") "skill/$s"
 }
-foreach ($a in @("spec-reviewer", "test-writer", "security-auditor")) {
+foreach ($a in @("spec-reviewer", "test-writer", "security-auditor",
+                 "research-agent", "debug-agent", "health-agent",
+                 "critical-thinker-agent")) {
     Test-Frontmatter (Join-Path $InstallRoot "agents\$a.md") "agent/$a"
 }
 
 # PowerShell hook syntax check
 $hookNames = @(
     "session-start", "strip-coauthor", "enforce-tests", "block-dangerous",
-    "context-check", "pre-compact", "writethru-episodic", "hook-wrapper"
+    "context-check", "pre-compact", "writethru-episodic", "hook-wrapper",
+    "gate-close-calibration", "skill-telemetry"
 )
 foreach ($h in $hookNames) {
     $path = Join-Path $InstallRoot "hooks\$h.ps1"
@@ -388,8 +438,8 @@ CLIENT_TYPE: PERSONAL
                     Fail "SessionStart: missing hookSpecificOutput wrapper"
                 } elseif ($parsed.hookSpecificOutput.hookEventName -ne "SessionStart") {
                     Fail "SessionStart: wrong hookEventName: $($parsed.hookSpecificOutput.hookEventName)"
-                } elseif (-not ($parsed.hookSpecificOutput.additionalContext -like "*Blueprint v11*")) {
-                    Fail "SessionStart: additionalContext missing 'Blueprint v11' marker"
+                } elseif (-not ($parsed.hookSpecificOutput.additionalContext -like "*Syntaris*")) {
+                    Fail "SessionStart: additionalContext missing 'Syntaris' marker"
                 } else {
                     Pass "SessionStart: valid JSON with hookSpecificOutput wrapper"
                 }
@@ -439,15 +489,15 @@ CLIENT_TYPE: PERSONAL
             Fail "block-dangerous: did not block force-push to main (exit $fpExit, expected 2)"
         }
 
-        # Smoke test 5: missing hook with BLUEPRINT_DEBUG surfaces diagnostic
-        $env:BLUEPRINT_DEBUG = "1"
+        # Smoke test 5: missing hook with SYNTARIS_DEBUG surfaces diagnostic
+        $env:SYNTARIS_DEBUG = "1"
         $dbgOutput = '{}' | & $pwshExe -NoProfile -File $wrapperPath nonexistent-hook 2>&1
         $dbgExit = $LASTEXITCODE
-        Remove-Item env:BLUEPRINT_DEBUG -ErrorAction SilentlyContinue
+        Remove-Item env:SYNTARIS_DEBUG -ErrorAction SilentlyContinue
 
         if ($dbgExit -eq 0) {
             if ($dbgOutput -match "not found on any fallback path") {
-                Pass "missing hook: diagnostic surfaces in BLUEPRINT_DEBUG mode"
+                Pass "missing hook: diagnostic surfaces in SYNTARIS_DEBUG mode"
             } else {
                 Warn "missing hook: exit 0 but no diagnostic message"
             }
@@ -499,14 +549,14 @@ if ($failCount -gt 0) {
         Write-Host "  - $msg"
     }
     Write-Host ""
-    Write-Host "Blueprint v11 install has problems. See failures above." -ForegroundColor Yellow
+    Write-Host "Syntaris install has problems. See failures above." -ForegroundColor Yellow
     Write-Host "Re-run install.ps1, or fix the specific items listed." -ForegroundColor Yellow
     Write-Host ""
     exit 1
 }
 
 Write-Host ""
-Write-Host "All verification layers passed. Blueprint v11 is ready to use." -ForegroundColor Green
+Write-Host "All verification layers passed. Syntaris is ready to use." -ForegroundColor Green
 Write-Host "  * Files: present and structurally valid"
 Write-Host "  * Hooks: executable and dependencies available"
 Write-Host "  * Smoke tests: SessionStart produces valid JSON; dangerous commands block correctly"

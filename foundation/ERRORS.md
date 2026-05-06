@@ -1,5 +1,5 @@
 # ERRORS.md
-# Blueprint v11 | Living Failure Log
+# Syntaris v0.3.0 | Living Failure Log
 # Every debugged issue is logged here. Check this FIRST before diagnosing.
 # Format: ERR-[NNN]: [title], root cause, fix, prevention
 

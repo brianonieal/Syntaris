@@ -1,26 +1,70 @@
 ﻿# install.ps1
-# Blueprint v11 Installer
+# Syntaris Installer
 # Run: PowerShell -ExecutionPolicy Bypass -File "install.ps1"
 #
 # Options:
-#   -ZipPath        Path to blueprint-v11.zip (default: current directory)
+#   -ZipPath        Path to syntaris-v0.3.0.zip (default: current directory)
 #   -InstallRoot    Claude Code config directory (default: ~/.claude)
-#   -BlueprintRoot  Foundation templates location (default: ~/Blueprint-v11)
+#   -SyntarisRoot  Foundation templates location (default: ~/Syntaris)
 #   -PersonalConfig Path to owner-config.md for variable substitution (optional)
 
 param(
-    [string]$ZipPath = ".\blueprint-v11.zip",
+    [string]$ZipPath = ".\syntaris-v0.3.0.zip",
     [string]$InstallRoot = "$env:USERPROFILE\.claude",
-    [string]$BlueprintRoot = "$env:USERPROFILE\Blueprint-v11",
+    [string]$SyntarisRoot = "$env:USERPROFILE\Syntaris",
     [string]$PersonalConfig = "",
+    [string]$Target = "",   # Empty = auto-detect. Valid: claude-code, cursor, windsurf, codex-cli, gemini-cli, aider, kiro, opencode
     [switch]$Force
 )
+
+# == Target detection ========================================================
+# If -Target wasn't passed, auto-detect via env vars and config files.
+
+if ([string]::IsNullOrEmpty($Target)) {
+    if ($env:CLAUDE_CODE -or $env:ANTHROPIC_CLAUDE_CODE) {
+        $Target = "claude-code"
+    } elseif ($env:CURSOR_USER -or (Test-Path ".cursor") -or (Test-Path ".cursorrules")) {
+        $Target = "cursor"
+    } elseif ($env:WINDSURF_USER -or (Test-Path ".windsurf")) {
+        $Target = "windsurf"
+    } elseif ((Test-Path ".codex/config.toml") -or $env:CODEX_HOME) {
+        $Target = "codex-cli"
+    } elseif ((Test-Path ".gemini") -or ($env:GEMINI_API_KEY -and $env:GEMINI_CLI_HOME)) {
+        $Target = "gemini-cli"
+    } elseif ($env:KIRO_HOME -or (Test-Path ".kiro")) {
+        $Target = "kiro"
+    } elseif ((Test-Path ".opencode") -or (Test-Path "opencode.json")) {
+        $Target = "opencode"
+    } elseif ($env:AIDER_MODEL -or (Test-Path ".aider.conf.yml")) {
+        $Target = "aider"
+    } else {
+        $Target = "claude-code"
+    }
+}
+
+# Tier mapping
+switch ($Target) {
+    "claude-code"  { $Tier = 1 }
+    "cursor"       { $Tier = 2 }
+    "windsurf"     { $Tier = 2 }
+    "codex-cli"    { $Tier = 3 }
+    "gemini-cli"   { $Tier = 3 }
+    "aider"        { $Tier = 3 }
+    "kiro"         { $Tier = 3 }
+    "opencode"     { $Tier = 3 }
+    default {
+        Write-Host "Unknown target: $Target. Valid: claude-code, cursor, windsurf, codex-cli, gemini-cli, aider, kiro, opencode" -ForegroundColor Red
+        exit 1
+    }
+}
+
+Write-Host "  Target:  $Target (Tier $Tier)" -ForegroundColor Cyan
 
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  Blueprint v11 Installer" -ForegroundColor Cyan
+Write-Host "  Syntaris Installer" -ForegroundColor Cyan
 Write-Host "  AI App Building Methodology" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
@@ -29,7 +73,7 @@ Write-Host ""
 #
 # This installer supports two usage patterns:
 #   A) Cloned from GitHub: run directly from the repo root, no zip involved.
-#   B) Packaged zip: extract a blueprint-v11.zip first, then install.
+#   B) Packaged zip: extract a syntaris-v0.3.0.zip first, then install.
 # We detect which mode we're in by checking whether .claude/ exists next to us.
 
 $ScriptDir = Split-Path -Parent $PSCommandPath
@@ -42,7 +86,7 @@ if (Test-Path $DirectClaude) {
     $UsedZip = $false
 } elseif (Test-Path $ZipPath) {
     # Mode B: extract zip into TEMP and use that as source.
-    $TempDir = "$env:TEMP\blueprint-v11-install"
+    $TempDir = "$env:TEMP\syntaris-install"
     if (Test-Path $TempDir) { Remove-Item $TempDir -Recurse -Force }
     New-Item -ItemType Directory -Path $TempDir | Out-Null
     Write-Host "Extracting: $ZipPath" -ForegroundColor Gray
@@ -54,14 +98,111 @@ if (Test-Path $DirectClaude) {
     Write-Host "Extracted to: $ExtractedRoot" -ForegroundColor Green
     $UsedZip = $true
 } else {
-    Write-Host "ERROR: Cannot locate Blueprint source." -ForegroundColor Red
+    Write-Host "ERROR: Cannot locate Syntaris source." -ForegroundColor Red
     Write-Host "Expected one of:" -ForegroundColor Yellow
     Write-Host "  - A .claude/ directory next to this installer (clone mode), or" -ForegroundColor Yellow
-    Write-Host "  - A blueprint-v11.zip at: $ZipPath (zip mode)" -ForegroundColor Yellow
+    Write-Host "  - A syntaris-v0.3.0.zip at: $ZipPath (zip mode)" -ForegroundColor Yellow
     Write-Host "" -ForegroundColor Yellow
     Write-Host "If you cloned from GitHub, run this installer from the repo root." -ForegroundColor Yellow
-    Write-Host "If you have a zip, specify: -ZipPath 'C:\path\to\blueprint-v11.zip'" -ForegroundColor Yellow
+    Write-Host "If you have a zip, specify: -ZipPath 'C:\path\to\syntaris-v0.3.0.zip'" -ForegroundColor Yellow
     exit 1
+}
+
+# == Step 1.5: Tier 2/3 install branch ======================================
+# Tier 1 (Claude Code) continues to the full install.
+# Tier 2/3 take a separate path that emits target-native config and exits.
+
+if ($Tier -ne 1) {
+    Write-Host ""
+    Write-Host "Step 1.5: Installing Tier $Tier adapter for $Target" -ForegroundColor Cyan
+
+    # All tiers get foundation templates copied to project root
+    $foundationSrc = Join-Path $SrcRoot "foundation"
+    if (Test-Path $foundationSrc) {
+        Copy-Item -Path $foundationSrc -Destination "." -Recurse -Force
+        Write-Host "  Copied foundation/ to project root" -ForegroundColor Green
+    }
+
+    switch ($Target) {
+        "cursor" {
+            New-Item -ItemType Directory -Force -Path ".cursor\rules" | Out-Null
+            $cursorRules = @"
+---
+description: Syntaris methodology rules
+alwaysApply: true
+---
+
+# Syntaris (Tier 2 - Cursor)
+
+Foundation files at foundation/ define the project contract, decisions, errors, and memory.
+Read them before any non-trivial edit.
+
+The five approval words gate work: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED, FRONTEND APPROVED, GO.
+Do not advance phases without an explicit approval word in the chat.
+
+Skills documented in .claude/skills/*/SKILL.md describe phase-specific behavior.
+Full rules translation pending per BUILD_NEXT.md.
+"@
+            $cursorRules | Out-File -FilePath ".cursor\rules\syntaris-core.mdc" -Encoding utf8
+            Write-Host "  Wrote .cursor/rules/syntaris-core.mdc" -ForegroundColor Green
+            Write-Host "  Full rules translation pending - see BUILD_NEXT.md" -ForegroundColor Yellow
+        }
+        "windsurf" {
+            New-Item -ItemType Directory -Force -Path ".windsurf\rules" | Out-Null
+            "# Syntaris (Tier 2 - Windsurf) - placeholder, see BUILD_NEXT.md" | Out-File -FilePath ".windsurf\rules\syntaris-core.md" -Encoding utf8
+            Write-Host "  Wrote .windsurf/rules/syntaris-core.md placeholder" -ForegroundColor Green
+        }
+        "codex-cli" {
+            $agentsBody = @"
+# Syntaris Methodology (Tier 3 advisory, Codex CLI)
+
+This project uses the Syntaris methodology. Foundation files in foundation/
+contain the project contract, decisions log, errors log, and memory.
+
+Read foundation/CONTRACT.md before any non-trivial edit. Respect the five
+approval words: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED, FRONTEND APPROVED,
+GO. These gate phase advancement.
+
+Full Syntaris methodology is documented at github.com/brianonieal/Syntaris.
+"@
+            $agentsBody | Out-File -FilePath "AGENTS.md" -Encoding utf8
+            Write-Host "  Wrote AGENTS.md for Codex CLI" -ForegroundColor Green
+        }
+        "gemini-cli" {
+            New-Item -ItemType Directory -Force -Path ".gemini" | Out-Null
+            "# Syntaris (Tier 3 advisory, Gemini CLI) - see foundation/ and .claude/skills/" | Out-File -FilePath ".gemini\GEMINI.md" -Encoding utf8
+            Write-Host "  Wrote .gemini/GEMINI.md" -ForegroundColor Green
+        }
+        "aider" {
+            $aiderBody = @"
+# Syntaris Methodology (Tier 3 advisory, Aider)
+
+Foundation files at foundation/ define project contract and memory.
+Read foundation/CONTRACT.md before non-trivial edits.
+Respect the five approval words: CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED, FRONTEND APPROVED, GO.
+"@
+            $aiderBody | Out-File -FilePath ".aider.syntaris.md" -Encoding utf8
+            Write-Host "  Wrote .aider.syntaris.md" -ForegroundColor Green
+            Write-Host "  Add 'read: .aider.syntaris.md' to your .aider.conf.yml manually" -ForegroundColor Yellow
+        }
+        "kiro" {
+            New-Item -ItemType Directory -Force -Path ".kiro\specs" | Out-Null
+            "# Syntaris Methodology (Tier 3 advisory, Kiro) - see foundation/ and .claude/skills/" | Out-File -FilePath ".kiro\specs\syntaris-methodology.md" -Encoding utf8
+            Write-Host "  Wrote .kiro/specs/syntaris-methodology.md" -ForegroundColor Green
+        }
+        "opencode" {
+            New-Item -ItemType Directory -Force -Path ".opencode\instructions" | Out-Null
+            "# Syntaris (Tier 3 advisory, OpenCode) - see foundation/ and .claude/skills/" | Out-File -FilePath ".opencode\instructions\INSTRUCTIONS.md" -Encoding utf8
+            Write-Host "  Wrote .opencode/instructions/INSTRUCTIONS.md" -ForegroundColor Green
+        }
+    }
+
+    Write-Host ""
+    Write-Host "Tier $Tier install complete for $Target." -ForegroundColor Cyan
+    Write-Host "Foundation templates copied to ./foundation/" -ForegroundColor Cyan
+    Write-Host "See docs/COMPATIBILITY.md for what's enforced at this tier." -ForegroundColor Cyan
+    Write-Host ""
+    exit 0
 }
 
 # == Step 2: Detect existing install and confirm clobber =====================
@@ -73,7 +214,7 @@ foreach ($p in @("$InstallRoot\skills", "$InstallRoot\hooks", "$InstallRoot\agen
 
 if ($existingDetected) {
     Write-Host ""
-    Write-Host "Existing Blueprint install detected at: $InstallRoot" -ForegroundColor Yellow
+    Write-Host "Existing Syntaris install detected at: $InstallRoot" -ForegroundColor Yellow
     Write-Host "Continuing will CLOBBER:" -ForegroundColor Yellow
     if (Test-Path "$InstallRoot\skills") { Write-Host "  - all files under $InstallRoot\skills\" -ForegroundColor Yellow }
     if (Test-Path "$InstallRoot\hooks") { Write-Host "  - all files under $InstallRoot\hooks\" -ForegroundColor Yellow }
@@ -81,7 +222,7 @@ if ($existingDetected) {
     if (Test-Path "$InstallRoot\settings.json") { Write-Host "  - settings.json (backed up to .bak first)" -ForegroundColor Yellow }
     Write-Host "Any files you have personally edited will be overwritten." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Preserved: foundation templates at $BlueprintRoot, per-project files," -ForegroundColor Yellow
+    Write-Host "Preserved: foundation templates at $SyntarisRoot, per-project files," -ForegroundColor Yellow
     Write-Host "  personal-overlay\owner-config.md, hook error logs in `$env:TEMP." -ForegroundColor Yellow
 
     if (-not $Force) {
@@ -149,35 +290,22 @@ if (Test-Path $agentPath) {
 # == Step 4: Install foundation templates =====================================
 
 Write-Host ""
-Write-Host "Installing foundation templates to: $BlueprintRoot" -ForegroundColor Cyan
+Write-Host "Installing foundation templates to: $SyntarisRoot" -ForegroundColor Cyan
 
-@("$BlueprintRoot\foundation", "$BlueprintRoot\claude-skills") | ForEach-Object {
-    New-Item -ItemType Directory -Path $_ -Force | Out-Null
-}
+New-Item -ItemType Directory -Path "$SyntarisRoot\foundation" -Force | Out-Null
 
 # Foundation files
 Get-ChildItem (Join-Path $ExtractedRoot "foundation\*.md") | ForEach-Object {
-    Copy-Item $_.FullName (Join-Path $BlueprintRoot "foundation\$($_.Name)") -Force
+    Copy-Item $_.FullName (Join-Path $SyntarisRoot "foundation\$($_.Name)") -Force
     Write-Host "  [OK] foundation\$($_.Name)" -ForegroundColor Green
 }
 
-# Claude-skills (for claude.ai upload)
-$csPath = Join-Path $ExtractedRoot "claude-skills"
-if (Test-Path $csPath) {
-    Get-ChildItem $csPath -Directory | ForEach-Object {
-        $destDir = Join-Path $BlueprintRoot "claude-skills\$($_.Name)"
-        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-        Copy-Item "$($_.FullName)\*" $destDir -Recurse -Force
-        Write-Host "  [OK] claude-skills\$($_.Name)" -ForegroundColor Green
-    }
-}
-
 # Copy install script and meta files
-Copy-Item $PSCommandPath (Join-Path $BlueprintRoot "install.ps1") -Force
+Copy-Item $PSCommandPath (Join-Path $SyntarisRoot "install.ps1") -Force
 $readme = Join-Path $ExtractedRoot "README.md"
-if (Test-Path $readme) { Copy-Item $readme $BlueprintRoot -Force }
+if (Test-Path $readme) { Copy-Item $readme $SyntarisRoot -Force }
 $license = Join-Path $ExtractedRoot "LICENSE"
-if (Test-Path $license) { Copy-Item $license $BlueprintRoot -Force }
+if (Test-Path $license) { Copy-Item $license $SyntarisRoot -Force }
 
 # == Step 5: Apply personal configuration (if provided) =======================
 
@@ -196,7 +324,7 @@ if ($PersonalConfig -and (Test-Path $PersonalConfig)) {
     if ($configVars.Count -gt 0) {
         # Replace {{VARIABLE}} placeholders in all installed .md files
         $targetDirs = @(
-            "$BlueprintRoot\foundation",
+            "$SyntarisRoot\foundation",
             "$InstallRoot\skills"
         )
         foreach ($dir in $targetDirs) {
@@ -236,8 +364,8 @@ if ($PersonalConfig -and (Test-Path $PersonalConfig)) {
 } else {
     # Check if placeholders exist and warn
     $placeholderCount = 0
-    if (Test-Path "$BlueprintRoot\foundation") {
-        $placeholderCount = (Get-ChildItem "$BlueprintRoot\foundation\*.md" | Select-String -Pattern "{{[A-Z_]+}}" | Measure-Object).Count
+    if (Test-Path "$SyntarisRoot\foundation") {
+        $placeholderCount = (Get-ChildItem "$SyntarisRoot\foundation\*.md" | Select-String -Pattern "{{[A-Z_]+}}" | Measure-Object).Count
     }
     if ($placeholderCount -gt 0) {
         Write-Host ""
@@ -274,8 +402,8 @@ $allOk = $true
 $requiredSkills = @(
     "start", "build-rules", "global-rules", "critical-thinker",
     "testing", "security", "deployment", "costs", "performance",
-    "debug", "research", "freelance-billing", "handoff",
-    "health", "onboard", "rollback"
+    "debug", "research", "billing",
+    "health", "rollback"
 )
 foreach ($skill in $requiredSkills) {
     $path = Join-Path $InstallRoot "skills\$skill\SKILL.md"
@@ -318,7 +446,7 @@ foreach ($hook in $requiredHooks) {
     }
 }
 
-# Check hook wrappers (new in v11.1)
+# Check hook wrappers
 $requiredWrappers = @("hook-wrapper.sh", "hook-wrapper.ps1")
 foreach ($wrapper in $requiredWrappers) {
     $path = Join-Path $InstallRoot "hooks\$wrapper"
@@ -327,31 +455,6 @@ foreach ($wrapper in $requiredWrappers) {
     } else {
         Write-Host "  [MISSING] hooks\$wrapper" -ForegroundColor Red
         $allOk = $false
-    }
-}
-
-# Check that source zip's .claude/skills and claude-skills directories are in sync
-# (they should be exact copies - drift indicates a packaging bug)
-$zipSkillsA = Join-Path $ExtractedRoot ".claude\skills"
-$zipSkillsB = Join-Path $ExtractedRoot "claude-skills"
-if ((Test-Path $zipSkillsA) -and (Test-Path $zipSkillsB)) {
-    $driftCount = 0
-    Get-ChildItem $zipSkillsA -Directory | ForEach-Object {
-        $skillA = Join-Path $_.FullName "SKILL.md"
-        $skillB = Join-Path $zipSkillsB "$($_.Name)\SKILL.md"
-        if ((Test-Path $skillA) -and (Test-Path $skillB)) {
-            $hashA = (Get-FileHash $skillA).Hash
-            $hashB = (Get-FileHash $skillB).Hash
-            if ($hashA -ne $hashB) {
-                Write-Host "  [DRIFT] skill '$($_.Name)' differs between .claude/skills and claude-skills" -ForegroundColor Yellow
-                $driftCount++
-            }
-        }
-    }
-    if ($driftCount -eq 0) {
-        Write-Host "  [OK] skill directories in sync" -ForegroundColor Green
-    } else {
-        Write-Host "  [WARN] $driftCount skill(s) drifted - package integrity issue" -ForegroundColor Yellow
     }
 }
 
@@ -369,13 +472,13 @@ Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 
 if ($allOk) {
-    Write-Host "  Blueprint v11 installed successfully!" -ForegroundColor Green
+    Write-Host "  Syntaris installed successfully!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Skills:     $InstallRoot\skills\ (16 skills)" -ForegroundColor White
-    Write-Host "  Hooks:      $InstallRoot\hooks\ (9 hooks + 1 wrapper, bash + PowerShell)" -ForegroundColor White
-    Write-Host "  Agents:     $InstallRoot\agents\ (3 subagents)" -ForegroundColor White
+    Write-Host "  Skills:     $InstallRoot\skills\ (14 skills)" -ForegroundColor White
+    Write-Host "  Hooks:      $InstallRoot\hooks\ (10 hooks + 1 wrapper, bash + PowerShell)" -ForegroundColor White
+    Write-Host "  Agents:     $InstallRoot\agents\ (7 subagents)" -ForegroundColor White
     Write-Host "  Settings:   $InstallRoot\settings.json" -ForegroundColor White
-    Write-Host "  Foundation: $BlueprintRoot\foundation\ (22 templates)" -ForegroundColor White
+    Write-Host "  Foundation: $SyntarisRoot\foundation\ (22 templates)" -ForegroundColor White
     Write-Host ""
     Write-Host "  Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Configure git identity for your project" -ForegroundColor White
