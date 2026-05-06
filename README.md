@@ -14,7 +14,7 @@ This is a methodology, not a tool. It works on Claude Code with full hook-based 
 
 **Syntaris is a harness engineering implementation.** Per OpenAI's Lopopolo (Feb 2026) and Martin Fowler's "Harness engineering for coding agent users" (April 2026), a harness is the system around the model that handles context resets, structured handoff artifacts, phase gates, and verification loops. Syntaris implements all four: shell-hook gates on Claude Code, rule-driven gates on Cursor/Windsurf, advisory gates everywhere else.
 
-**Syntaris is built for two audiences.** Casual coders get a concise-mode walkthrough that explains every gate as it happens, plus stack-flexible recipe selection (web app, API, CLI, mobile, other) without forcing knowledge of stack jargon. Freelance AI engineers get the methodology with billing, time-tracking, and client handoff workflows wired in: pick "client work" at session start, fill in twelve fields, and Syntaris generates invoices automatically at gate close from actual hours.
+**Syntaris is built for two audiences.** If you're building something for yourself, `/start` asks what you want to build, researches the competitive landscape, recommends a stack, and gets to work. If you're building for a client, it adds billing, time-tracking, and invoice generation on top of the same flow.
 
 **Syntaris is opinionated where it has evidence and stack-flexible where it doesn't.** The reference Next.js + FastAPI + Supabase + LangGraph stack ("Brian's reference stack") has 12 gates of calibration data from Forge Finance. Other stacks ship as recipes - populated where I've used them (Next.js + Supabase, Vite + Express, Python CLI), as community-fillable scaffolds where I haven't.
 
@@ -56,11 +56,13 @@ Memory persists across `/clear` and sessions. Patterns earn confidence through r
 
 At every gate close, a reflexion entry records predicted hours, actual hours, variance, and (in v0.4.0+) error count delta. When variance exceeds 30%, a longer reflexion is required. Across enough gates, estimates calibrate.
 
-### Personal vs client branch
+### What `/start` does
 
-`/start` asks "personal or client?" as its first question. If client, it collects 12 billing fields and writes `foundation/CLIENTS.md`. The `PROJECT_TYPE` flag in `CONTRACT.md` activates the consolidated `billing` skill: invoice prompts at gate close, three handoff documents at v1.0.0. Personal projects skip all of this.
+`/start` detects your runtime, checks if you're resuming an existing project, then asks the one question that matters: *what do you want to build?* After you describe your idea, it researches the competitive landscape (top 5 similar products, where they fall short, how yours can stand out), recommends a tech stack with trade-offs, and asks whether this is personal or client work. Client projects get billing fields collected conversationally and automatic invoicing at gate close.
 
-This is the part with the most evidence behind it. The Forge Finance build produced consistent variance data across 12 gates: real hours ran 83-95% under naive raw estimates once Syntaris's pre-decided schemas and managed-SDK adjustments were factored in. That is one project on one stack - calibration of your own builds will produce different numbers.
+### Calibration loop
+
+The Forge Finance build produced consistent variance data across 12 gates: real hours ran 83-95% under naive raw estimates once Syntaris's pre-decided schemas and managed-SDK adjustments were factored in. That is one project on one stack - calibration of your own builds will produce different numbers.
 
 ---
 
@@ -94,92 +96,41 @@ The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of trut
 
 ---
 
-## Two ways to install
+## Install
 
-Syntaris ships with two distribution paths. Same skills, same hooks, same agents. They differ only in how slash commands are invoked.
+### One command (Claude Code)
 
-### Path A: install.sh (personal install)
+Open Claude Code and type:
 
-For your own machine. Slash commands stay short and unprefixed.
-
-```bash
-git clone https://github.com/brianonieal/Syntaris.git
-cd Syntaris
-
-# Auto-detect runtime (default behavior)
-bash install.sh           # macOS, Linux
-./install.ps1             # Windows
-
-# Or specify target explicitly
-bash install.sh --target claude-code   # Tier 1 full install
-bash install.sh --target cursor        # Tier 2 partial install
-bash install.sh --target codex-cli     # Tier 3 advisory install
-
-# In a project directory with your harness:
-/start
 ```
-
-The installer reads `.claude/lib/detect-runtime.sh` to auto-detect which harness you're running. On Tier 1 (Claude Code), it copies skills, hooks, and agents to `~/.claude/`, copies foundation templates to `~/Syntaris/`, runs `verify.sh` automatically. On Tier 2/3 it writes runtime-native config to your project directory and skips the hook install.
-
-Slash commands you'll use on Tier 1: `/start`, `/research`, `/debug`, `/health`, `/critical-thinker`, etc. On Tier 2/3, slash commands depend on the harness; the methodology loads as rules or context.
-
-To install with a personal config:
-
-```bash
-cp personal-overlay/owner-config.template.md personal-overlay/owner-config.md
-# Edit owner-config.md with your name, hourly rate, payment methods, etc.
-bash install.sh --personal-config personal-overlay/owner-config.md
-```
-
-The personal config substitutes `{{OWNER_NAME}}`, `{{HOURLY_RATE}}`, `{{PAYMENT_METHODS}}`, and other placeholders in the skills that need them (the consolidated `billing` skill, `start`).
-
-To uninstall:
-
-```bash
-bash uninstall.sh
-```
-
-### Path B: `/plugin install` (shareable install for clients)
-
-For client handoffs and shareable distribution. Slash commands are namespaced under `syn` so it's clear they come from Syntaris.
-
-```bash
-# From within Claude Code:
 /plugin install syn@brianonieal
-
-# In a project directory:
-/syn:start
 ```
 
-Slash commands you'll use: `/syn:start`, `/syn:research`, `/syn:debug`, `/syn:health`, `/syn:critical-thinker`, etc. The namespace prefix is mandatory at the plugin layer; this is intentional. When a client sees `/syn:research` in your handoff documentation, they know that command came from Syntaris and not from their own setup.
+That's it. Then open any project and type `/syn:start`.
 
-For local development of the plugin form:
+### Clone and install (all runtimes)
 
-```bash
-claude --plugin-dir /path/to/Syntaris
-```
-
-This loads Syntaris as a plugin without permanent install. Use `/reload-plugins` after edits to pick up changes without restarting.
-
-### Which to use
-
-- **You, on your machine, daily**: Path A. Short commands, your own muscle memory.
-- **A client, a teammate, or anyone who isn't you**: Path B. Namespaced commands, single install command, clear provenance.
-- **Both at once**: install.sh for your daily use, plugin install for repeated client deployments. Same source repo.
-
----
-
-## Quick start (Path A)
-
-If you just want the fast path:
+For the full install with hooks, or if you're using Cursor, Windsurf, Codex CLI, or another supported runtime:
 
 ```bash
 git clone https://github.com/brianonieal/Syntaris.git
 cd Syntaris
-bash install.sh   # or ./install.ps1 on Windows
+bash install.sh       # macOS / Linux
+./install.ps1         # Windows
 ```
 
-Then in any project directory: `/start`.
+The installer auto-detects your runtime and installs accordingly. Then open any project and type `/start`.
+
+To uninstall: `bash uninstall.sh` or `./uninstall.ps1`.
+
+### Which should I use?
+
+| Method | Best for | Slash commands |
+|--------|----------|---------------|
+| `/plugin install` | Fastest setup, sharing with others | `/syn:start`, `/syn:research`, etc. |
+| `install.sh` / `install.ps1` | Full hook enforcement, personal config, non-Claude Code runtimes | `/start`, `/research`, etc. |
+
+Both methods install the same skills, hooks, and agents. You can use both at the same time.
 
 ---
 
