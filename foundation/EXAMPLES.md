@@ -9,7 +9,7 @@
 # methodology's calibration data. If you are on a different stack, treat this
 # file as a worked example of the patterns Syntaris expects (auth, DB sessions,
 # vector search, agent state) rather than as a literal blueprint. Stack-specific
-# recipes for other stacks are a v0.2.0 roadmap item.
+# recipes for other stacks are in the recipes/ directory as of v0.3.0.
 
 ---
 

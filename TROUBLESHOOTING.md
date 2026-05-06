@@ -219,7 +219,7 @@ distributions may produce different rates.
 
 ---
 
-## Plugin install path issues (v0.2.0+)
+## Plugin install path issues (v0.3.0+)
 
 ### Plugin install fails with "manifest not found"
 
@@ -248,7 +248,7 @@ If the behavior difference is unexpected, compare the actual hook config (`cat ~
 
 ---
 
-## Subagent issues (v0.2.0+)
+## Subagent issues (v0.3.0+)
 
 ### Subagent invocation hangs or times out
 
@@ -268,7 +268,7 @@ The subagents are instructed to return output in specific formats (`TARGET:`, `D
 
 The architectural rule is: subagents return structured output, parent skills write to memory files. If you observe a subagent directly writing to `RESEARCH.md`, `ERRORS.md`, `MEMORY_*`, or `DECISIONS.md`:
 
-1. That's a regression. Subagents in v0.2.0 are read-only with respect to memory files. The parent skill is responsible for the write.
+1. That's a regression. Subagents in v0.3.0 are read-only with respect to memory files. The parent skill is responsible for the write.
 2. Open an issue with the diagnostic bundle. Include the subagent name and the file that was written. This is the kind of bug that erodes the calibration loop's coherence and needs to be fixed quickly.
 
 ---

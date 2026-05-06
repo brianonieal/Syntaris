@@ -1,6 +1,6 @@
 # Syntaris Subagents Reference
 
-Syntaris v0.3.0 ships 7 subagents in `.claude/agents/`. Three were inherited from v0.1.0; four were added in v0.2.0 to migrate the noisiest skills out of the main conversation context.
+Syntaris v0.3.0 ships 7 subagents in `.claude/agents/`. Three were inherited from v0.1.0; four were added in v0.3.0 to migrate the noisiest skills out of the main conversation context.
 
 This document explains what each one does, what tools it has, what it returns, and the architectural rule that governs how parent skills interact with them.
 
@@ -10,14 +10,14 @@ This document explains what each one does, what tools it has, what it returns, a
 
 **Subagents return structured output. Parent skills write to memory files.**
 
-This is the single most important rule in the v0.2.0 subagent layer. Subagents run in fresh, isolated conversations and do not have access to the main thread's prior context. If a subagent wrote to `MEMORY_SEMANTIC.md` directly, the main thread would not see the write happen, breaking the reflexion-and-calibration loop. So instead:
+This is the single most important rule in the v0.3.0 subagent layer. Subagents run in fresh, isolated conversations and do not have access to the main thread's prior context. If a subagent wrote to `MEMORY_SEMANTIC.md` directly, the main thread would not see the write happen, breaking the reflexion-and-calibration loop. So instead:
 
 1. The parent skill (running in the main thread) decides when to delegate to a subagent.
 2. The subagent does the heavy reading or analysis in its isolated context.
 3. The subagent returns a structured response (the `TARGET:`, `DIAGNOSIS:`, `STRONGEST_OBJECTIONS:`, etc. blocks documented in each subagent file).
 4. The parent skill receives the structured response and writes any memory updates itself, in the main thread, where the user and other skills can see them.
 
-Subagents in v0.2.0 are **read-only** with respect to memory files. If you observe a subagent directly writing to `RESEARCH.md`, `ERRORS.md`, `MEMORY_*`, or `DECISIONS.md`, that's a regression and should be reported.
+Subagents in v0.3.0 are **read-only** with respect to memory files. If you observe a subagent directly writing to `RESEARCH.md`, `ERRORS.md`, `MEMORY_*`, or `DECISIONS.md`, that's a regression and should be reported.
 
 ---
 
@@ -47,7 +47,7 @@ Subagents in v0.2.0 are **read-only** with respect to memory files. If you obser
 **Returns:** structured findings with severity and remediation steps.
 **Memory writes:** none. The parent writes to `SECURITY.md`.
 
-### `research-agent` (v0.2.0)
+### `research-agent` (v0.3.0)
 
 **Used by:** the `/research` skill.
 **Job:** perform competitive intelligence and framework documentation research. Web fetches, prior-research checks, multi-source synthesis.
@@ -55,9 +55,9 @@ Subagents in v0.2.0 are **read-only** with respect to memory files. If you obser
 **Returns:** a structured 600-800 word summary with `TARGET`, `SUMMARY`, `FINDINGS`, `LIMITATIONS_OBSERVED`, `RECOMMENDATION`, `OPEN_QUESTIONS` sections.
 **Memory writes:** none. The parent writes to `RESEARCH.md`.
 
-**Why it exists:** before v0.2.0, the `/research` skill did web fetches and multi-source reading in the main conversation, accumulating context that the user paid for in token budget across the rest of the session. The subagent contains all that reading.
+**Why it exists:** before v0.3.0, the `/research` skill did web fetches and multi-source reading in the main conversation, accumulating context that the user paid for in token budget across the rest of the session. The subagent contains all that reading.
 
-### `debug-agent` (v0.2.0)
+### `debug-agent` (v0.3.0)
 
 **Used by:** the `/debug` skill (and auto-triggered after 3 consecutive failures on the same problem).
 **Job:** read `ERRORS.md` for prior diagnoses, grep the codebase, parse logs, form a root-cause hypothesis with confidence rating.
@@ -67,7 +67,7 @@ Subagents in v0.2.0 are **read-only** with respect to memory files. If you obser
 
 **Why it exists:** debug sessions tend to involve many file reads and grep operations. Containing them in a subagent keeps the main thread focused on the conversation about which fix to apply.
 
-### `health-agent` (v0.2.0)
+### `health-agent` (v0.3.0)
 
 **Used by:** the `/health` skill.
 **Job:** audit the project's foundation files (up to 22), the three memory files, the strip-coauthor hook installation, and the pattern quality in `MEMORY_SEMANTIC.md`.
@@ -77,7 +77,7 @@ Subagents in v0.2.0 are **read-only** with respect to memory files. If you obser
 
 **Why it exists:** `/health` reads up to 22 files. That's a lot of context to pull into the main thread for a periodic audit. The subagent reads, summarizes, and returns a fixed-format report.
 
-### `critical-thinker-agent` (v0.2.0, hybrid pattern)
+### `critical-thinker-agent` (v0.3.0, hybrid pattern)
 
 **Used by:** the `/critical-thinker` skill.
 **Job:** read `RESEARCH.md`, `MEMORY_SEMANTIC.md`, `DECISIONS.md`, `MEMORY_CORRECTIONS.md`. Produce a structured critique of a proposed decision.
@@ -85,7 +85,7 @@ Subagents in v0.2.0 are **read-only** with respect to memory files. If you obser
 **Returns:** structured `DECISION_UNDER_REVIEW`, `STRONGEST_OBJECTIONS`, `ALTERNATIVES_NOT_YET_CONSIDERED`, `EVIDENCE_GAPS`, `PATTERNS_THAT_APPLY`, `PATTERNS_THAT_CONTRADICT`, `PRIOR_REFLEXION`, `QUESTIONS_FOR_THE_USER` sections.
 **Memory writes:** none. The parent has the conversation with the user and writes the resulting `DEC-NNN` entry to `DECISIONS.md`.
 
-**Why it's hybrid:** `/critical-thinker` is fundamentally a back-and-forth: you propose a decision, the skill pressures you, you defend or revise. That conversation belongs in the main thread because that's where the user is. But the analytical work behind the critique (reading research, finding contradicting patterns, surfacing prior reflexion entries) is heavy reading and belongs in the subagent. The skill in v0.2.0 splits the responsibility cleanly: subagent produces critique, main thread runs the conversation.
+**Why it's hybrid:** `/critical-thinker` is fundamentally a back-and-forth: you propose a decision, the skill pressures you, you defend or revise. That conversation belongs in the main thread because that's where the user is. But the analytical work behind the critique (reading research, finding contradicting patterns, surfacing prior reflexion entries) is heavy reading and belongs in the subagent. The skill in v0.3.0 splits the responsibility cleanly: subagent produces critique, main thread runs the conversation.
 
 ---
 
@@ -117,7 +117,7 @@ This keeps the subagent from guessing. It also keeps the user-facing conversatio
 
 ## When NOT to write a subagent
 
-Subagents add overhead. A skill that only reads 1-2 files and returns a one-paragraph response should run inline in the main thread. The four skills that became subagents in v0.2.0 (research, debug, health, critical-thinker) all share these traits:
+Subagents add overhead. A skill that only reads 1-2 files and returns a one-paragraph response should run inline in the main thread. The four skills that became subagents in v0.3.0 (research, debug, health, critical-thinker) all share these traits:
 
 - They read at least 5 files (and sometimes 22).
 - They invoke external tools (web fetch, grep, bash).
@@ -132,7 +132,7 @@ Skills that don't have all of these traits should stay inline. Adding subagent o
 
 When Syntaris is installed via the plugin path (`/plugin install syn@brianonieal`), the subagents have one restriction the install.sh form does not: per Anthropic's plugin spec, plugin subagents do not support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields.
 
-This affects future subagents that need to attach their own hooks or MCP server connections. None of the v0.2.0 subagents use these fields, so the plugin form is fully equivalent for now. Future versions that introduce subagents with these capabilities will need to keep them in the install.sh form or split them into separate distribution.
+This affects future subagents that need to attach their own hooks or MCP server connections. None of the v0.3.0 subagents use these fields, so the plugin form is fully equivalent for now. Future versions that introduce subagents with these capabilities will need to keep them in the install.sh form or split them into separate distribution.
 
 ---
 

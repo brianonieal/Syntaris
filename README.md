@@ -206,7 +206,7 @@ Hooks that can block tool calls (exit 2): `enforce-tests`, `block-dangerous`. Ev
 
 ## Subagents
 
-Syntaris ships 7 subagents. The first 3 are gate-close QA helpers (write to specific files, run specific checks). The other 4 are analytical heavy-lifters introduced in v0.2.0 to keep main-thread context clean for the noisiest skills.
+Syntaris ships 7 subagents. The first 3 are gate-close QA helpers (write to specific files, run specific checks). The other 4 are analytical heavy-lifters introduced in v0.3.0 to keep main-thread context clean for the noisiest skills.
 
 | Subagent | Used by | Purpose |
 |---|---|---|
@@ -215,10 +215,10 @@ Syntaris ships 7 subagents. The first 3 are gate-close QA helpers (write to spec
 | `security-auditor` | security skill | Audit code for OWASP-class vulnerabilities |
 | `research-agent` | `/research` | Web fetches, RESEARCH.md reads, returns structured summary |
 | `debug-agent` | `/debug` | Log parsing, ERRORS.md reads, returns root-cause diagnosis |
-| `health-agent` | `/health` | 22-file foundation audit, returns structured report |
+| `health-agent` | `/health` | 23-file foundation audit, returns structured report |
 | `critical-thinker-agent` | `/critical-thinker` | Reads research and prior decisions, returns structured critique |
 
-**Why the four new subagents matter.** The skills they wrap are the most context-hungry in the system. `/research` does web fetches and reads RESEARCH.md. `/debug` reads ERRORS.md and greps the codebase. `/health` reads up to 22 foundation files. `/critical-thinker` reads RESEARCH.md, MEMORY_SEMANTIC.md, DECISIONS.md, and MEMORY_CORRECTIONS.md. Before v0.2.0 all of that read activity happened in your main conversation, accumulating context until you hit the warn threshold. Now the heavy reading happens inside an isolated subagent and only the structured summary returns to your main thread.
+**Why the four new subagents matter.** The skills they wrap are the most context-hungry in the system. `/research` does web fetches and reads RESEARCH.md. `/debug` reads ERRORS.md and greps the codebase. `/health` reads up to 22 foundation files. `/critical-thinker` reads RESEARCH.md, MEMORY_SEMANTIC.md, DECISIONS.md, and MEMORY_CORRECTIONS.md. Before v0.3.0 all of that read activity happened in your main conversation, accumulating context until you hit the warn threshold. Now the heavy reading happens inside an isolated subagent and only the structured summary returns to your main thread.
 
 **The architectural rule.** Subagents return structured output. The parent skill writes to memory files. This keeps the reflexion-and-calibration loop coherent in one place (the main thread sees every memory write) while still getting the context-isolation win for the noisy reads.
 
@@ -238,7 +238,7 @@ Syntaris/
     hooks/hooks.json        Hook event bindings (used by plugin path)
     agents/                 7 subagents
     settings.json           Hook event bindings (used by install.sh path)
-  foundation/               22 templates (CLAUDE.md, CONTRACT.md, MEMORY_*, etc.)
+  foundation/               23 templates (CLAUDE.md, CONTRACT.md, CLIENTS.md.template, MEMORY_*, etc.)
   personal-overlay/         Template for per-user config
   docs/                     HOOKS.md and other reference docs
   install.sh, install.ps1
@@ -255,7 +255,6 @@ Syntaris/
 Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntaris v8 through v11.4) are documented in `CHANGELOG.md` and `MIGRATION.md` for users coming from a private install.
 
 - **v0.1.0** - first public release; README cleanup, security baseline, version reset
-- **v0.2.0** - subagent migration and plugin manifest for `/plugin install` distribution
 - **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark. **This version.**
 - **v0.4.0** - planned: semantic gate cluster (LSP simulation hook, mutation testing, property-based test scaffolding, spec-to-test traceability, diagnostic delta in reflexion)
 - **v0.5.0** - planned: full benchmark with 30 tasks, 3 runs per condition, audited task selection

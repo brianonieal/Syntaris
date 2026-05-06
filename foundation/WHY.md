@@ -4,7 +4,7 @@
 # Stack-specific: Next.js + FastAPI + Supabase + LangGraph + Plaid
 #
 # STACK-SPECIFIC FILE
-# Some sections below justify decisions that are specific to the v0.2.0 stack
+# Some sections below justify decisions that are specific to the v0.3.0 reference stack
 # (Voyage AI embeddings for finance, Plaid as the data integration, asyncpg
 # connection strategy). The methodological reasoning - why gates, why memory,
 # why Reflexion, why /clear over /compact - is universal. The stack-specific
