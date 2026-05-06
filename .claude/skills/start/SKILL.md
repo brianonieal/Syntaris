@@ -93,59 +93,41 @@ This is the experienced-user-vs-casual-coder branch. The first time someone runs
 
 The flag is recorded in `foundation/CLAUDE.md` as `ONBOARDING_MODE: concise` or `ONBOARDING_MODE: standard`. Future sessions read this and behave accordingly.
 
-## STEP 4: WHAT ARE YOU BUILDING?
+## STEP 4: MEMORY DUMP
 
 Ask:
 
-> "What are you building? (web app / API / CLI tool / mobile app / other / specify recipe directly)"
+> "Tell me everything about what you want to build. Don't worry about structure or technical terms - just dump it all: the idea, who it's for, what it should do, any constraints, anything you've already tried."
 
-The five options funnel into recipe selection without forcing the user to know stack jargon.
+Let the user write as much or as little as they want. Do not interrupt. Wait for them to finish.
 
-### Option: web app
+Once they're done, acknowledge what you heard in 2-3 sentences. Then proceed to Step 4a.
 
-Default recipe: `web-app-starter`. Then ask follow-up:
+### Step 4a: Stack recommendation
 
-> "Frontend framework? (React / Vue / Svelte / Plain HTML)"
+Based on the user's dump, analyze what they described and present 2-3 tech stack options. For each option, present:
 
-Selection loads sub-recipe:
-- React → `recipes/web-app-starter/react/`
-- Vue → `recipes/web-app-starter/vue/`
-- Svelte → `recipes/web-app-starter/svelte/` *(populated by Claude Code build, see BUILD_NEXT.md)*
-- Plain HTML → `recipes/web-app-starter/plain/` *(populated by Claude Code build)*
+- **Stack name** - a short label (e.g., "Next.js + Supabase", "Vite + Express + Postgres")
+- **Why it fits** - 1-2 sentences connecting the stack to what they described
+- **Trade-offs** - 1-2 honest downsides or constraints
+- **Recipe** - which Syntaris recipe this maps to (read from `recipes/` directory)
 
-For React, ask one more:
+If the project clearly fits one stack, lead with that as the recommendation and present alternatives as "also worth considering." If it's ambiguous, present options without ranking and ask the user to pick.
 
-> "Full-stack stack? (Next.js + Supabase / Next.js + FastAPI + Supabase (Brian's reference stack) / Vite + Express / I'll configure manually)"
+For projects that match Brian's reference stack (Next.js + FastAPI + Supabase + LangGraph), mention it has the most calibration data in Syntaris. Don't push it if the project doesn't need a Python backend or AI agents.
 
-The "Brian's reference stack" framing is honest about provenance. Casual coders skip it; power users recognize it.
+End with:
 
-### Option: API
+> "Which stack sounds right, or do you want to go a different direction?"
 
-Default recipe: `api-starter`. Follow-up:
+The user picks. Map their choice to the corresponding recipe:
+- `recipes/web-app-starter/react/`, `vue/`, `svelte/`, `plain/`
+- `recipes/api-starter/typescript/`, `python/`, `go/`
+- `recipes/python-cli/`
+- `recipes/mobile-starter/swift/`, `kotlin/`, `react-native/`, `flutter/`
+- `recipes/bring-your-own/` (if nothing fits or user wants manual)
 
-> "Language? (TypeScript / Python / Go / Other)"
-
-Sub-recipes load accordingly. Python defaults to FastAPI, TypeScript to Express or Fastify (asked), Go to Gin or Echo (asked).
-
-### Option: CLI tool
-
-Default recipe: `python-cli`. No follow-up - Python CLI is the simplest path. If the user wants a different language, they can pick "specify recipe directly."
-
-### Option: mobile app
-
-Default recipe: `mobile-starter`. Follow-up:
-
-> "Native or cross-platform? (Swift / Kotlin / React Native / Flutter)"
-
-*(Note: mobile sub-recipes are populated by Claude Code build per BUILD_NEXT.md - for v0.3.0 zip release, mobile-starter is a stub.)*
-
-### Option: other
-
-Load `recipes/bring-your-own/`. Tell the user this is the empty recipe - they'll fill in CONTRACT.md fields manually during the interrogation.
-
-### Option: specify recipe directly
-
-List all available recipes (read from `recipes/` directory). Let the user pick by name. This is the power-user escape hatch.
+If the user names a stack that doesn't have a recipe yet, use `bring-your-own` and tell them the recipe is empty but Syntaris will still run the gates.
 
 ## STEP 5: CONFIRM AND HAND OFF
 
@@ -182,7 +164,7 @@ After Step 1 ("New project"):
 After Step 2 ("Client work"):
 > "Because this is client work, we'll collect billing info now. Syntaris will generate invoices automatically at gate close based on actual hours from the calibration loop. You review every invoice before sending."
 
-After Step 4 ("Web app, React, Next.js + FastAPI + Supabase"):
-> "You picked Brian's reference stack. This is the most heavily-tested combination in Syntaris. If you're not sure, this is a safe default. You can change later by editing CONTRACT.md."
+After Step 4 (stack selected):
+> "Based on what you described, we picked [STACK]. This recipe comes with pre-configured patterns for [key capability]. You can always change it later by editing CONTRACT.md."
 
 These explanations are 1-3 sentences each. Don't lecture. The casual coder learns by doing.
