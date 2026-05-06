@@ -96,6 +96,39 @@ a "bash couldn't read the file" message.
 
 ---
 
+## OBSERVED: `.sh` hooks fail bash syntax check with "unexpected end of file"
+
+**Symptom.** On Windows with WSL installed and working, `verify.ps1`'s
+layer 2 reports every `.sh` hook as a syntax error. Running with
+`-VerboseMode` shows `unexpected end of file` in the error output.
+This is different from the "bash couldn't read the file" warning (which
+means bash can't find or open the file at all).
+
+**Cause.** `git clone` on Windows with `core.autocrlf=true` (the default)
+converts LF line endings to CRLF. Bash cannot parse scripts that have
+`\r` at the end of every line. The `\r` is treated as part of the last
+command on each line, causing cascading parse failures that surface as
+"unexpected end of file."
+
+**Fix.** The v0.3.0 repo now includes a `.gitattributes` file that forces
+`*.sh` files to LF on checkout. If you cloned before this fix:
+
+```bash
+git rm --cached -r .
+git reset HEAD -- .
+git checkout -- .
+```
+
+Then re-run `install.ps1` (which now converts `.sh` files to LF during
+install) and `verify.ps1` (which now creates a LF temp copy before
+running `bash -n` on Windows).
+
+**Prevention.** `.gitattributes` forces `*.sh` to `eol=lf`. `install.ps1`
+strips `\r` from `.sh` files during copy. `verify.ps1` detects CRLF in
+`.sh` files and tests a LF temp copy instead.
+
+---
+
 ## OBSERVED: PowerShell scripts blocked by execution policy
 
 **Symptom.** When running `install.ps1` or any other `.ps1` script from

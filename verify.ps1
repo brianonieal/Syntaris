@@ -267,35 +267,62 @@ if (Get-Command bash -ErrorAction SilentlyContinue) {
 
 if ($bashWorks) {
     foreach ($h in $hookNames) {
-        # Forward-slash literal works on both Windows (PowerShell normalizes)
-        # and non-Windows (forward slash is native). A backslash literal here
-        # ends up as a literal character in the filename on Linux PS 7.
         $hostPath = Join-Path $InstallRoot "hooks/$h.sh"
         if (Test-Path $hostPath) {
-            # On non-Windows the host path is already POSIX; hand it to bash
-            # directly. On Windows we need to translate C:\... into /c/...
-            # (Git Bash) or /mnt/c/... (WSL) because bash expects POSIX paths.
             $unixPath = $hostPath -replace '\\', '/'
             if ($unixPath -match '^([A-Za-z]):(.*)') {
-                # Windows host: drive letter present; try Git Bash then WSL.
+                # Windows: CRLF line endings break bash parsing. Write a
+                # temp copy with LF endings and test that instead of the
+                # installed file (which git may have checked out as CRLF).
                 $drive = $matches[1].ToLower()
                 $rest = $matches[2]
                 $gitBashPath = "/$drive$rest"
                 $wslPath = "/mnt/$drive$rest"
-                $out = & bash -n $gitBashPath 2>&1
-                if ($LASTEXITCODE -eq 0) {
-                    Pass "bash syntax: $h.sh"
+
+                $tmpFile = $null
+                $needsTmp = $false
+                $content = [System.IO.File]::ReadAllText($hostPath)
+                if ($content.Contains("`r`n")) {
+                    $needsTmp = $true
+                    $tmpFile = [System.IO.Path]::GetTempFileName() + ".sh"
+                    $lfContent = $content -replace "`r`n", "`n"
+                    [System.IO.File]::WriteAllText($tmpFile, $lfContent, [System.Text.UTF8Encoding]::new($false))
+                }
+
+                $passed = $false
+                if ($needsTmp) {
+                    # Use the LF temp copy for syntax check
+                    $tmpUnix = $tmpFile -replace '\\', '/'
+                    if ($tmpUnix -match '^([A-Za-z]):(.*)') {
+                        $td = $matches[1].ToLower()
+                        $tr = $matches[2]
+                        $out = & bash -n "/$td$tr" 2>&1
+                        if ($LASTEXITCODE -eq 0) { $passed = $true }
+                        else {
+                            $out = & bash -n "/mnt/$td$tr" 2>&1
+                            if ($LASTEXITCODE -eq 0) { $passed = $true }
+                        }
+                    }
                 } else {
-                    $out2 = & bash -n $wslPath 2>&1
-                    if ($LASTEXITCODE -eq 0) {
-                        Pass "bash syntax: $h.sh"
-                    } else {
-                        if ($VerboseMode) { Warn "bash syntax: $h.sh - $out" }
-                        else { Warn "bash syntax: $h.sh (skipped: bash couldn't read the file)" }
+                    $out = & bash -n $gitBashPath 2>&1
+                    if ($LASTEXITCODE -eq 0) { $passed = $true }
+                    else {
+                        $out = & bash -n $wslPath 2>&1
+                        if ($LASTEXITCODE -eq 0) { $passed = $true }
                     }
                 }
+
+                if ($passed) {
+                    Pass "bash syntax: $h.sh"
+                } else {
+                    if ($VerboseMode) { Warn "bash syntax: $h.sh - $out" }
+                    else { Warn "bash syntax: $h.sh (skipped: bash couldn't read the file)" }
+                }
+
+                if ($tmpFile -and (Test-Path $tmpFile)) {
+                    Remove-Item $tmpFile -Force -ErrorAction SilentlyContinue
+                }
             } else {
-                # Non-Windows host: the POSIX path is already correct.
                 $out = & bash -n $unixPath 2>&1
                 if ($LASTEXITCODE -eq 0) {
                     Pass "bash syntax: $h.sh"

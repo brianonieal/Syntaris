@@ -1,0 +1,13 @@
+# Force LF line endings for shell scripts so they work on WSL/Git Bash
+# regardless of core.autocrlf setting.
+*.sh text eol=lf
+detect-runtime.sh text eol=lf
+
+# PowerShell scripts can safely use CRLF (native Windows)
+*.ps1 text eol=crlf
+
+# Keep JSON and Markdown as LF for consistency
+*.json text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf

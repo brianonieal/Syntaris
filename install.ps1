@@ -270,10 +270,17 @@ foreach ($skillDir in $skillDirs) {
     Write-Host "  [OK] skills\$($skillDir.Name)" -ForegroundColor Green
 }
 
-# Hook scripts
+# Hook scripts (convert .sh files to LF endings for bash compatibility)
 $hookFiles = Get-ChildItem (Join-Path $ExtractedRoot ".claude\hooks\*")
 foreach ($file in $hookFiles) {
-    Copy-Item $file.FullName (Join-Path $InstallRoot "hooks\$($file.Name)") -Force
+    $dest = Join-Path $InstallRoot "hooks\$($file.Name)"
+    if ($file.Extension -eq ".sh") {
+        $text = [System.IO.File]::ReadAllText($file.FullName)
+        $lfText = $text -replace "`r`n", "`n"
+        [System.IO.File]::WriteAllText($dest, $lfText, [System.Text.UTF8Encoding]::new($false))
+    } else {
+        Copy-Item $file.FullName $dest -Force
+    }
     Write-Host "  [OK] hooks\$($file.Name)" -ForegroundColor Green
 }
 
