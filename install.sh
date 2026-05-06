@@ -340,10 +340,22 @@ for skill_dir in "$SRC_ROOT/.claude/skills/"*/; do
 done
 
 # Hooks
+# Strip CRLF from .sh files during copy so bash can parse them on Windows
+# checkouts where core.autocrlf=true converted LF to CRLF in the working tree.
+# .ps1 files keep CRLF (PowerShell prefers it).
 for hook_file in "$SRC_ROOT/.claude/hooks/"*; do
   [[ -f "$hook_file" ]] || continue
   name="$(basename "$hook_file")"
-  cp -f "$hook_file" "$INSTALL_ROOT/hooks/$name"
+  case "$name" in
+    *.sh)
+      # Convert CRLF -> LF on the fly. tr is in every POSIX environment.
+      tr -d '\r' < "$hook_file" > "$INSTALL_ROOT/hooks/$name"
+      chmod +x "$INSTALL_ROOT/hooks/$name" 2>/dev/null
+      ;;
+    *)
+      cp -f "$hook_file" "$INSTALL_ROOT/hooks/$name"
+      ;;
+  esac
   ok "hooks/$name"
 done
 
