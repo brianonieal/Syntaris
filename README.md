@@ -1,6 +1,8 @@
 # Syntaris
 
-**v0.4.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
+[![validate](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml/badge.svg)](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml)
+
+**v0.4.1** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
 
 Syntaris breaks software projects into five mechanically-gated phases, accumulates structured calibration data across sessions so estimates improve with each gate, and runs across eight AI coding harnesses at three enforcement tiers.
 
@@ -229,7 +231,8 @@ Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntari
 
 - **v0.1.0** - first public release; README cleanup, security baseline, version reset
 - **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark
-- **v0.4.0** - diagnostic delta in calibration, spec-to-test traceability, `/validate` skill (103 tests), conversational `/start` rewrite, competitive landscape mode in `/research`, README install simplification, install.sh CRLF fix. **This version.**
+- **v0.4.0** - diagnostic delta in calibration, spec-to-test traceability, `/validate` skill (103 tests), conversational `/start` rewrite, competitive landscape mode in `/research`, README install simplification, install.sh CRLF fix
+- **v0.4.1** - wire `/validate` into the methodology: build-rules gate-close integration (Layer 1), GitHub Actions CI on every push (Layer 2), health-agent freshness check via skill-telemetry log (Layer 3). **This version.**
 - **v0.5.0** - planned: pattern extraction from MEMORY_CORRECTIONS.md (auto-surface variance patterns into MEMORY_SEMANTIC.md), task-level Outcomes (success criteria + grader + retry within a gate), full 30-task benchmark
 - **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards) plus `/start --quick` mode
 - **v0.7.0** - planned: calibration evidence (auto-generated learning curve from accumulated patterns, populated MEMORY_CORRECTIONS.md example)

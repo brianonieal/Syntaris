@@ -142,6 +142,9 @@ for skill_dir in "$SKILLS_DIR"/*/; do
       health)
         kw='(health check|audit blueprint|blueprint audit|audit syntaris|syntaris audit)'
         ;;
+      validate)
+        kw='(run validation|harness check|full test sweep|validate (the )?(harness|install|skills|hooks))'
+        ;;
       research)
         kw='(competitive (intel|intelligence|analysis)|research (the )?market|look up (the )?competitors?|competitor analysis)'
         ;;

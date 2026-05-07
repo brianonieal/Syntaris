@@ -122,7 +122,52 @@ else
   FAILURES+=("05.11 HOOKS.md")
 fi
 
-# 05.12 - Plugin manifest is valid JSON
+# 05.12a - build-rules skill references /validate at gate close (Layer 1)
+TOTAL=$((TOTAL+1))
+if grep -q "/validate" "$R/.claude/skills/build-rules/SKILL.md" 2>/dev/null; then
+  echo "  [PASS] 05.12a build-rules skill references /validate"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12a build-rules skill missing /validate ref at gate close"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12a build-rules /validate ref")
+fi
+
+# 05.12b - foundation/CLAUDE.md gate-close protocol references /validate
+TOTAL=$((TOTAL+1))
+if grep -q "/validate" "$R/foundation/CLAUDE.md" 2>/dev/null; then
+  echo "  [PASS] 05.12b foundation/CLAUDE.md references /validate at gate close"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12b foundation/CLAUDE.md missing /validate ref"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12b foundation/CLAUDE.md /validate ref")
+fi
+
+# 05.12c - health-agent checks /validate freshness (Layer 3)
+TOTAL=$((TOTAL+1))
+if grep -q "validate" "$R/.claude/agents/health-agent.md" 2>/dev/null \
+   && grep -q "skill-log" "$R/.claude/agents/health-agent.md" 2>/dev/null; then
+  echo "  [PASS] 05.12c health-agent checks /validate freshness"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12c health-agent missing /validate freshness check"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12c health-agent /validate freshness")
+fi
+
+# 05.12d - GitHub Actions CI workflow exists (Layer 2)
+TOTAL=$((TOTAL+1))
+if [[ -f "$R/.github/workflows/validate.yml" ]]; then
+  echo "  [PASS] 05.12d GitHub Actions validate.yml exists"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12d GitHub Actions validate.yml missing"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12d CI workflow")
+fi
+
+# 05.13 - Plugin manifest is valid JSON
 TOTAL=$((TOTAL+1))
 PLUGIN="$R/.claude-plugin/plugin.json"
 PLUGIN_FOR_PY="$PLUGIN"

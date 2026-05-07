@@ -62,6 +62,27 @@ For each flagged pattern, note: pattern name, category (stale | contradicted | s
 
 Read `foundation/RESEARCH.md`. Find the most recent "Date:" entry. If older than 90 days, flag as STALE.
 
+### Step 6: Validation freshness
+
+Read `~/.claude/state/skill-log.jsonl` (the skill-telemetry log). Find the most recent invocation of the `validate` skill. Apply two thresholds:
+
+- **STALE**: last `/validate` invocation older than 14 days
+- **NEVER**: no `/validate` invocation found in the log
+
+If skill-log.jsonl doesn't exist (skill-telemetry hook not yet installed or hasn't run), report VALIDATION = UNKNOWN. Don't treat that as a failure — it just means we lack data.
+
+Bash for inspection:
+
+```bash
+LOG="$HOME/.claude/state/skill-log.jsonl"
+if [ -f "$LOG" ]; then
+  # skill-telemetry log format: {"ts":"...","skill":"validate","session":"...","prompt_hint":"..."}
+  grep '"skill":"validate"' "$LOG" | tail -1 | grep -oE '"ts":"[^"]*"'
+fi
+```
+
+If the parsed timestamp is older than 14 days from today, report STALE. If no `"skill":"validate"` line exists in the log, report NEVER. If the log file doesn't exist, report UNKNOWN.
+
 ## What you return
 
 ```
@@ -88,6 +109,8 @@ Pattern Quality:
     - <pattern>: <current confidence, line N>
 
 Research Staleness: <CURRENT | STALE: last entry <date>>
+
+Validation Freshness: <CURRENT: last run <date> | STALE: last run <date>, >14 days | NEVER: /validate has not been run | UNKNOWN: skill-log not available>
 
 OVERALL: <HEALTHY | NEEDS_ATTENTION | UNHEALTHY>
 

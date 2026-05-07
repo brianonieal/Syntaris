@@ -4,6 +4,50 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.4.1] - 2026-05-07 - Wire `/validate` into the methodology
+
+Patch release that integrates the v0.4.0 `/validate` skill more deeply
+into the harness. v0.4.0 shipped `/validate` as an installed skill
+sitting next to the others; v0.4.1 makes it a first-class part of
+the gate-close protocol with discovery and CI backstops.
+
+### Added
+
+- **Layer 1 - build-rules integration.** `.claude/skills/build-rules/SKILL.md`
+  gate-close protocol now lists "/validate" as step 1, replacing the
+  older "verify all tests for this gate pass." This closes the drift
+  between `foundation/CLAUDE.md` (already mentioned /validate) and the
+  build-rules skill (didn't).
+- **Layer 2 - GitHub Actions CI.** `.github/workflows/validate.yml`
+  runs the full /validate suite on every push to main and every PR.
+  Catches regressions before they ship. Build status visible on the
+  repo's Actions tab and badge-able in the README.
+- **Layer 3 - health-agent integration.** `health-agent` now reads
+  `~/.claude/state/skill-log.jsonl` to find the most recent /validate
+  invocation. Reports `Validation Freshness: CURRENT | STALE (>14
+  days) | NEVER | UNKNOWN` in the health audit. Closes the discovery
+  loop so users know when their harness validation is going stale.
+- **Skill-telemetry curated keywords for /validate.** Phrases like
+  "run validation", "harness check", "full test sweep" now trigger
+  log entries for /validate, not just literal "/validate".
+- **Cross-file tests for the layers.** Added `05.12a-d` to
+  `tests/05-cross-file.sh`: build-rules references /validate,
+  foundation/CLAUDE.md references /validate, health-agent checks
+  /validate freshness, GitHub Actions workflow exists.
+
+### Changed
+
+- Plugin manifest version `0.4.0` → `0.4.1`.
+- `SYNTARIS_VERSION` env var `v0.4.0` → `v0.4.1`.
+
+### Migration
+
+None. v0.4.0 → v0.4.1 is purely additive. Existing installs continue
+working; running install.sh or pulling the plugin gets the new
+references.
+
+---
+
 ## [0.4.0] - 2026-05-06 - Diagnostic delta + spec-to-test traceability + `/validate`
 
 Smaller release than v0.3.0 but adds two pieces of methodology

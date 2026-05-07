@@ -90,6 +90,7 @@ Get-ChildItem $skillsDir -Directory -ErrorAction SilentlyContinue | ForEach-Obje
             'build-rules'      { '(new (project|app|build)|start (a|the) build|plan (a|the) (app|build|project)|build (a|an) (app|tool)|make (a|an) (app|tool))' }
             'billing'          { '(invoice|billable hours|hours worked|how many hours|bill (for|the) client|timelog|hand[ -]?off|deliver to client|client handoff|project complete|new client|client (intake|onboarding)|send (the )?proposal|draft (a )?contract)' }
             'health'           { '(health check|audit blueprint|blueprint audit|audit syntaris|syntaris audit)' }
+            'validate'         { '(run validation|harness check|full test sweep|validate (the )?(harness|install|skills|hooks))' }
             'research'         { '(competitive (intel|intelligence|analysis)|research (the )?market|look up (the )?competitors?|competitor analysis)' }
             'costs'            { '(how much will (this|it) cost|cost (estimate|projection|forecast)|monthly bill|pricing for)' }
             'start'            { '(resume (the|this) project|pick (this|it) up|continue from|where did we leave)' }

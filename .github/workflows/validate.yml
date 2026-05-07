@@ -1,0 +1,53 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # allow manual runs from the Actions tab
+
+jobs:
+  validate:
+    name: /validate (103 tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          # We need history because some tests check git operations.
+          # The full history isn't needed though; depth=2 covers HEAD vs HEAD~1.
+          fetch-depth: 2
+
+      - name: Verify shell environment
+        run: |
+          echo "bash version: $(bash --version | head -1)"
+          echo "OS: $(uname -a)"
+          which bash
+          which file
+          which python3
+
+      - name: Make scripts executable
+        run: |
+          chmod +x .claude/skills/validate/run-all.sh
+          chmod +x .claude/skills/validate/tests/*.sh
+          chmod +x .claude/skills/validate/lib.sh
+          chmod +x .claude/hooks/*.sh
+          chmod +x install.sh uninstall.sh verify.sh
+
+      - name: Run /validate suite
+        env:
+          # CI doesn't have a project test runner, so 10-project-tests.sh skips.
+          # The 09-install.sh test creates its own fake $HOME with mktemp -d.
+          SYNTARIS_ROOT: ${{ github.workspace }}
+        run: |
+          bash .claude/skills/validate/run-all.sh
+
+      - name: Print summary on failure
+        if: failure()
+        run: |
+          echo "::error::/validate failed. See log above for which test(s) failed."
+          echo "To reproduce locally:"
+          echo "  bash .claude/skills/validate/run-all.sh"

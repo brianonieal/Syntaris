@@ -214,7 +214,12 @@ that gate. Every gate needs its own GO.
 
 When a gate's work is done:
 
-1. Verify all tests for this gate pass
+1. **Run /validate.** Runs the harness validation suite (103 tests
+   covering hooks, calibration math, stale references, install
+   round-trip) plus the user-project test suite (pytest / vitest /
+   jest / go / cargo, auto-detected). Fails block the gate. This
+   replaces the older "verify all tests for this gate pass" step
+   because /validate covers both the harness and the project tests.
 2. Run /security (hook runs anyway at production gate)
 3. Run /performance (hook runs anyway at production gate)
 4. **Update VERSION_ROADMAP.md for the closing gate.** Edit the row for
