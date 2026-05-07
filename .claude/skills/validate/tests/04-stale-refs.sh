@@ -60,16 +60,19 @@ COUNT="${COUNT:-0}"
 assert_eq "04.6 No old onboarding-mode gatekeeping in /start" "0" "$COUNT"
 
 # 04.7 - v0.5.1+ gate model: SCOPE CONFIRMED retired in active code
-# (Self-exclude tests/04-stale-refs.sh since it contains the literal pattern.)
+# Exclusions: history/planning docs (CHANGELOG, MIGRATION, BUILD_NEXT),
+# this self-test file. Active skills + hooks + foundation templates must
+# not mention SCOPE CONFIRMED.
 COUNT=$(grep -rln "SCOPE CONFIRMED" \
   --include="*.md" --include="*.sh" --include="*.ps1" \
   --exclude-dir=.git --exclude-dir=archive \
   "$R" 2>/dev/null \
   | grep -v "CHANGELOG.md" \
   | grep -v "MIGRATION.md" \
+  | grep -v "BUILD_NEXT.md" \
   | grep -v "tests/04-stale-refs.sh" \
   | wc -l)
-assert_eq "04.7 No SCOPE CONFIRMED in active code (renamed to CONFIRMED at gate level, BUILD APPROVED at project level)" "0" "$COUNT"
+assert_eq "04.7 No SCOPE CONFIRMED in active skills/hooks/foundation" "0" "$COUNT"
 
 # 04.8 - v0.5.1+ gate model: TESTS APPROVED retired in active code
 # Exclusions: history docs (CHANGELOG, MIGRATION, BUILD_NEXT), version-table
