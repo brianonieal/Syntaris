@@ -4,6 +4,55 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.5.2] - 2026-05-07 - Adopt-mode in /start + README onboarding pass
+
+Patch release. Two pieces of work, both about onboarding friction
+that surfaced from the first real `/plugin install` attempt and the
+README claims that didn't match reality.
+
+### Added
+
+- **Adopt-mode in `/start`.** New branch in Step 1 for projects
+  that already have code but no Syntaris. Detects existing project
+  files (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`,
+  `requirements.txt`, etc.) and the absence of a populated
+  CONTRACT.md. Skips Steps 3-5 (idea dump, competitive landscape,
+  from-scratch stack recommendation) since the project exists.
+  Bootstraps CONTRACT.md and a partial SPEC.md from detected files +
+  user answers, then hands off to `/build-rules`.
+- **Forward-only roadmap shortcut in `/build-rules`.** When `/start`
+  hands off in adopt-mode, `/build-rules` skips Steps 2-4 (the
+  dump, build-type, clarifying questions) and asks one question:
+  "where are we going from here?" Roadmap starts at the next
+  version after current, not v0.0.0. No imaginary historical gates
+  get backfilled.
+- **/validate test coverage.** New `tests/13-adopt-mode.sh` (5 tests)
+  verifying adopt-mode wiring across `/start` and `/build-rules`.
+  Suite is now 129/129 (was 124).
+
+### Changed
+
+- **README install section overhauled.** Six new subsections:
+  Prerequisites (workspace trust + folder requirement, addressing
+  the WorkspaceTrustError that surfaced on first plugin-install
+  attempt), Verify the install worked (`/validate` + `verify.sh`),
+  Project-level vs install-level (global skills/hooks/agents vs
+  per-project foundation/), Adopting Syntaris in an existing
+  project (now consistent with the actual `/start` adopt branch),
+  Uninstall (plugin + clone paths), When something doesn't work
+  (common errors with triage paths). Total: +55/-7 lines.
+- Plugin manifest version `0.5.1` → `0.5.2`.
+- `SYNTARIS_VERSION` env var bumped.
+
+### Migration
+
+v0.5.1 → v0.5.2 is purely additive. Existing projects keep working.
+The adopt-mode branch only fires when CONTRACT.md is missing AND
+project files are detected, so resume mode and from-scratch mode
+both behave exactly as before.
+
+---
+
 ## [0.5.1] - 2026-05-07 - Gate model evolution + conversational /start
 
 The methodology gate model evolved alongside a conversational `/start`

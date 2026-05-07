@@ -3,7 +3,7 @@ name: start
 description: "Session orchestration entry point. Greets the user, detects runtime, figures out if they're starting fresh or resuming, handles project logistics, gets them talking about what they want to build, runs competitive landscape and stack recommendation with critical-thinker pressure-testing, then hands off to /build-rules. Always the first command at the start of any project session."
 ---
 
-# START SKILL - Syntaris v0.5.1
+# START SKILL - Syntaris v0.5.2
 # Invoke: /start
 
 ## TONE
@@ -22,13 +22,18 @@ Before saying anything, detect which runtime you're in. Run `.claude/lib/detect-
 
 Print one short line:
 
-> "Syntaris v0.5.1 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
+> "Syntaris v0.5.2 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
 
 For Tier 2/3, add one sentence about what's different. Don't dwell on it.
 
-## STEP 1: GREETING + NEW OR RESUMING?
+## STEP 1: GREETING + NEW / ADOPT / RESUMING?
 
-Check if `foundation/CONTRACT.md` exists and has content beyond the template.
+Check `foundation/CONTRACT.md`:
+
+- **Has real content** → resuming (skip to "If resuming")
+- **Missing or template-only** → check the project folder. Look for any of: `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `pom.xml`, `src/`, `app/`, `apps/`, an existing `README.md` with project content, or `.git/` with commit history.
+  - **Found project files** → adopting (skip to "If adopting an existing project")
+  - **Folder is fresh / scaffold-only** → new (skip to "If new")
 
 ### If resuming (CONTRACT.md has real content):
 
@@ -38,7 +43,52 @@ Read `foundation/MEMORY_EPISODIC.md` for the most recent session. Open warmly wi
 
 Confirm before proceeding. Skip the rest of this skill once you've reoriented.
 
-### If new (CONTRACT.md empty or missing):
+### If adopting an existing project:
+
+The user is bringing Syntaris to code that already exists. Skip the from-scratch flow; bootstrap from what's already there.
+
+Open with the adopt greeting:
+
+> "Good to see you. I'm Syntaris - I'll be the engineer on this one. Looks like there's already code here - I'll work backwards from what you've built rather than starting from scratch.
+>
+> Quick logistics first: is this a personal project, or are you building it for a client?"
+
+Once they answer, move through Step 2 (logistics) normally.
+
+After Step 2, **skip Steps 3-5** (the idea dump, competitive landscape, and from-scratch stack recommendation). Instead, run the adopt-mode bootstrap:
+
+#### Adopt-mode bootstrap
+
+1. **Detect what's there.** Read in this order, surfacing what you find:
+   - `package.json` / `pyproject.toml` / `Cargo.toml` / `go.mod` etc. for the stack
+   - `README.md` for the project's stated purpose, current state
+   - `tests/`, `__tests__/`, `*.test.*`, `*.spec.*` for existing test setup
+   - `.github/workflows/` or other CI for deployment hints
+   - Recent git log (`git log --oneline -10`) for what's been worked on lately
+
+2. **Present what you found, ask the user to fill the gaps.** Frame it as a working summary, not a quiz:
+
+   > "Here's what I'm seeing in this codebase:
+   >
+   > - **Stack:** [detected stack, e.g., 'Next.js 14 + Supabase + Drizzle']
+   > - **Test setup:** [what's there, or 'no test runner detected']
+   > - **Recent work:** [from git log, e.g., 'last 5 commits look like dashboard work']
+   >
+   > Couple of things I can't tell from the code alone:
+   >
+   > - What version is this at currently? Is it shipped, in staging, or still local?
+   > - What's the next thing you want to ship?
+   > - Anything important I should know that isn't obvious from the files?"
+
+3. **Bootstrap CONTRACT.md from the answers.** Detected fields auto-fill (stack, project name from package.json, etc.). User-provided fields fill in the gaps (current version, target version, banned techs if any).
+
+4. **Bootstrap a partial SPEC.md** describing current state - what exists, what's known to work, what's known broken. The next gate's planning happens in `/build-rules`.
+
+5. **Skip critical-thinker on stack.** The stack is already chosen; pressure-testing it now is too late unless the user explicitly says "I'm questioning the stack." If they do, invoke /critical-thinker on the existing stack with framing: "We're auditing whether to migrate, not whether to start with X."
+
+6. **Hand off to /build-rules** with adopt-mode signal. /build-rules notices CONTRACT.md was bootstrapped from existing code and runs a **forward-only roadmap** flow: roadmap from current version through v1.0 (or beyond), not from v0.0.0.
+
+### If new (CONTRACT.md empty or missing, folder is fresh):
 
 Open with the warm-but-grounded greeting that introduces the persona and immediately moves to the first logistics question:
 

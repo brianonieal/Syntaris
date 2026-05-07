@@ -3,7 +3,7 @@ name: research
 description: "Runs competitive intelligence and framework documentation research. Use when starting a new project, evaluating tech stack options, or when the user types /research. Handles two modes: app-idea competitive landscape (top similar products, differentiation opportunities, build recommendations) and targeted research on a specific competitor, framework, or library. The analytical heavy lift happens in an isolated subagent so the main conversation stays clean."
 ---
 
-# RESEARCH SKILL - Syntaris v0.5.1
+# RESEARCH SKILL - Syntaris v0.5.2
 # Invoke: /research
 
 ## TONE

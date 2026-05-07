@@ -3,7 +3,7 @@ name: build-rules
 description: "Invokes the planning and approval flow before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Syntaris v0.5.1
+# BUILD RULES - Syntaris v0.5.2
 # Invoke: /build-rules or auto-triggered at new project start
 
 ## GATE MODEL
@@ -63,6 +63,33 @@ This is where the real thinking happens. The goal is to produce a
 foundation (CONTRACT.md, SPEC.md, VERSION_ROADMAP.md) that the rest of
 the build can lean on, then lock the entire version roadmap with one
 project-level approval word: **BUILD APPROVED**.
+
+### Adopt-mode shortcut
+
+If `/start` handed off in adopt-mode (CONTRACT.md was bootstrapped
+from existing code, the `from_adopt: true` marker is set in CONTRACT
+metadata, or the folder clearly has working code from before
+Syntaris arrived), run the abbreviated **forward-only** flow:
+
+1. Skip Steps 2-4 (the dump question, build-type question, and
+   clarifying questions). The project exists; the answers are in
+   the code or already in CONTRACT.md.
+2. Read the partial CONTRACT.md and SPEC.md that `/start` bootstrapped.
+3. Ask the user one question:
+   > "I see the project's at [current version]. Where are we going
+   > from here? Walk me through the next 2-5 things you want to
+   > ship - I'll turn that into a forward roadmap."
+4. Generate VERSION_ROADMAP.md starting from the **next** version
+   (e.g., if currently v0.4, the roadmap starts at v0.5 not v0.1).
+   Don't backfill imaginary historical gates.
+5. Continue to Step 5 (calibration multiplier — but with a note that
+   no prior ESTIMATION data exists yet, so the default 2.0x
+   conservative multiplier applies until forward gates start
+   producing data).
+6. Continue to Step 7 (present and lock with **BUILD APPROVED**).
+
+For projects where `/start` did NOT hand off in adopt-mode, run the
+full from-scratch flow below.
 
 ### Step 1 - read existing memory
 
