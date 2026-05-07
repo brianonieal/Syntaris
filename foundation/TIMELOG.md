@@ -1,5 +1,5 @@
 # TIMELOG.md
-# Syntaris v0.5.3 | Time Tracking
+# Syntaris v0.6.0 | Time Tracking
 # Updated at every gate close. Used by /bill and /invoice.
 
 ## TIME LOG

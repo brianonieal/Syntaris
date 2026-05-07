@@ -1,5 +1,5 @@
 # CONTRACT.md
-# Syntaris v0.5.3 | Project Contract
+# Syntaris v0.6.0 | Project Contract
 # Fill this out during BUILD APPROVED phase. Lock all fields before GO.
 # Once LOCKED, fields only change via new DECISIONS.md entry, which
 # also triggers re-doing BUILD APPROVED.

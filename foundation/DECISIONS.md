@@ -1,5 +1,5 @@
 # DECISIONS.md
-# Syntaris v0.5.3 | Architectural Decision Log
+# Syntaris v0.6.0 | Architectural Decision Log
 # Every significant technical decision is recorded here before being implemented.
 # LOCKED decisions cannot be changed without a new entry that supersedes them.
 
@@ -88,7 +88,7 @@ Status: LOCKED
 Date: [project start]
 Gate: v0.4.0+ (when embeddings needed)
 Owner: {{OWNER_NAME}}
-Scope: This decision is specific to projects on the Syntaris v0.5.3 fintech stack. Non-fintech projects should evaluate embeddings providers against their own domain. Remove or replace this entry if your project is not fintech.
+Scope: This decision is specific to projects on the Syntaris v0.6.0 fintech stack. Non-fintech projects should evaluate embeddings providers against their own domain. Remove or replace this entry if your project is not fintech.
 Decision: Use Voyage AI voyage-finance-2 for financial text, voyage-3 for general
 Reason: Finance-specific model produces more accurate semantic search for transactions
 Alternatives considered: OpenAI text-embedding-3-small (general purpose, less accurate)

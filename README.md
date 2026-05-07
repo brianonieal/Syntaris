@@ -2,7 +2,7 @@
 
 [![validate](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml/badge.svg)](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml)
 
-**v0.5.3** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
+**v0.6.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
 
 Syntaris breaks software projects into five mechanically-gated phases, accumulates structured calibration data across sessions so estimates improve with each gate, and runs across eight AI coding harnesses at three enforcement tiers.
 
@@ -285,8 +285,9 @@ Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntari
 - **v0.5.0** - pattern extraction from MEMORY_CORRECTIONS.md (4 pattern types: project-systemic, error-introduction, source bias, gate-type variance), `/health --review-patterns` flow, Outcomes template + spec-reviewer grader
 - **v0.5.1** - gate model evolution: project-level `BUILD APPROVED` (locks the full version roadmap once), per-gate `CONFIRMED → ROADMAP APPROVED → MOCKUPS APPROVED → FRONTEND APPROVED → GO`. `TESTS APPROVED` retired. New conversational `/start` rewrite.
 - **v0.5.2** - adopt-mode in `/start`, forward-only roadmap shortcut, README onboarding pass
-- **v0.5.3** - methodology clarifications from first cold-run feedback: approval-word matching is case-insensitive (docs explicit), MOCKUPS/FRONTEND APPROVED definition clarified to cover scaffold + chrome + design system gates (not just "screens"). **This version.**
-- **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards), `/start --quick` mode, automated Outcomes retry loop, recovery patterns (5th pattern type)
+- **v0.5.3** - methodology clarifications from first cold-run feedback: approval-word matching is case-insensitive, MOCKUPS/FRONTEND APPROVED definition clarified
+- **v0.6.0** - calibration loop closes: hooks now find foundation files in `foundation/` (was bug — looked at root), recovery patterns (5th pattern type), `migrate-reflexion-to-estimation.sh` backfills structured ESTIMATION lines from narrative REFLEXION blocks. First real pattern extracted from real cold-run data: −55% systemic variance over 5 gates. **This version.**
+- **v0.6.1** - planned: telemetry (cost tracking, stuck-loop guards), `/start --quick` mode, automated Outcomes retry loop
 - **v0.7.0** - planned: calibration evidence (auto-generated learning curve from accumulated patterns, populated MEMORY_CORRECTIONS.md example)
 - **v1.0.0** - when calibration data exists across at least three different stacks AND the API is stable enough to commit to backward compatibility
 

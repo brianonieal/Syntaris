@@ -4,6 +4,118 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.6.0] - 2026-05-07 - Calibration loop actually closes
+
+The cold-run on v0.5.x revealed two real bugs that prevented the
+calibration loop from doing what the docs said. v0.6.0 fixes both,
+adds the 5th pattern type, and ships a migration helper for projects
+that already have narrative REFLEXION entries from before the
+structured format existed.
+
+### Fixed (the cold-run discoveries)
+
+- **Foundation file path resolution**: All hooks (`gate-close-calibration.sh`,
+  `gate-close-calibration.ps1`, `session-start.sh`, `session-start.ps1`)
+  and `extract-patterns.sh` were looking for memory files at
+  `$PROJ_DIR/MEMORY_CORRECTIONS.md` (project root), but Syntaris
+  convention places foundation files in `$PROJ_DIR/foundation/`.
+  The cold-run wrote 5 gates of ESTIMATION-equivalent data to
+  `foundation/MEMORY_CORRECTIONS.md` and pattern extraction never
+  saw any of it. **All path-touching hooks now resolve via
+  foundation/ first, root as legacy fallback.** Backwards-compatible
+  for projects that had files at root.
+
+- **Narrative-to-structured format gap**: The cold-run produced
+  narrative REFLEXION blocks (matching the foundation template)
+  rather than structured `ESTIMATION:` lines (which the v0.5.0
+  pattern extractor reads). Both formats are valid, but extraction
+  only saw the structured one. v0.6.0 ships
+  `scripts/migrate-reflexion-to-estimation.sh` which backfills
+  parseable ESTIMATION lines from existing narrative entries.
+  Idempotent, creates a backup, parses 5+ gate variants of the
+  REFLEXION format.
+
+### Added
+
+- **Recovery patterns (5th pattern type)**: `extract-patterns.sh` now
+  detects gates that closed within ~24h of a STOP EVENT in
+  `MEMORY_EPISODIC.md` (recovery gates) versus cold gates. Compares
+  mean variance between groups; flags when the difference exceeds
+  15%. Quantifies context-switch cost or recovery boost as a
+  pattern. Completes the 5-pattern set originally scoped for
+  v0.5.0.
+
+- **`scripts/migrate-reflexion-to-estimation.sh`**: parses narrative
+  REFLEXION blocks (`### REFLEXION: vX.Y.Z` with `Predicted:`,
+  `Actual:`, `Variance:` fields) and appends matching `ESTIMATION:`
+  lines so `extract-patterns.sh` can read accumulated history.
+  Idempotent — re-runs skip gates that already have ESTIMATION
+  lines. Creates a `.pre-migration.bak` backup before touching the
+  source.
+
+- **/validate test coverage**: new `tests/14-foundation-paths.sh`
+  (4 tests) covering path resolution preference, legacy fallback,
+  foundation-first precedence, and extractor reads from foundation/.
+  New `tests/15-migration.sh` (5 tests) covering migrator presence,
+  parsing, idempotency, backup creation, and end-to-end flow
+  (narrative → migrated → pattern extracted). Suite is now
+  **140/140** (was 131).
+
+### Validated by the cold-run
+
+The reading-tracker cold-run (5 gates, v0.0.0 through v1.0.0) was
+the real test. After v0.6.0 fixes:
+
+- `extract-patterns.sh` against the cold-run's `foundation/MEMORY_CORRECTIONS.md`
+  now sees the data
+- After `migrate-reflexion-to-estimation.sh` runs, **the first real
+  pattern extracts**: PAT-001 Project-level systemic estimation bias,
+  −55% variance over 5 gates, MEDIUM confidence
+- `/health --review-patterns` would now have something to walk
+  through
+
+This is the calibration loop closing on real data for the first
+time. v0.5.0 built the machinery; v0.6.0 fixed the path bugs
+preventing it from running.
+
+### Migration
+
+For any v0.5.x project with narrative REFLEXION entries (especially
+the cold-run reading tracker):
+
+```bash
+bash scripts/migrate-reflexion-to-estimation.sh
+bash $HOME/.claude/lib/extract-patterns.sh
+```
+
+Output: structured ESTIMATION lines added to
+`foundation/MEMORY_CORRECTIONS.md`, proposals written to
+`.syntaris/proposed-patterns.md`. Run `/health --review-patterns`
+to walk through proposals.
+
+For new projects: nothing changes. The hooks now write to
+`foundation/MEMORY_CORRECTIONS.md` by default if `foundation/`
+exists, otherwise to project root.
+
+### Plus
+
+- Plugin manifest version `0.5.3` → `0.6.0`.
+- `SYNTARIS_VERSION` env var bumped.
+- All hook/skill/foundation headers v0.5.3 → v0.6.0.
+
+### Deferred to v0.6.1+
+
+- Telemetry expansion (cost tracking, model routing, stuck-loop guards)
+- `/start --quick` mode
+- Automated Outcomes retry loop
+
+These were originally scoped for v0.6.0, but the path bugs were
+higher priority — the calibration loop being broken made all other
+calibration-dependent features speculative. With v0.6.0 fixing the
+plumbing, v0.6.1 features build on real data.
+
+---
+
 ## [0.5.3] - 2026-05-07 - Methodology clarifications from first cold-run
 
 Patch release driven by feedback from the first real-project run on

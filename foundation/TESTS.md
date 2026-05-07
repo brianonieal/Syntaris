@@ -1,5 +1,5 @@
 # TESTS.md
-# Syntaris v0.5.3 | Permanent Test Registry
+# Syntaris v0.6.0 | Permanent Test Registry
 # Updated at every gate close.
 
 ## TEST REGISTRY

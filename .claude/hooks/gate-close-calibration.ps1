@@ -19,9 +19,21 @@ param(
 $ErrorActionPreference = "Continue"
 
 $projDir = if ($env:CLAUDE_PROJECT_DIR) { $env:CLAUDE_PROJECT_DIR } else { (Get-Location).Path }
-$roadmap = Join-Path $projDir "VERSION_ROADMAP.md"
-$timelog = Join-Path $projDir "TIMELOG.md"
-$corrections = Join-Path $projDir "MEMORY_CORRECTIONS.md"
+# v0.6.0: foundation files live in foundation/ by Syntaris convention.
+# Older projects keep them at root. Try foundation/ first, fall back.
+function Resolve-FoundationFile($projDir, $fname) {
+    $foundationDir  = Join-Path $projDir "foundation"
+    $foundationPath = Join-Path $foundationDir $fname
+    $rootPath = Join-Path $projDir $fname
+    if (Test-Path $foundationPath) { return $foundationPath }
+    if (Test-Path $rootPath)       { return $rootPath }
+    if (Test-Path $foundationDir)  { return $foundationPath }
+    return $rootPath  # legacy fallback when neither exists
+}
+
+$roadmap     = Resolve-FoundationFile $projDir "VERSION_ROADMAP.md"
+$timelog     = Resolve-FoundationFile $projDir "TIMELOG.md"
+$corrections = Resolve-FoundationFile $projDir "MEMORY_CORRECTIONS.md"
 
 if (-not (Test-Path $roadmap)) {
     [Console]::Error.WriteLine("gate-close-calibration: VERSION_ROADMAP.md not found at $roadmap")
@@ -134,7 +146,7 @@ if (-not $actual) {
 # .syntaris/errors-at-gate-open.count. We read that snapshot here
 # and count the current ERR- entries to compute the delta.
 
-$errorsFile = Join-Path $projDir "ERRORS.md"
+$errorsFile = Resolve-FoundationFile $projDir "ERRORS.md"
 $gateOpenCountFile = Join-Path (Join-Path $projDir ".syntaris") "errors-at-gate-open.count"
 
 $errorsClose = 0

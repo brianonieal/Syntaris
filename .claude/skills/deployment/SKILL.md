@@ -3,7 +3,7 @@ name: deployment
 description: "This skill manages production deployments with pre-deploy gates, health checks, and rollback protocols. Use when deploying, configuring CI/CD, or when the user types /deploy."
 ---
 
-# DEPLOYMENT SKILL - Syntaris v0.5.3
+# DEPLOYMENT SKILL - Syntaris v0.6.0
 # Invoke: /deploy
 
 ## PRE-DEPLOY GATES (all must pass)

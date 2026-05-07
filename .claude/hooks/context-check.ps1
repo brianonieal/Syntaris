@@ -1,5 +1,5 @@
 ﻿# context-check.ps1
-# Syntaris v0.5.3: Warn when context approaches dangerous fill level
+# Syntaris v0.6.0: Warn when context approaches dangerous fill level
 # Runs as PostToolUse hook. Turn-count proxy stored per session.
 # PowerShell counterpart for the cross-platform install.
 

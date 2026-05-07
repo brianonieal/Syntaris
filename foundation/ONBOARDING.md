@@ -1,5 +1,5 @@
 # ONBOARDING.md
-# Syntaris v0.5.3 | First-Time User Guide
+# Syntaris v0.6.0 | First-Time User Guide
 # For: researchers, collaborators, or anyone new to Syntaris
 
 ---

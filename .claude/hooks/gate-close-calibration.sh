@@ -29,9 +29,32 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-ROADMAP="$PROJ_DIR/VERSION_ROADMAP.md"
-TIMELOG="$PROJ_DIR/TIMELOG.md"
-CORRECTIONS="$PROJ_DIR/MEMORY_CORRECTIONS.md"
+
+# v0.6.0: foundation files live in $PROJ_DIR/foundation/ by Syntaris
+# convention. Older or non-conforming projects keep them at the project
+# root. Resolve each foundation file by trying foundation/ first, then
+# falling back to root. This keeps backwards compatibility for any
+# project that had files at root, while supporting the actual convention.
+
+resolve_foundation_file() {
+  local fname="$1"
+  if [[ -f "$PROJ_DIR/foundation/$fname" ]]; then
+    echo "$PROJ_DIR/foundation/$fname"
+  elif [[ -f "$PROJ_DIR/$fname" ]]; then
+    echo "$PROJ_DIR/$fname"
+  elif [[ -d "$PROJ_DIR/foundation" ]]; then
+    # Foundation dir exists but file doesn't yet - create new file there
+    echo "$PROJ_DIR/foundation/$fname"
+  else
+    # No foundation dir - use project root for new files (legacy behavior)
+    echo "$PROJ_DIR/$fname"
+  fi
+}
+
+ROADMAP=$(resolve_foundation_file "VERSION_ROADMAP.md")
+TIMELOG=$(resolve_foundation_file "TIMELOG.md")
+CORRECTIONS=$(resolve_foundation_file "MEMORY_CORRECTIONS.md")
+ERRORS_FILE_PATH=$(resolve_foundation_file "ERRORS.md")
 
 if [[ ! -f "$ROADMAP" ]]; then
   echo "gate-close-calibration: VERSION_ROADMAP.md not found at $ROADMAP" >&2
@@ -179,7 +202,7 @@ fi
 # .syntaris/errors-at-gate-open.count. We read that snapshot here
 # and count the current ERR- entries to compute the delta.
 
-ERRORS_FILE="$PROJ_DIR/ERRORS.md"
+ERRORS_FILE="$ERRORS_FILE_PATH"
 GATE_OPEN_COUNT_FILE="$PROJ_DIR/.syntaris/errors-at-gate-open.count"
 
 ERRORS_CLOSE=0

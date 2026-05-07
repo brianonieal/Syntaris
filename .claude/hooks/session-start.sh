@@ -12,14 +12,31 @@ fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 
+# v0.6.0: foundation files live in foundation/ by Syntaris convention.
+# Older projects keep them at root. Try foundation/ first, fall back.
+resolve_foundation_file() {
+  local fname="$1"
+  if [ -f "$PROJECT_DIR/foundation/$fname" ]; then
+    echo "$PROJECT_DIR/foundation/$fname"
+  elif [ -f "$PROJECT_DIR/$fname" ]; then
+    echo "$PROJECT_DIR/$fname"
+  else
+    echo ""
+  fi
+}
+
+CONTRACT_FILE=$(resolve_foundation_file "CONTRACT.md")
+EPISODIC_FILE=$(resolve_foundation_file "MEMORY_EPISODIC.md")
+ERRORS_FILE=$(resolve_foundation_file "ERRORS.md")
+
 # Build context injection
 CONTEXT=""
 
 # Check if this is a Syntaris project (has CONTRACT.md)
-if [ -f "$PROJECT_DIR/CONTRACT.md" ]; then
-  PROJECT_NAME=$(grep "^PROJECT_NAME:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/PROJECT_NAME:[[:space:]]*//')
-  CURRENT_VERSION=$(grep "^PROJECT_VERSION:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/PROJECT_VERSION:[[:space:]]*//')
-  CLIENT_TYPE=$(grep "^CLIENT_TYPE:" "$PROJECT_DIR/CONTRACT.md" 2>/dev/null | head -1 | sed 's/CLIENT_TYPE:[[:space:]]*//')
+if [ -n "$CONTRACT_FILE" ] && [ -f "$CONTRACT_FILE" ]; then
+  PROJECT_NAME=$(grep "^PROJECT_NAME:" "$CONTRACT_FILE" 2>/dev/null | head -1 | sed 's/PROJECT_NAME:[[:space:]]*//')
+  CURRENT_VERSION=$(grep "^PROJECT_VERSION:" "$CONTRACT_FILE" 2>/dev/null | head -1 | sed 's/PROJECT_VERSION:[[:space:]]*//')
+  CLIENT_TYPE=$(grep "^CLIENT_TYPE:" "$CONTRACT_FILE" 2>/dev/null | head -1 | sed 's/CLIENT_TYPE:[[:space:]]*//')
 
   CONTEXT="You are operating under Syntaris methodology."
   CONTEXT="$CONTEXT Project: ${PROJECT_NAME:-unknown} at ${CURRENT_VERSION:-v0.0.0}."
@@ -31,8 +48,8 @@ if [ -f "$PROJECT_DIR/CONTRACT.md" ]; then
   CONTEXT="$CONTEXT Use /start to begin. Check ERRORS.md before diagnosing any error."
 
   # Check for unclosed stop events
-  if [ -f "$PROJECT_DIR/MEMORY_EPISODIC.md" ]; then
-    LAST_STOP=$(grep "STOP EVENT" "$PROJECT_DIR/MEMORY_EPISODIC.md" 2>/dev/null | tail -1)
+  if [ -n "$EPISODIC_FILE" ] && [ -f "$EPISODIC_FILE" ]; then
+    LAST_STOP=$(grep "STOP EVENT" "$EPISODIC_FILE" 2>/dev/null | tail -1)
     if [ -n "$LAST_STOP" ]; then
       CONTEXT="$CONTEXT WARNING: Unclosed STOP EVENT found. Read PLANS.md to resume."
     fi
@@ -41,10 +58,10 @@ if [ -f "$PROJECT_DIR/CONTRACT.md" ]; then
   # Snapshot error count for diagnostic delta at gate close.
   # Counts ERR- entries in ERRORS.md and writes to .syntaris/errors-at-gate-open.count.
   # The gate-close-calibration hook reads this to compute the delta.
-  if [ -f "$PROJECT_DIR/ERRORS.md" ]; then
+  if [ -n "$ERRORS_FILE" ] && [ -f "$ERRORS_FILE" ]; then
     # grep -c outputs the count but exits 1 when zero matches.
     # Capture separately to avoid || echo doubling the output.
-    ERR_COUNT=$(grep -cE "^(###?\s+)?ERR-" "$PROJECT_DIR/ERRORS.md" 2>/dev/null) || true
+    ERR_COUNT=$(grep -cE "^(###?\s+)?ERR-" "$ERRORS_FILE" 2>/dev/null) || true
     ERR_COUNT="${ERR_COUNT:-0}"
   else
     ERR_COUNT=0

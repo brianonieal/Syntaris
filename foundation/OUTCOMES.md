@@ -1,5 +1,5 @@
 # OUTCOMES.md
-# Syntaris v0.5.3 | Task-Level Success Criteria
+# Syntaris v0.6.0 | Task-Level Success Criteria
 #
 # Within a gate, define success criteria for individual tasks. The
 # spec-reviewer subagent grades each task at gate close; failed

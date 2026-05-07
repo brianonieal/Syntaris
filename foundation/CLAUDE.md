@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Syntaris v0.5.3 | Session Rules
+# Syntaris v0.6.0 | Session Rules
 # Read at every session start. Keep under 150 lines.
 
 ---

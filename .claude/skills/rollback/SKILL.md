@@ -3,7 +3,7 @@ name: rollback
 description: Revert a Syntaris project to the last closed gate. Use this skill when a completed gate turns out to be wrong (bad architectural decision, broken code that can't be cleanly fixed forward, lost tests) and you need a clean return to the previous known-good state. Invoke with "/rollback" or phrases like "roll back to v0.2.0", "undo this gate", "revert to the last gate". Do NOT use for small code changes (use git), for aborting in-progress work before gate close (just discard the branch), or for anything outside the Syntaris gate structure.
 ---
 
-# ROLLBACK SKILL - Syntaris v0.5.3
+# ROLLBACK SKILL - Syntaris v0.6.0
 
 ## What rollback means in Syntaris
 
@@ -29,7 +29,7 @@ and snapshots the foundation files to `.syntaris/snapshots/<version>/`
 at each close. Projects that started under Blueprint v11.x will have
 older `blueprint-gate-<version>` tags and `.blueprint/snapshots/`
 directories; rollback supports both prefixes transparently so existing
-projects continue to work after upgrading to Syntaris v0.5.3.
+projects continue to work after upgrading to Syntaris v0.6.0.
 
 If the target gate was closed without these artifacts, rollback cannot
 restore the memory files; in that case, offer to do a code-only git

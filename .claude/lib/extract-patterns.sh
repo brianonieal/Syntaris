@@ -1,21 +1,18 @@
 #!/bin/bash
 # extract-patterns.sh
-# Syntaris v0.5.3: Pattern extraction from accumulated ESTIMATION data.
+# Syntaris v0.6.0: Pattern extraction from accumulated ESTIMATION data.
 #
-# Reads ESTIMATION lines from MEMORY_CORRECTIONS.md, detects four pattern
+# Reads ESTIMATION lines from MEMORY_CORRECTIONS.md, detects five pattern
 # types, writes proposed PAT entries to .syntaris/proposed-patterns.md.
 # The /health --review-patterns flow (or manual edit) promotes accepted
 # patterns to MEMORY_SEMANTIC.md.
 #
-# Pattern types implemented:
+# Pattern types implemented (v0.6.0+):
 #   1. Project-level systemic bias - mean variance across all gates
 #   2. Error-introduction variance - gates that grew error count vs not
 #   3. Source-of-actuals bias - timelog-source vs git-source mean variance
 #   4. Gate-type variance bias - keyword-grouped from VERSION_ROADMAP feature
-#
-# Pattern type DEFERRED to a later version:
-#   5. Recovery patterns - gates after STOP EVENT vs cold gates
-#      (needs episodic event timing parsing; scoped for v0.5.1/v0.6.0)
+#   5. Recovery patterns - gates within 24h of STOP EVENT vs cold gates
 #
 # Idempotent: re-runs with the same input produce the same output. The
 # proposed-patterns.md file is overwritten on each run, so accepted
@@ -32,8 +29,25 @@
 set -u
 
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-CORRECTIONS="$PROJ_DIR/MEMORY_CORRECTIONS.md"
-ROADMAP="$PROJ_DIR/VERSION_ROADMAP.md"
+
+# v0.6.0: foundation files live in foundation/ by Syntaris convention.
+# Older projects keep them at root. Try foundation/ first, fall back.
+resolve_foundation_file() {
+  local fname="$1"
+  if [[ -f "$PROJ_DIR/foundation/$fname" ]]; then
+    echo "$PROJ_DIR/foundation/$fname"
+  elif [[ -f "$PROJ_DIR/$fname" ]]; then
+    echo "$PROJ_DIR/$fname"
+  elif [[ -d "$PROJ_DIR/foundation" ]]; then
+    echo "$PROJ_DIR/foundation/$fname"
+  else
+    echo "$PROJ_DIR/$fname"
+  fi
+}
+
+CORRECTIONS=$(resolve_foundation_file "MEMORY_CORRECTIONS.md")
+ROADMAP=$(resolve_foundation_file "VERSION_ROADMAP.md")
+EPISODIC=$(resolve_foundation_file "MEMORY_EPISODIC.md")
 OUT_DIR="$PROJ_DIR/.syntaris"
 OUT="$OUT_DIR/proposed-patterns.md"
 
@@ -219,6 +233,71 @@ if [[ -f "$ROADMAP" ]]; then
   ' "$TYPED")
 fi
 
+# --- Pattern type 5: Recovery patterns (gates after STOP EVENT) ---
+# Read MEMORY_EPISODIC.md for STOP EVENT markers. For each gate, decide
+# if it closed within ~24h after a STOP EVENT (recovery gate) or not (cold).
+# Compare mean variance between groups. Need N>=2 in each group.
+# Flag if abs difference between means >= 15%.
+#
+# Episodic format expected (loose - these are narrative):
+#   STOP EVENT: <date> ...
+#   GATE CLOSED: v0.1.0 <date> ...
+# We use ESTIMATION date as the gate close timestamp instead, since that's
+# what we already have parsed. A gate is "after STOP" if its date is within
+# 24h after any STOP EVENT.
+
+P5_OUTPUT=""
+if [[ -f "$EPISODIC" ]]; then
+  STOPS=$(mktemp)
+  trap "rm -f '$PARSED' '${TYPED:-/dev/null}' '$STOPS'" EXIT
+
+  # Extract STOP EVENT dates (ISO-formatted YYYY-MM-DD or full ISO timestamp)
+  grep -iE "^.*STOP EVENT" "$EPISODIC" 2>/dev/null \
+    | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9:]+Z?)?' \
+    | sort -u > "$STOPS" || true
+
+  # Group gates: ESTIMATION date within 24h after any STOP = recovery gate
+  RECOVERY_TYPED=$(mktemp)
+  trap "rm -f '$PARSED' '${TYPED:-/dev/null}' '$STOPS' '$RECOVERY_TYPED'" EXIT
+
+  while IFS=$'\t' read -r gate variance source eo ec date; do
+    # Use date prefix for comparison (YYYY-MM-DD)
+    gate_day=$(echo "$date" | cut -c1-10)
+    classification="cold"
+
+    while IFS= read -r stop_date; do
+      stop_day=$(echo "$stop_date" | cut -c1-10)
+      # Compare epoch days. Gate within 1 day after stop = recovery.
+      g_epoch=$(date -d "$gate_day" +%s 2>/dev/null) || continue
+      s_epoch=$(date -d "$stop_day" +%s 2>/dev/null) || continue
+      diff=$(( (g_epoch - s_epoch) / 86400 ))
+      if [[ "$diff" -ge 0 && "$diff" -le 1 ]]; then
+        classification="recovery"
+        break
+      fi
+    done < "$STOPS"
+
+    printf "%s\t%s\n" "$variance" "$classification" >> "$RECOVERY_TYPED"
+  done < "$PARSED"
+
+  # Compute means per group; flag if N>=2 each and abs diff >= 15
+  P5_OUTPUT=$(awk -F'\t' '
+    $2 == "recovery" { r_sum += $1; r_count++ }
+    $2 == "cold"     { c_sum += $1; c_count++ }
+    END {
+      if (r_count >= 2 && c_count >= 2) {
+        r_mean = r_sum / r_count
+        c_mean = c_sum / c_count
+        diff = r_mean - c_mean
+        abs_diff = (diff < 0) ? -diff : diff
+        if (abs_diff >= 15) {
+          printf "RECOVERY|%.0f|%d|%.0f|%d", r_mean, r_count, c_mean, c_count
+        }
+      }
+    }
+  ' "$RECOVERY_TYPED")
+fi
+
 # --- Build proposed-patterns.md ---
 
 TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -226,7 +305,7 @@ TODAY=$(date -u +%Y-%m-%d)
 NEXT_PAT_NUM=1
 
 # Read existing PAT-NNN highest number from MEMORY_SEMANTIC.md if it exists
-SEMANTIC="$PROJ_DIR/MEMORY_SEMANTIC.md"
+SEMANTIC=$(resolve_foundation_file "MEMORY_SEMANTIC.md")
 if [[ -f "$SEMANTIC" ]]; then
   HIGHEST=$(grep -oE '^### PAT-[0-9]+' "$SEMANTIC" 2>/dev/null \
             | grep -oE '[0-9]+' \
@@ -379,6 +458,36 @@ Data points: $count $category-category gates
 
 EOF
   done
+fi
+
+# --- Pattern 5: Recovery patterns (gates after STOP EVENT vs cold) ---
+if [[ -n "$P5_OUTPUT" ]]; then
+  IFS='|' read -r _ r_mean r_count c_mean c_count <<< "$P5_OUTPUT"
+  total=$((r_count + c_count))
+  conf=$(confidence_for_n "$total")
+  pat_id=$(printf "PAT-%03d" "$NEXT_PAT_NUM")
+  NEXT_PAT_NUM=$((NEXT_PAT_NUM + 1))
+  PROPOSAL_COUNT=$((PROPOSAL_COUNT + 1))
+
+  cat >> "$tmp_out" <<EOF
+### $pat_id: Recovery gates (after STOP EVENT) run differently
+Confidence: $conf
+Source: $r_count recovery gates (within 24h after a STOP EVENT in
+MEMORY_EPISODIC), $c_count cold gates
+Description: Gates closed within ~24h after a STOP EVENT in
+MEMORY_EPISODIC.md averaged ${r_mean}% variance from estimate. Cold
+gates (no recent STOP) averaged ${c_mean}%. The gap suggests context-
+switch cost (or recovery boost) is a real estimation factor on this
+project. When estimating a gate immediately after a long break, budget
+for the recovery-gate variance.
+Last validated: $TODAY
+Auto-extracted: yes (extract-patterns.sh, $TIMESTAMP)
+Human-reviewed: no
+Data points: $r_count recovery + $c_count cold gates
+
+---
+
+EOF
 fi
 
 # --- Footer ---

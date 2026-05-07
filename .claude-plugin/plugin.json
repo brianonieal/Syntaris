@@ -1,6 +1,6 @@
 {
   "name": "syn",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "Syntaris: a compilation-stage knowledge layer and harness engineering implementation for AI coding agents. Five-phase gate model, three-layer memory, calibration loop, multi-runtime support across 8 harnesses (Tier 1: Claude Code, Tier 2: Cursor/Windsurf, Tier 3: Codex CLI/Gemini CLI/Aider/Kiro/OpenCode), personal/client billing branch.",
   "author": {
     "name": "Brian Onieal",

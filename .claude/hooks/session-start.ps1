@@ -9,9 +9,22 @@ $rawInput = [Console]::In.ReadToEnd()
 if ([string]::IsNullOrEmpty($rawInput)) { exit 0 }
 
 $projectDir = if ($env:CLAUDE_PROJECT_DIR) { $env:CLAUDE_PROJECT_DIR } else { $PWD }
-$contractPath = Join-Path $projectDir "CONTRACT.md"
 
-if (-not (Test-Path $contractPath)) { exit 0 }
+# v0.6.0: foundation files live in foundation/ by Syntaris convention.
+# Older projects keep them at root. Try foundation/ first, fall back.
+function Resolve-FoundationFile($projDir, $fname) {
+    $foundationPath = Join-Path (Join-Path $projDir "foundation") $fname
+    $rootPath = Join-Path $projDir $fname
+    if (Test-Path $foundationPath) { return $foundationPath }
+    if (Test-Path $rootPath) { return $rootPath }
+    return $null
+}
+
+$contractPath = Resolve-FoundationFile $projectDir "CONTRACT.md"
+$episodicPath = Resolve-FoundationFile $projectDir "MEMORY_EPISODIC.md"
+$errorsPath   = Resolve-FoundationFile $projectDir "ERRORS.md"
+
+if (-not $contractPath) { exit 0 }
 
 $contractContent = Get-Content $contractPath -Raw
 
@@ -29,8 +42,7 @@ $context += " never let test count decrease between gates."
 $context += " Use /start to begin. Check ERRORS.md before diagnosing any error."
 
 # Check for unclosed stop events
-$episodicPath = Join-Path $projectDir "MEMORY_EPISODIC.md"
-if (Test-Path $episodicPath) {
+if ($episodicPath -and (Test-Path $episodicPath)) {
     $lastStop = Select-String -Path $episodicPath -Pattern "STOP EVENT" | Select-Object -Last 1
     if ($lastStop) {
         $context += " WARNING: Unclosed STOP EVENT found. Read PLANS.md to resume."
@@ -40,9 +52,8 @@ if (Test-Path $episodicPath) {
 # Snapshot error count for diagnostic delta at gate close.
 # Counts ERR- entries in ERRORS.md and writes to .syntaris/errors-at-gate-open.count.
 # The gate-close-calibration hook reads this to compute the delta.
-$errorsPath = Join-Path $projectDir "ERRORS.md"
 $errCount = 0
-if (Test-Path $errorsPath) {
+if ($errorsPath -and (Test-Path $errorsPath)) {
     $errCount = @(Select-String -Path $errorsPath -Pattern "^(###?\s+)?ERR-" -ErrorAction SilentlyContinue).Count
 }
 $syntarisState = Join-Path $projectDir ".syntaris"

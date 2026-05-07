@@ -3,7 +3,7 @@ name: validate
 description: "Run the Syntaris harness validation suite plus user-project tests. Use this skill at gate close, before tagging a Syntaris release, before publishing, or whenever you want to confirm the methodology layer (hooks, skills, agents, calibration) plus the user's project tests are all healthy. Trigger phrases: validate, run validation, /validate, harness check, full test sweep."
 ---
 
-# VALIDATE SKILL - Syntaris v0.5.3+
+# VALIDATE SKILL - Syntaris v0.6.0+
 # Invoke: /validate
 
 The validation suite confirms two things in one pass:
