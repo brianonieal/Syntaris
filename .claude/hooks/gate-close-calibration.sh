@@ -272,7 +272,7 @@ echo "  $ENTRY" >&2
 # Heads-up when variance exceeds 30%. This is intentionally mechanical:
 # the skill documents the policy, the hook enforces it. Approved roadmap
 # values are NOT silently edited; the user is told so they can choose to
-# re-open SCOPE CONFIRMED if the pattern continues.
+# re-open BUILD APPROVED if the pattern continues.
 if [ "$VARIANCE_ABS" -gt 30 ]; then
   echo "" >&2
   echo "=== Heads up: ${VERSION} came in at ${VARIANCE} variance ===" >&2

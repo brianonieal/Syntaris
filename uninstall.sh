@@ -1,6 +1,6 @@
 #!/bin/bash
 # uninstall.sh
-# Syntaris v0.5.0: Remove Syntaris-owned files from this machine.
+# Syntaris v0.5.1: Remove Syntaris-owned files from this machine.
 #
 # What this REMOVES:
 #   - $INSTALL_ROOT/skills/   (all skills)

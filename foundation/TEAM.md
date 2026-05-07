@@ -1,5 +1,5 @@
 # TEAM.md
-# Syntaris v0.5.0 | Multi-Developer Collaboration Layer
+# Syntaris v0.5.1 | Multi-Developer Collaboration Layer
 # OPTIONAL - activate only on multi-developer projects
 # Solo projects do not use this file
 

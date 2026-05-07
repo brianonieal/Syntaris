@@ -3,7 +3,7 @@ name: global-rules
 description: "This skill defines universal coding standards, communication style, and context management rules for all Syntaris sessions. Referenced by other skills. Use when checking project conventions or when the user types /global-rules."
 ---
 
-# GLOBAL RULES - Syntaris v0.5.0
+# GLOBAL RULES - Syntaris v0.5.1
 # Always referenced by other skills. Invoke: /global-rules
 
 ## IDENTITY

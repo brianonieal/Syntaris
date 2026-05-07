@@ -3,7 +3,7 @@ name: start
 description: "Session orchestration entry point. Greets the user, detects runtime, figures out if they're starting fresh or resuming, handles project logistics, gets them talking about what they want to build, runs competitive landscape and stack recommendation with critical-thinker pressure-testing, then hands off to /build-rules. Always the first command at the start of any project session."
 ---
 
-# START SKILL - Syntaris v0.5.0
+# START SKILL - Syntaris v0.5.1
 # Invoke: /start
 
 ## TONE
@@ -22,7 +22,7 @@ Before saying anything, detect which runtime you're in. Run `.claude/lib/detect-
 
 Print one short line:
 
-> "Syntaris v0.5.0 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
+> "Syntaris v0.5.1 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
 
 For Tier 2/3, add one sentence about what's different. Don't dwell on it.
 

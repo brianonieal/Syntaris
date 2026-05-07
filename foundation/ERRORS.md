@@ -1,5 +1,5 @@
 # ERRORS.md
-# Syntaris v0.5.0 | Living Failure Log
+# Syntaris v0.5.1 | Living Failure Log
 # Every debugged issue is logged here. Check this FIRST before diagnosing.
 # Format: ERR-[NNN]: [title], root cause, fix, prevention
 

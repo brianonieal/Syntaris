@@ -165,7 +165,7 @@ changes — additive over v0.4.0.
 #### Goal
 
 Today Syntaris's checkpoints fire at gate boundaries (CONFIRMED,
-MOCKUPS APPROVED, FRONTEND APPROVED, TESTS APPROVED, GO). Within a
+MOCKUPS APPROVED, FRONTEND APPROVED, GO; v0.5.1 retired TESTS APPROVED). Within a
 gate, individual tasks succeed or fail without structured criteria.
 The circuit breaker (3 failures → /debug) is the only sub-gate
 recovery primitive.

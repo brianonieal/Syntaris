@@ -3,7 +3,7 @@ name: validate
 description: "Run the Syntaris harness validation suite plus user-project tests. Use this skill at gate close, before tagging a Syntaris release, before publishing, or whenever you want to confirm the methodology layer (hooks, skills, agents, calibration) plus the user's project tests are all healthy. Trigger phrases: validate, run validation, /validate, harness check, full test sweep."
 ---
 
-# VALIDATE SKILL - Syntaris v0.5.0+
+# VALIDATE SKILL - Syntaris v0.5.1+
 # Invoke: /validate
 
 The validation suite confirms two things in one pass:
@@ -25,8 +25,8 @@ Manual:
 
 Auto (per `foundation/CLAUDE.md` gate-close protocol):
 - At every gate close, before the calibration hook fires
-- Failures block the gate. Approval cannot proceed past TESTS APPROVED if
-  /validate reports any failures.
+- Failures block the gate. The user cannot type GO if /validate
+  reports any failures.
 
 ## Platform requirement
 

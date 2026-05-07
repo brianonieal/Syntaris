@@ -1,6 +1,6 @@
 # Syntaris Subagents Reference
 
-Syntaris v0.5.0 ships 7 subagents in `.claude/agents/`. Three were inherited from v0.1.0; four were added in v0.3.0 to migrate the noisiest skills out of the main conversation context.
+Syntaris v0.5.1 ships 7 subagents in `.claude/agents/`. Three were inherited from v0.1.0; four were added in v0.3.0 to migrate the noisiest skills out of the main conversation context.
 
 This document explains what each one does, what tools it has, what it returns, and the architectural rule that governs how parent skills interact with them.
 

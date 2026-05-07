@@ -1,6 +1,6 @@
 # SPEC.md
-# Syntaris v0.5.0 | Project Specification
-# Written during SCOPE CONFIRMED phase. Updated at each gate close.
+# Syntaris v0.5.1 | Project Specification
+# Written during BUILD APPROVED phase. Updated at each gate close.
 
 ## PROJECT
 App name: [from CONTRACT.md]

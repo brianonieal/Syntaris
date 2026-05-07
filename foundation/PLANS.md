@@ -1,5 +1,5 @@
 # PLANS.md
-# Syntaris v0.5.0 | Context Save State
+# Syntaris v0.5.1 | Context Save State
 # Written before /clear to preserve progress across context resets.
 # Read at session resume (/start option 2) to reconstruct state.
 

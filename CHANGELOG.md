@@ -4,6 +4,95 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.5.1] - 2026-05-07 - Gate model evolution + conversational /start
+
+The methodology gate model evolved alongside a conversational `/start`
+rewrite. v0.5.0 ground rules (planning flows through SCOPE CONFIRMED
+→ MOCKUPS APPROVED → FRONTEND APPROVED → TESTS APPROVED → GO) are
+retired. The new model separates project-level scope locking from
+per-gate flow.
+
+### Changed (methodology)
+
+**New gate model:**
+
+```
+PROJECT-LEVEL (once, inside /build-rules):
+    BUILD APPROVED   - locks the full version roadmap v0.1.0 -> v1.0.0
+
+PER-GATE (each version):
+    CONFIRMED -> ROADMAP APPROVED -> MOCKUPS APPROVED ->
+    FRONTEND APPROVED -> GO
+```
+
+- `SCOPE CONFIRMED` retired. Project-level scope now locks via
+  `BUILD APPROVED` (one-time, the full roadmap table). Per-gate scope
+  uses `CONFIRMED`.
+- `TESTS APPROVED` retired. Test plans fold into `ROADMAP APPROVED`
+  (the gate's task list explicitly includes test tasks). Test
+  enforcement happens at `GO` via `/validate`. The user-facing
+  approval count drops from 5 to 5 with one rename and one swap.
+- `ROADMAP APPROVED` is new at the per-gate level (locks the gate's
+  concrete task list).
+- `MOCKUPS APPROVED` and `FRONTEND APPROVED` only fire on UI-producing
+  gates. Backend-only gates skip them and run CONFIRMED →
+  ROADMAP APPROVED → GO.
+
+### Changed (skills)
+
+- `/start` (v0.5.0 conversational rewrite): new TONE section, runtime
+  detection silent, logistics first, idea second, competitive
+  landscape with research-agent delegation, stack recommendation
+  with critical-thinker pressure-test, hand-off to /build-rules.
+- `/build-rules` major restructure: PHASE 0 (BUILD APPROVED, project-
+  level, once), PHASE 1 (CONFIRMED, per-gate scope), PHASE 2
+  (ROADMAP APPROVED, per-gate task list incl. tests), PHASE 3
+  (MOCKUPS APPROVED, UI gates only), PHASE 4 (FRONTEND APPROVED, UI
+  gates only), PHASE 5 (GO, per-gate close).
+
+### Changed (foundation)
+
+- `foundation/CLAUDE.md` gate model section rewritten to describe
+  the two-layer (project + per-gate) flow.
+- `foundation/CONTRACT.md`, `SPEC.md`, `VERSION_ROADMAP.md`,
+  `ONBOARDING.md`, `WHY.md` SCOPE-CONFIRMED references updated to
+  BUILD APPROVED.
+- `critical-thinker` skill SCOPE-CONFIRMED reference updated to
+  BUILD APPROVED.
+- `gate-close-calibration.sh` heads-up message escalation path
+  updated (re-open BUILD APPROVED for roadmap-level changes,
+  CONFIRMED for gate-level).
+
+### Added (tests)
+
+- `tests/04-stale-refs.sh`: 4 new tests (04.7-04.10) covering
+  retirement of SCOPE CONFIRMED + TESTS APPROVED and presence of
+  BUILD APPROVED + ROADMAP APPROVED in methodology docs.
+
+### Migration
+
+Existing v0.5.0 projects:
+- Foundation files keep working. Schema didn't change, only the names
+  in the comments.
+- If a project has an in-flight CONTRACT.md with status `SCOPE
+  CONFIRMED`, the new model maps it to `BUILD APPROVED` semantically
+  (the roadmap is locked). No script needed.
+- Active gates that were waiting on `TESTS APPROVED` should now wait
+  on `ROADMAP APPROVED` if test tasks were already in the list, or
+  re-do `ROADMAP APPROVED` to include test tasks if they weren't.
+
+The runtime hooks (gate-close-calibration, session-start, etc.) don't
+care about gate names directly — they fire on hook events. So no
+behavior changes from this update; only documentation and skill
+prompts.
+
+### Plus
+
+- Plugin manifest version `0.5.0` → `0.5.1`.
+- `SYNTARIS_VERSION` env var bumped.
+
+---
+
 ## [0.5.0] - 2026-05-07 - Pattern extraction + Outcomes
 
 The headline is closing the gap with Anthropic Managed Agents'

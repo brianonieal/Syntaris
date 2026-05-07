@@ -1,5 +1,5 @@
 # ONBOARDING.md
-# Syntaris v0.5.0 | First-Time User Guide
+# Syntaris v0.5.1 | First-Time User Guide
 # For: researchers, collaborators, or anyone new to Syntaris
 
 ---
@@ -103,7 +103,7 @@ Claude Code generates a VERSION_ROADMAP.md showing every build gate
 from v0.0.0 through v1.0.0 with time estimates.
 
 Review it. If something looks wrong: say so now.
-Type: SCOPE CONFIRMED
+Type: BUILD APPROVED
 
 ### Step 5: Review and approve the mockups
 
@@ -134,7 +134,7 @@ Syntaris uses five specific words as approval gates:
 
 | Word | Meaning |
 |------|---------|
-| SCOPE CONFIRMED | App description, build type, and full roadmap through final version approved |
+| BUILD APPROVED | App description, build type, and full roadmap through final version approved |
 | MOCKUPS APPROVED | Screen mockups approved |
 | FRONTEND APPROVED | Component specs and design system approved |
 | GO | Build this gate |

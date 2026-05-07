@@ -1,8 +1,8 @@
 # CONTRACT.md
-# Syntaris v0.5.0 | Project Contract
-# Fill this out during SCOPE CONFIRMED phase. Lock all fields before GO.
+# Syntaris v0.5.1 | Project Contract
+# Fill this out during BUILD APPROVED phase. Lock all fields before GO.
 # Once LOCKED, fields only change via new DECISIONS.md entry, which
-# also triggers re-doing SCOPE CONFIRMED.
+# also triggers re-doing BUILD APPROVED.
 
 ---
 
@@ -22,7 +22,7 @@ TARGET_LAUNCH_DATE:    [date]
 
 ---
 
-## TECH STACK (locked after SCOPE CONFIRMED)
+## TECH STACK (locked after BUILD APPROVED)
 
 # NOTE: The fields below default to Brian's reference stack (Next.js + FastAPI + Supabase + LangGraph).
 # When you run /start and pick a recipe, the recipe's CONTRACT.snippet.md will override these defaults.
@@ -47,7 +47,7 @@ BILLING:               Stripe (v5.0.0+) | None
 
 ---
 
-## DEPLOYMENT (locked after SCOPE CONFIRMED)
+## DEPLOYMENT (locked after BUILD APPROVED)
 
 FRONTEND_PLATFORM:     Vercel
 BACKEND_PLATFORM:      Render (free -> Railway at v5.0.0)
@@ -120,6 +120,6 @@ DEV_SERVER_URL:        http://localhost:3000
 
 ## STATUS
 
-Contract status: DRAFT | SCOPE CONFIRMED | LOCKED
+Contract status: DRAFT | BUILD APPROVED | LOCKED
 Last updated: [date]
 Updated by: [project owner]

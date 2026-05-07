@@ -1,35 +1,41 @@
 ---
 name: build-rules
-description: "Invokes the five-phase planning and approval process before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
+description: "Invokes the planning and approval flow before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Syntaris v0.5.0
+# BUILD RULES - Syntaris v0.5.1
 # Invoke: /build-rules or auto-triggered at new project start
 
-## THE FIVE PHASES
+## GATE MODEL
 
-Planning flows through five sequential checkpoints. Each requires the user
-to explicitly type the approval word. No implicit advancement.
+Two layers. The project-level lock fires once; the per-gate flow fires
+many times (once per version v0.1.0, v0.2.0, ...).
 
 ```
-SCOPE CONFIRMED -> MOCKUPS APPROVED -> FRONTEND APPROVED -> TESTS APPROVED -> GO
+PROJECT-LEVEL (once):
+    BUILD APPROVED   - the full roadmap v0.1.0 -> v1.0.0 is locked
+
+PER-GATE (each version):
+    CONFIRMED -> ROADMAP APPROVED -> MOCKUPS APPROVED ->
+    FRONTEND APPROVED -> GO
 ```
 
-Phases do what they say:
-- **SCOPE CONFIRMED** - we agree on the app, the build type, and the full
-  version roadmap through to final
-- **MOCKUPS APPROVED** - we agree on visual design
-- **FRONTEND APPROVED** - static implementation of mockups is in place and
-  reviewed before backend wires in
-- **TESTS APPROVED** - test plan and coverage targets approved before
-  backend code is written
-- **GO** - per-gate approval to proceed with actual coding
+Each approval word requires the user to type it explicitly. No implicit
+advancement. **MOCKUPS APPROVED** and **FRONTEND APPROVED** only fire
+on gates that produce UI; backend-only gates skip them. Test plans fold
+into **ROADMAP APPROVED** (the gate's task list includes test tasks),
+and test enforcement happens at **GO** via /validate.
 
-If the user proposes scope changes mid-build (adding a feature, dropping
-a gate, changing the build type), that is a trigger to re-do
-SCOPE CONFIRMED. Do not silently absorb scope changes into the active
-gate. Tell the user plainly: "that's a scope change, which means we
-redo SCOPE CONFIRMED before we proceed."
+If the user proposes a per-gate scope change (adding a feature, dropping
+a sub-task, changing the gate's deliverable), that triggers a re-do of
+**CONFIRMED** for the current gate. If the user proposes a roadmap-level
+change (changing the v1.0 endpoint, adding a new version, reordering
+gates), that triggers a re-do of **BUILD APPROVED**.
+
+Do not silently absorb either. Tell the user plainly: "that's a
+[gate-scope | roadmap-level] change, which means we redo
+[CONFIRMED for this gate | BUILD APPROVED for the whole roadmap]
+before we proceed."
 
 ## TONE
 
@@ -51,11 +57,12 @@ question 4 of 7."
 The tone softens the delivery but not the substance. Rules are still
 rules. Gates still gate. Bad ideas still get named.
 
-## PHASE 1: SCOPE CONFIRMED
+## PHASE 0: BUILD APPROVED (project-level, once)
 
 This is where the real thinking happens. The goal is to produce a
 foundation (CONTRACT.md, SPEC.md, VERSION_ROADMAP.md) that the rest of
-the build can lean on.
+the build can lean on, then lock the entire version roadmap with one
+project-level approval word: **BUILD APPROVED**.
 
 ### Step 1 - read existing memory
 
@@ -159,19 +166,69 @@ items, build type, complexity tier, target users.
 SPEC.md is the current-gate detail: what v0.0 covers, current status,
 active tasks.
 
-### Step 7 - present and wait
+### Step 7 - present the full roadmap and lock it
 
 Show the user:
 - The CONTRACT summary
-- The full roadmap
+- The full version roadmap as a table (v0.1.0 -> v1.0.0 MVP -> ... ->
+  fully polished version), with estimates
 - Any assumptions you made that they should push back on
 
-Wait for the user to type: **SCOPE CONFIRMED**
+Frame the lock plainly:
+
+> "Here's the full build through v1.0. Once you approve, we'll work
+> through it gate by gate - each gate gets its own scope check before
+> we start. Type **BUILD APPROVED** to lock the roadmap."
+
+Wait for the user to type: **BUILD APPROVED**
 
 If they push back on anything, update and show again. Do not advance
-without the exact approval word.
+without the exact approval word. Once locked, roadmap-level changes
+require re-running BUILD APPROVED.
 
-## PHASE 2: MOCKUPS -> MOCKUPS APPROVED
+Also write the test strategy to TESTS.md as part of this phase: which
+test runners (pytest, vitest, playwright), coverage targets per layer,
+critical-path E2E coverage, regression test policy. The strategy is
+locked under BUILD APPROVED; per-gate test tasks fold into ROADMAP
+APPROVED.
+
+---
+
+## PER-GATE FLOW
+
+After BUILD APPROVED, the rest of the project runs gate by gate. The
+flow below repeats for every version (v0.1.0, v0.2.0, ..., v1.0.0).
+
+## PHASE 1: CONFIRMED (per-gate scope)
+
+At the start of each gate, recap:
+- What this gate's user-facing outcome is
+- What is in scope (referencing the locked roadmap)
+- What is explicitly NOT in this gate (deferred to a later version)
+
+Wait for the user to type: **CONFIRMED**
+
+If the user wants to change scope, treat it as a re-do of CONFIRMED
+for this gate. If they want to change the overall roadmap, escalate
+to a re-do of BUILD APPROVED.
+
+## PHASE 2: ROADMAP APPROVED (per-gate task list)
+
+Generate the gate's concrete task list. This includes:
+- Implementation tasks (what code gets written)
+- Test tasks (what tests get added per the locked TESTS.md strategy)
+- Verification tasks (what /validate or /security checks need to pass)
+
+Show the user the full task list. Estimates per task are optional but
+helpful. Wait for: **ROADMAP APPROVED**
+
+Test approval is implicit in this phase - if test tasks are in the list
+and the user approves the list, tests are approved. /validate at gate
+close is the enforcement mechanism, not a separate user gate.
+
+## PHASE 3: MOCKUPS APPROVED (UI gates only)
+
+Skip this phase if the gate produces no UI.
 
 Produce visual design artifacts - wireframes, mockups, reference
 screenshots, or a stylistic direction doc. What counts as "mockups"
@@ -180,7 +237,9 @@ SaaS might be a full Figma file or HTML wireframes.
 
 Wait for: **MOCKUPS APPROVED**
 
-## PHASE 3: FRONTEND -> FRONTEND APPROVED
+## PHASE 4: FRONTEND APPROVED (UI gates only)
+
+Skip this phase if the gate produces no UI.
 
 Build the static frontend implementation of the mockups. Routes, pages,
 components, navigation, empty states. No backend wire-up yet. This
@@ -188,27 +247,16 @@ catches design problems before they become database schema problems.
 
 Wait for: **FRONTEND APPROVED**
 
-## PHASE 4: TESTS -> TESTS APPROVED
+## PHASE 5: GO (per-gate execution + close)
 
-Plan the test strategy. Not execute it - that's the `testing` skill's
-job. Here we agree on:
+Now write the code: backend wire-up, integrations, tests, all the work
+described in the ROADMAP APPROVED task list. Run the gate-close
+protocol below before declaring the gate done. The user types **GO**
+to certify gate close once /validate passes and the protocol completes.
 
-- What test runners to use (pytest, vitest, playwright, etc.)
-- Coverage targets per layer
-- Which critical paths get explicit E2E coverage
-- Which failure modes need regression tests from day one
-
-Write TESTS.md with the plan. Show the user. Wait for:
-**TESTS APPROVED**
-
-Once approved, the `testing` skill takes over and generates and
-enforces tests as gates close.
-
-## PHASE 5: GO (per-gate)
-
-At the start of each gate, recap the gate's goal, the estimate, and
-the tasks. Wait for the user to type **GO** before writing code for
-that gate. Every gate needs its own GO.
+Backend-only gates: phases are CONFIRMED -> ROADMAP APPROVED -> GO.
+UI gates: phases are CONFIRMED -> ROADMAP APPROVED -> MOCKUPS
+APPROVED -> FRONTEND APPROVED -> GO.
 
 ## GATE CLOSE PROTOCOL
 
@@ -257,7 +305,8 @@ When a gate's work is done:
    roadmap ranges in response; the approved roadmap is a commitment and
    variance informs *future* new estimates, not retroactive rewrites.
    If the variance pattern is significant, raise it with the user as a
-   scope-change candidate (which would re-open SCOPE CONFIRMED).
+   scope-change candidate (which would re-open BUILD APPROVED at the
+   roadmap level, or CONFIRMED for the affected gate).
 
     The calibration hook also auto-runs pattern extraction
     (`extract-patterns.sh`). When patterns are proposed, the hook

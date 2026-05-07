@@ -1,5 +1,5 @@
 # WHY.md
-# Syntaris v0.5.0 | The Reasoning Behind Every Major Decision
+# Syntaris v0.5.1 | The Reasoning Behind Every Major Decision
 # Read this before questioning the methodology
 # Stack-specific: Next.js + FastAPI + Supabase + LangGraph + Plaid
 #
@@ -42,7 +42,7 @@ The gate structure is not bureaucracy. It is the anti-regression protocol.
 
 ---
 
-## WHY SPEC BEFORE CODE (SCOPE CONFIRMED -> FRONTEND APPROVED before GO)
+## WHY SPEC BEFORE CODE (BUILD APPROVED -> FRONTEND APPROVED before GO)
 
 In AI-assisted development, implementation time approaches zero.
 The bottleneck is decision quality, not coding speed.

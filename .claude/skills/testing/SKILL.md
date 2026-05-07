@@ -3,7 +3,7 @@ name: testing
 description: "This skill manages test strategy, test writing, and test enforcement for all app builds. Use when writing tests, checking test coverage, setting up test infrastructure, or at gate close. Covers Pytest, Vitest, React Testing Library, and Playwright."
 ---
 
-# TESTING SKILL - Syntaris v0.5.0
+# TESTING SKILL - Syntaris v0.5.1
 # Invoke: /testing
 
 ## TEST STRATEGY BY GATE

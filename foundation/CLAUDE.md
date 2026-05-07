@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Syntaris v0.5.0 | Session Rules
+# Syntaris v0.5.1 | Session Rules
 # Read at every session start. Keep under 150 lines.
 
 ---
@@ -49,14 +49,28 @@ Context thresholds:
 
 ---
 
-## THE FIVE PHASES
+## GATE MODEL (v0.5.1+)
+
+Two layers. Project-level lock once, per-gate flow many times.
 
 ```
-SCOPE CONFIRMED -> MOCKUPS APPROVED -> FRONTEND APPROVED -> TESTS APPROVED -> GO
+PROJECT-LEVEL (once per project, inside /build-rules):
+    BUILD APPROVED  - the full version roadmap v0.1 -> v1.0 is locked
+
+PER-GATE (each version: v0.1.0, v0.2.0, ..., v1.0.0):
+    CONFIRMED -> ROADMAP APPROVED -> MOCKUPS APPROVED ->
+    FRONTEND APPROVED -> GO
 ```
 
-Each phase requires the user to type the approval word. No implicit
-advancement. Scope changes mid-build require re-doing SCOPE CONFIRMED.
+Each approval word requires the user to type it explicitly. No implicit
+advancement. MOCKUPS APPROVED and FRONTEND APPROVED only apply to gates
+that produce UI; backend-only gates skip them. Test plans fold into
+ROADMAP APPROVED (the gate's task list), and test enforcement happens
+at GO via /validate.
+
+Scope changes mid-build require re-doing CONFIRMED for the affected
+gate. Roadmap-level changes (changing the v1.0 endpoint, adding/removing
+versions) require re-running BUILD APPROVED.
 
 ---
 
@@ -118,7 +132,9 @@ At every gate close, do all of this before presenting the checklist:
 
 These don't bend regardless of tone:
 
-- Never write code before FRONTEND APPROVED
+- Never write production code before ROADMAP APPROVED for the current
+  gate (UI gates additionally require FRONTEND APPROVED before backend
+  wire-up)
 - Never advance a gate without the user typing the exact approval word
 - Never skip the REFLEXION entry at gate close
 - Never skip the calibration step at gate close

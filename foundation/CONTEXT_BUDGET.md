@@ -1,5 +1,5 @@
 # CONTEXT_BUDGET.md
-# Syntaris v0.5.0 | Context Budget Management
+# Syntaris v0.5.1 | Context Budget Management
 # Read this when context warning fires or session feels slow
 
 ---

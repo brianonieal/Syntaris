@@ -1,6 +1,6 @@
 # VERSION_ROADMAP.md
-# Syntaris v0.5.0 | Full Version Roadmap
-# Generated during SCOPE CONFIRMED phase.
+# Syntaris v0.5.1 | Full Version Roadmap
+# Generated during BUILD APPROVED phase.
 # Covers v0.0 through the final version for this build type.
 
 ## BUILD TYPE
@@ -40,7 +40,7 @@ Example row for a far-term gate:
 - Failing tests = do not advance
 - Each gate defines exactly what ships and what does NOT ship
 - Gates over 6 hours should be split into sub-gates (e.g. v0.5-A, v0.5-B)
-- Scope changes require re-doing SCOPE CONFIRMED; do not silently
+- Scope changes require re-doing BUILD APPROVED; do not silently
   edit this file mid-build
 - When variance > 30% at a gate close, a heads-up is printed but
   approved ranges are NOT silently edited - the user decides whether
