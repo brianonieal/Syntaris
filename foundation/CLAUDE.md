@@ -64,7 +64,9 @@ advancement. Scope changes mid-build require re-doing SCOPE CONFIRMED.
 
 At every gate close, do all of this before presenting the checklist:
 
-1. Run full test suite - fix failures before presenting
+1. Run /validate - fails block the gate. Covers harness validation
+   (hooks, calibration, stale refs, install round-trip) plus the
+   project test suite (pytest/vitest/jest/go/cargo) in one pass.
 2. Run lightweight security check
 3. Take Playwright screenshots if screens were built (/visual-checks)
 4. Update VERSION_ROADMAP.md for the closing gate: set Status = DONE,

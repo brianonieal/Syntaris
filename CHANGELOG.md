@@ -24,6 +24,7 @@ Changes made after v0.3.0 shipped, before v0.4.0.
 - **ONBOARDING_MODE removed** from CONTRACT.md template, migration script, and all references. Syntaris now always explains concepts naturally rather than toggling between concise and standard modes.
 - **Diagnostic delta in calibration.** `session-start` hook now snapshots the `ERR-` count from `ERRORS.md` at session start into `.syntaris/errors-at-gate-open.count`. `gate-close-calibration` reads that snapshot and includes `errors_open` and `errors_close` in the ESTIMATION line, tracking whether a gate reduced or grew the project's error surface.
 - **Spec-to-test traceability.** `COMPONENT_REGISTRY.md` now has a `Test File` column. The `test-writer` agent registers test file paths when it writes tests. The `testing` skill checks for spec drift at gate close: if FRONTEND_SPEC.md changed for a component, it flags the associated test files for review. The `spec-reviewer` agent also flags untested components.
+- **`/validate` skill.** New skill that runs the harness validation suite plus user-project tests in one pass. Replaces "Run full test suite" as step 1 of the gate-close protocol. 100+ tests covering syntax, hooks, calibration math, stale references, cross-file consistency, full-cycle integration, edge cases, hook-wrapper dispatch, install round-trip, and project test runners (pytest/vitest/jest/go/cargo). Skill at `.claude/skills/validate/`, run-all entry point at `run-all.sh`, individual test scripts in `tests/*.sh`. Requires Git Bash or WSL on Windows.
 
 ---
 
