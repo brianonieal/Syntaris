@@ -123,15 +123,25 @@ The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of trut
 
 ## Install
 
+### Prerequisites
+
+Before installing, you need an open and trusted folder in Claude Code (or whichever runtime you're using). If you don't have one yet:
+
+1. Create a folder somewhere on your machine — e.g. `mkdir ~/syntaris-test && cd ~/syntaris-test`
+2. Open it in Claude Code
+3. Approve workspace trust when Claude Code prompts you
+
+If you skip this and run install commands in an untrusted folder, you'll see `WorkspaceTrustError: Workspace requires trust approval`. That's not a Syntaris bug — it's your runtime's security gate. Approve trust, then continue.
+
 ### One command (Claude Code)
 
-Open Claude Code and type:
+Open Claude Code in a trusted folder and type:
 
 ```
 /plugin install syn@brianonieal
 ```
 
-That's it. Then open any project and type `/syn:start`.
+That's it. The plugin installs Syntaris's skills, hooks, and agents globally — they're available across all your Claude Code workspaces. Then type `/syn:start` to begin your first project.
 
 ### Clone and install (all runtimes)
 
@@ -144,18 +154,56 @@ bash install.sh       # macOS / Linux
 ./install.ps1         # Windows
 ```
 
-The installer auto-detects your runtime and installs accordingly. Then open any project and type `/start`.
+The installer auto-detects your runtime and installs accordingly. Then `cd` into any project folder and type `/start`.
 
-To uninstall: `bash uninstall.sh` or `./uninstall.ps1`.
+### Verify the install worked
 
-### Which should I use?
+```bash
+bash .claude/skills/validate/run-all.sh
+```
+
+Should report `Total: 124, Passed: 124, Failed: 0`. If the count is lower or anything fails, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+You can also run `bash verify.sh` (or `./verify.ps1`) for a structural check — files present, hooks executable, settings.json valid.
+
+### Project-level vs install-level
+
+Two different scopes worth understanding:
+
+- **Install-level** (`~/.claude/` or the plugin sandbox): the skills, hooks, and agents themselves. Set up once. Survives across all your projects.
+- **Project-level** (`<your-project>/foundation/`): created the first time you run `/start` (or `/syn:start`) in a new folder. Contains CONTRACT.md, SPEC.md, the memory files, version roadmap, and everything specific to *that* project. Each project has its own `foundation/`.
+
+You install Syntaris once, then use it in many projects.
+
+### Which command should I use?
 
 | Method | Best for | Slash commands |
 |--------|----------|---------------|
-| `/plugin install` | Fastest setup, sharing with others | `/syn:start`, `/syn:research`, etc. |
+| `/plugin install` | Fastest setup, sharing with others, Claude Code only | `/syn:start`, `/syn:research`, etc. |
 | `install.sh` / `install.ps1` | Full hook enforcement, personal config, non-Claude Code runtimes | `/start`, `/research`, etc. |
 
-Both methods install the same skills, hooks, and agents. You can use both at the same time.
+Both methods install the same skills, hooks, and agents. You can use both at the same time on the same machine. The slash-command prefix is the only user-visible difference.
+
+### Adopting Syntaris in an existing project
+
+You can run `/start` (or `/syn:start`) in a folder that already has code in it. Syntaris will create a `foundation/` directory alongside your existing files without touching your code. The first conversation in `/start` is "are you starting fresh or adapting an existing project?" — pick the second option and Syntaris will read what's there, ask about the current state, and bootstrap CONTRACT.md and a partial roadmap from what it finds.
+
+If you never want to be prompted by Syntaris in this folder, just don't create `foundation/`. The hooks only fire when there's a `CONTRACT.md` to read.
+
+### Uninstall
+
+If installed via plugin: `/plugin uninstall syn@brianonieal` from inside Claude Code.
+
+If installed via clone: `bash uninstall.sh` (`./uninstall.ps1` on Windows) from the cloned Syntaris repo. This removes `~/.claude/skills/`, `~/.claude/hooks/`, `~/.claude/agents/`, and backs up your `settings.json`. Project-level `foundation/` directories are never touched by uninstall — your project memory survives.
+
+### When something doesn't work
+
+- **`WorkspaceTrustError`** — approve workspace trust in your runtime, see Prerequisites above
+- **`/syn:start` not recognized** — the plugin install didn't complete; try `/plugin list` to confirm
+- **Hooks not firing** — run `bash verify.sh` to confirm install is structurally valid; if green, see [docs/HOOKS.md](docs/HOOKS.md) for hook event bindings
+- **Calibration hook silent** — runs at gate close only, not on every command. Triggered manually or by gate-close protocol.
+
+For other issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) or run `bash collect-diagnostics.sh` to gather a diagnostic bundle.
 
 ---
 
