@@ -2,7 +2,7 @@
 
 **v0.4.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
 
-Syntaris breaks software projects into five mechanically-gated phases, keeps three-layer memory across sessions so the system learns from past mistakes, and runs across eight AI coding harnesses at three enforcement tiers.
+Syntaris breaks software projects into five mechanically-gated phases, accumulates structured calibration data across sessions so estimates improve with each gate, and runs across eight AI coding harnesses at three enforcement tiers.
 
 This is a methodology, not a tool. It works on Claude Code with full hook-based enforcement (Tier 1), on Cursor and Windsurf with rule-based partial enforcement (Tier 2), and on Codex CLI / Gemini CLI / Aider / Kiro / OpenCode as advisory text (Tier 3).
 
@@ -30,6 +30,22 @@ This is a methodology, not a tool. It works on Claude Code with full hook-based 
 
 ---
 
+## How this relates to Anthropic's Claude Managed Agents
+
+Anthropic announced three additions to Managed Agents in May 2026: Dreaming (between-session memory hygiene), Outcomes (success-criteria + grader + retry), and Multiagent orchestration (lead splits across specialists). There is real overlap with Syntaris on one of those surfaces, partial overlap on a second, and basically none on the third.
+
+| Managed Agents feature | Overlap with Syntaris | Honest read |
+|---|---|---|
+| Dreaming | High | Both run reflexion over predicted-vs-actual outcomes. Syntaris fires on **gate close** (structural boundary), Managed Agents on **between sessions** (temporal). Syntaris's ESTIMATION format is numeric and structured; auto-pattern-extraction is on the v0.5.0 roadmap (today the data is collected mechanically, surfacing is human-reviewed). |
+| Outcomes | Partial | Syntaris has gate-level approval (binary, manual) and a circuit breaker (3 failures → /debug). Task-level success criteria with automated grading and retry is a real gap, scoped for v0.5.0+ in `BUILD_NEXT.md`. |
+| Multiagent orchestration | Already there | Syntaris ships 7 subagents with structured handoff (`research-agent`, `debug-agent`, `health-agent`, `critical-thinker-agent`, `spec-reviewer`, `test-writer`, `security-auditor`). Architecture is sequential delegation, not parallel split. |
+
+**Where Syntaris doesn't overlap.** Managed Agents is locked to Anthropic's runtime. Syntaris ships across eight runtimes at three enforcement tiers, with foundation files as portable compilation-stage artifacts that survive context resets and `/clear`. The five-phase gate model with mechanical approval words and the personal/client billing branch are also outside Managed Agents' scope. The compilation-stage knowledge layer framing (per VentureBeat / Karpathy / Pinecone Nexus) is a different positioning than Managed Agents' "smart agent runtime" framing.
+
+If you're using Managed Agents and only Managed Agents, you may not need Syntaris. If you're working across multiple harnesses, want gate-tied calibration with structured numeric output, or need the personal/client branch, Syntaris is built for that.
+
+---
+
 ## How it works
 
 ### Five-phase gate model
@@ -54,15 +70,21 @@ Memory persists across `/clear` and sessions. Patterns earn confidence through r
 
 ### Calibration loop
 
-At every gate close, a reflexion entry records predicted hours, actual hours, variance, and (in v0.4.0+) error count delta. When variance exceeds 30%, a longer reflexion is required. Across enough gates, estimates calibrate.
+At every gate close, a structured ESTIMATION entry is appended to `MEMORY_CORRECTIONS.md`:
+
+```
+ESTIMATION: gate=v0.3.0 estimated=4h actual=6.00h variance=+50% source=timelog errors_open=2 errors_close=4 date=2026-05-06T18:36:19Z
+```
+
+Predicted hours come from `VERSION_ROADMAP.md`. Actual hours come from `TIMELOG.md` (preferred) or git commit timestamps (fallback). Error delta comes from counting `ERR-` entries in `ERRORS.md` at session start vs gate close. When variance exceeds 30%, a heads-up message fires and a longer reflexion is required.
+
+The Forge Finance build produced consistent variance data across 12 gates: real hours ran 83-95% under naive raw estimates once Syntaris's pre-decided schemas and managed-SDK adjustments were factored in. That is one project on one stack — calibration of your own builds will produce different numbers.
+
+The data accumulates mechanically. **Pattern extraction from accumulated ESTIMATION data is on the v0.5.0 roadmap** (see `BUILD_NEXT.md`) — today the data is structured but human-reviewed; v0.5.0 auto-surfaces patterns like "RLS gates run +35% over estimate, last 4 gates" into `MEMORY_SEMANTIC.md`.
 
 ### What `/start` does
 
 `/start` detects your runtime, checks if you're resuming an existing project, then asks the one question that matters: *what do you want to build?* After you describe your idea, it researches the competitive landscape (top 5 similar products, where they fall short, how yours can stand out), recommends a tech stack with trade-offs, and asks whether this is personal or client work. Client projects get billing fields collected conversationally and automatic invoicing at gate close.
-
-### Calibration loop
-
-The Forge Finance build produced consistent variance data across 12 gates: real hours ran 83-95% under naive raw estimates once Syntaris's pre-decided schemas and managed-SDK adjustments were factored in. That is one project on one stack - calibration of your own builds will produce different numbers.
 
 ---
 
@@ -80,12 +102,12 @@ Syntaris runs across eight AI coding harnesses at three enforcement tiers.
 
 The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of truth on capability per runtime. Other Claude Code frameworks may claim equal support across all runtimes; Syntaris doesn't, because hook systems, rule auto-application, and subagent isolation differ mechanically.
 
-### What ships in v0.3.0
+### What ships in v0.4.0
 
-- **14 skills** in `.claude/skills/` covering session orchestration (`start`), build rules (`build-rules`), critical thinking (`critical-thinker`), research (`research`), costs (`costs`), testing (`testing`), security (`security`), performance (`performance`), deployment (`deployment`), debug (`debug`), health (`health`), billing (consolidated), rollback (`rollback`), and global rules (`global-rules`)
-- **20 hook scripts** in `.claude/hooks/` (10 bash + 10 PowerShell pairs)
+- **15 skills** in `.claude/skills/` covering session orchestration (`start`), build rules (`build-rules`), critical thinking (`critical-thinker`), research (`research`), costs (`costs`), testing (`testing`), security (`security`), performance (`performance`), deployment (`deployment`), debug (`debug`), health (`health`), billing (consolidated), rollback (`rollback`), global rules (`global-rules`), and the new harness validation suite (`validate`, 103 tests)
+- **20 hook scripts** in `.claude/hooks/` (10 bash + 10 PowerShell pairs), with the v0.4.0 diagnostic delta in `gate-close-calibration` and `session-start`
 - **7 subagents** in `.claude/agents/`: `spec-reviewer`, `test-writer`, `security-auditor`, `research-agent`, `debug-agent`, `health-agent`, `critical-thinker-agent`
-- **22 foundation file templates** in `foundation/` covering contract, spec, decisions, memory, costs, components, frontend spec, design system, examples, etc., plus `CLIENTS.md.template` for client work
+- **23 foundation file templates** in `foundation/` covering contract, spec, decisions, memory, costs, components (now with `Test File` column for spec-to-test traceability), frontend spec, design system, examples, etc., plus `CLIENTS.md.template` for client work
 - **8 target adapters** in `targets/` (one per supported runtime, with per-target install logic)
 - **6 recipe families** in `recipes/`: `web-app-starter` with React/Vue/Svelte/Plain sub-recipes, `api-starter` with TypeScript/Python/Go sub-recipes, `python-cli`, `mobile-starter` with platform sub-recipes, `bring-your-own`, `_template`
 - **Runtime detection** at `.claude/lib/detect-runtime.sh` and `.ps1`
@@ -208,9 +230,9 @@ Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntari
 - **v0.1.0** - first public release; README cleanup, security baseline, version reset
 - **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark
 - **v0.4.0** - diagnostic delta in calibration, spec-to-test traceability, `/validate` skill (103 tests), conversational `/start` rewrite, competitive landscape mode in `/research`, README install simplification, install.sh CRLF fix. **This version.**
-- **v0.5.0** - planned: full benchmark with 30 tasks, 3 runs per condition, audited task selection
+- **v0.5.0** - planned: pattern extraction from MEMORY_CORRECTIONS.md (auto-surface variance patterns into MEMORY_SEMANTIC.md), task-level Outcomes (success criteria + grader + retry within a gate), full 30-task benchmark
 - **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards) plus `/start --quick` mode
-- **v0.7.0** - planned: calibration evidence (auto-generated learning curve, populated MEMORY_CORRECTIONS.md example)
+- **v0.7.0** - planned: calibration evidence (auto-generated learning curve from accumulated patterns, populated MEMORY_CORRECTIONS.md example)
 - **v1.0.0** - when calibration data exists across at least three different stacks AND the API is stable enough to commit to backward compatibility
 
 ---
