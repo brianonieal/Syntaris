@@ -3,7 +3,7 @@ name: build-rules
 description: "Invokes the five-phase planning and approval process before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Syntaris v0.3.0
+# BUILD RULES - Syntaris v0.4.0
 # Invoke: /build-rules or auto-triggered at new project start
 
 ## THE FIVE PHASES

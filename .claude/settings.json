@@ -112,7 +112,7 @@
   },
 
   "env": {
-    "SYNTARIS_VERSION": "v0.2.0",
+    "SYNTARIS_VERSION": "v0.4.0",
     "CONTEXT_WARN_TURNS": "80",
     "CONTEXT_HARD_TURNS": "120"
   }

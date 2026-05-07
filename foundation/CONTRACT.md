@@ -1,5 +1,5 @@
 # CONTRACT.md
-# Syntaris v0.3.0 | Project Contract
+# Syntaris v0.4.0 | Project Contract
 # Fill this out during SCOPE CONFIRMED phase. Lock all fields before GO.
 # Once LOCKED, fields only change via new DECISIONS.md entry, which
 # also triggers re-doing SCOPE CONFIRMED.

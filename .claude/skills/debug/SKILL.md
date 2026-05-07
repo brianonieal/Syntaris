@@ -3,7 +3,7 @@ name: debug
 description: "Structured root cause analysis with a circuit-breaker rule. Use after 3 consecutive failures on the same problem, when the user types /debug, or when diagnosing any persistent error. Heavy reading happens in an isolated subagent."
 ---
 
-# DEBUG SKILL - Syntaris v0.3.0
+# DEBUG SKILL - Syntaris v0.4.0
 # Invoke: /debug or auto-triggered after 3 consecutive failures
 
 ## TONE

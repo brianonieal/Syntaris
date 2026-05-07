@@ -1,5 +1,5 @@
 # VISUAL_CHECKS.md
-# Syntaris v0.3.0 | Visual Verification at Gate Close
+# Syntaris v0.4.0 | Visual Verification at Gate Close
 # Playwright screenshots compared against MOCKUPS.md spec
 
 ---

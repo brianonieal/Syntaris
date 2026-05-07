@@ -1,6 +1,6 @@
 # Syntaris
 
-**v0.3.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
+**v0.4.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
 
 Syntaris breaks software projects into five mechanically-gated phases, keeps three-layer memory across sessions so the system learns from past mistakes, and runs across eight AI coding harnesses at three enforcement tiers.
 
@@ -206,8 +206,8 @@ Syntaris/
 Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntaris v8 through v11.4) are documented in `CHANGELOG.md` and `MIGRATION.md` for users coming from a private install.
 
 - **v0.1.0** - first public release; README cleanup, security baseline, version reset
-- **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark. **This version.**
-- **v0.4.0** - planned: semantic gate cluster (LSP simulation hook, mutation testing, property-based test scaffolding, spec-to-test traceability, diagnostic delta in reflexion)
+- **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark
+- **v0.4.0** - diagnostic delta in calibration, spec-to-test traceability, `/validate` skill (103 tests), conversational `/start` rewrite, competitive landscape mode in `/research`, README install simplification, install.sh CRLF fix. **This version.**
 - **v0.5.0** - planned: full benchmark with 30 tasks, 3 runs per condition, audited task selection
 - **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards) plus `/start --quick` mode
 - **v0.7.0** - planned: calibration evidence (auto-generated learning curve, populated MEMORY_CORRECTIONS.md example)

@@ -3,7 +3,7 @@ name: health
 description: "Audits Syntaris installation and project foundation files. Use when checking system integrity, after long breaks from a project, or when the user types /health. The 22-file read happens in an isolated subagent."
 ---
 
-# HEALTH SKILL - Syntaris v0.3.0
+# HEALTH SKILL - Syntaris v0.4.0
 # Invoke: /health
 
 ## STEP 1: DELEGATE TO HEALTH-AGENT

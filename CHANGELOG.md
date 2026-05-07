@@ -4,27 +4,88 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
-## [0.3.0-post] - 2026-05-06 - Post-release polish
+## [0.4.0] - 2026-05-06 - Diagnostic delta + spec-to-test traceability + `/validate`
 
-Changes made after v0.3.0 shipped, before v0.4.0.
+Smaller release than v0.3.0 but adds two pieces of methodology
+infrastructure (diagnostic delta in calibration, spec-to-test
+traceability) and one validation backbone (`/validate` skill). Also
+sweeps several stale references and cleans the `/start` flow.
+
+### Added
+
+- **Diagnostic delta in calibration.** `session-start` hook snapshots
+  the `ERR-` count from `ERRORS.md` at session start into
+  `.syntaris/errors-at-gate-open.count`. `gate-close-calibration` reads
+  that snapshot and writes `errors_open=N errors_close=M` into the
+  ESTIMATION line, tracking whether a gate shrank or grew the project's
+  error surface across both bash and PowerShell platforms.
+- **Spec-to-test traceability.** `COMPONENT_REGISTRY.md` gains a
+  `Test File` column. The `test-writer` agent registers test file
+  paths when it writes tests. The `testing` skill checks for spec
+  drift at gate close: if `FRONTEND_SPEC.md` changed for a component,
+  it flags the associated test files for review. The `spec-reviewer`
+  agent also flags untested components.
+- **`/validate` skill.** New skill that runs the harness validation
+  suite plus user-project tests in one pass. Replaces "Run full test
+  suite" as step 1 of the gate-close protocol. 103 tests covering
+  syntax, hooks, calibration math, stale references, cross-file
+  consistency, full-cycle integration, edge cases, hook-wrapper
+  dispatch, install round-trip, and project test runners (pytest /
+  vitest / jest / go / cargo). Located at `.claude/skills/validate/`,
+  with `run-all.sh` orchestrating numbered scripts in `tests/`.
+  Requires Git Bash or WSL on Windows.
+- **Competitive landscape mode in `/research`.** Mode A finds top 5
+  similar products for an app idea, surfaces differentiation
+  opportunities, recommends MVP priorities and what to skip. Original
+  targeted research preserved as Mode B. The `research-agent` subagent
+  has structured output formats for both modes.
 
 ### Fixed
 
-- **CRLF line endings breaking bash syntax checks on Windows.** `git clone` with `core.autocrlf=true` converted `.sh` files to CRLF, causing `bash -n` to fail via WSL. Three-layer fix: `.gitattributes` forces `*.sh` to LF, `install.ps1` strips CRLF during hook copy, `verify.ps1` creates LF temp copies before testing.
-- **Stale v0.2.0 references.** v0.2.0 was never publicly released. Fixed references across SUBAGENTS.md, README.md, TROUBLESHOOTING.md, EXAMPLES.md, WHY.md.
-- **Foundation file count.** README and docs said 22 templates; actual count was 23 (CLIENTS.md.template added in v0.3.0).
-- **Em-dash and double-hyphen inconsistencies** across documentation files.
+- **CRLF line endings breaking bash syntax checks on Windows.**
+  `git clone` with `core.autocrlf=true` converted `.sh` files to CRLF,
+  causing `bash -n` to fail via WSL. Four-layer fix: `.gitattributes`
+  forces `*.sh` to LF, `install.sh` strips CRLF during hook copy,
+  `install.ps1` does the same on its side, `verify.ps1` creates LF
+  temp copies before testing.
+- **`grep -c` zero-match double-output bug.** `grep -c` outputs `0`
+  AND exits 1 when there are no matches. The `|| echo "0"` pattern
+  concatenated a second `0`, producing `"0\n0"` written to the count
+  file. Fixed with the `|| true` pattern.
+- **PowerShell 5.1 `Join-Path` 3-argument incompatibility.** The
+  calibration hook's snapshot path used three positional arguments,
+  which PS 5.1 silently rejects. Fixed with nested `Join-Path` calls.
+- **Stale references swept.** `ONBOARDING_MODE`, "casual coder",
+  `CLIENT_TYPE` (renamed to `PROJECT_TYPE`), and "New to Syntaris?"
+  removed from all active source files. Stale `v0.2.0` references
+  cleaned across SUBAGENTS.md, README.md, TROUBLESHOOTING.md,
+  EXAMPLES.md, WHY.md. Em-dash and double-hyphen inconsistencies
+  fixed across documentation.
 
 ### Changed
 
-- **`/start` skill rewritten.** Removed "New to Syntaris?" question and ONBOARDING_MODE. New flow: detect runtime, check if resuming, ask "what do you want to build?" (open-ended memory dump), competitive landscape + stack recommendation, personal/client logistics last. Conversational tone throughout.
-- **`/research` skill: added competitive landscape mode.** New Mode A finds top 5 similar products for an app idea, surfaces differentiation opportunities, recommends MVP priorities and what to skip. Original targeted research preserved as Mode B.
-- **`research-agent` subagent updated** with structured output format for competitive landscape analysis.
-- **README install section simplified.** Replaced 75-line two-path explanation with 25-line section leading with one-command plugin install (`/plugin install syn@brianonieal`).
-- **ONBOARDING_MODE removed** from CONTRACT.md template, migration script, and all references. Syntaris now always explains concepts naturally rather than toggling between concise and standard modes.
-- **Diagnostic delta in calibration.** `session-start` hook now snapshots the `ERR-` count from `ERRORS.md` at session start into `.syntaris/errors-at-gate-open.count`. `gate-close-calibration` reads that snapshot and includes `errors_open` and `errors_close` in the ESTIMATION line, tracking whether a gate reduced or grew the project's error surface.
-- **Spec-to-test traceability.** `COMPONENT_REGISTRY.md` now has a `Test File` column. The `test-writer` agent registers test file paths when it writes tests. The `testing` skill checks for spec drift at gate close: if FRONTEND_SPEC.md changed for a component, it flags the associated test files for review. The `spec-reviewer` agent also flags untested components.
-- **`/validate` skill.** New skill that runs the harness validation suite plus user-project tests in one pass. Replaces "Run full test suite" as step 1 of the gate-close protocol. 100+ tests covering syntax, hooks, calibration math, stale references, cross-file consistency, full-cycle integration, edge cases, hook-wrapper dispatch, install round-trip, and project test runners (pytest/vitest/jest/go/cargo). Skill at `.claude/skills/validate/`, run-all entry point at `run-all.sh`, individual test scripts in `tests/*.sh`. Requires Git Bash or WSL on Windows.
+- **`/start` skill rewritten.** New flow: detect runtime, check if
+  resuming, ask "what do you want to build?" (open-ended memory dump),
+  competitive landscape + stack recommendation, personal/client
+  logistics last. Conversational tone throughout. Removed the
+  "New to Syntaris?" question and the entire `ONBOARDING_MODE`
+  concept.
+- **README install section simplified.** Replaced 75-line two-path
+  explanation with 25-line section leading with one-command plugin
+  install (`/plugin install syn@brianonieal`).
+- **Gate-close protocol step 1 now `/validate` instead of "full test
+  suite"** since `/validate` covers both the harness and the project
+  tests.
+
+### Migration
+
+- v0.3.0 → v0.4.0 is **additive only**. No migration script needed.
+- Existing `MEMORY_CORRECTIONS.md` files without `errors_open`/
+  `errors_close` fields keep working; new entries gain the new fields,
+  old entries are preserved as-is.
+- Existing `COMPONENT_REGISTRY.md` files without a `Test File` column
+  should be edited to add it; the testing skill tolerates either
+  format but spec-drift detection only works once the column exists.
 
 ---
 

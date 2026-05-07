@@ -3,7 +3,7 @@ name: costs
 description: "This skill tracks build costs and operational costs for app projects. Use when estimating costs, checking spending, or when the user types /costs. Flags cheaper alternatives at every decision point."
 ---
 
-# COSTS SKILL - Syntaris v0.3.0
+# COSTS SKILL - Syntaris v0.4.0
 # Invoke: /costs or /cost-tracker
 
 ## COST ESTIMATES BEFORE BUILDING
