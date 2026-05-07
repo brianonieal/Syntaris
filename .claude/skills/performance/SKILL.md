@@ -3,7 +3,7 @@ name: performance
 description: "This skill audits frontend load speed, backend response time, and database query performance. Use before production deployments, at gate close, or when the user types /performance."
 ---
 
-# PERFORMANCE SKILL - Syntaris v0.5.2
+# PERFORMANCE SKILL - Syntaris v0.5.3
 # Invoke: /performance or auto-triggered pre-deploy
 
 ## TARGETS

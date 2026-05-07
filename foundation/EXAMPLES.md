@@ -1,9 +1,9 @@
 # EXAMPLES.md
-# Syntaris v0.5.2 | Real Code Patterns
+# Syntaris v0.5.3 | Real Code Patterns
 # Stack: Next.js 14+ App Router, FastAPI Python 3.11, Supabase, LangGraph, LiteLLM, Voyage AI
 #
 # STACK-SPECIFIC FILE
-# Syntaris v0.5.2 ships opinionated for the stack listed above. The patterns
+# Syntaris v0.5.3 ships opinionated for the stack listed above. The patterns
 # here use Plaid, Voyage AI's voyage-finance-2 model, and other fintech-flavored
 # examples drawn from the production build (Forge Finance) that produced the
 # methodology's calibration data. If you are on a different stack, treat this

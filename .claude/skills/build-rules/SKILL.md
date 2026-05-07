@@ -3,7 +3,7 @@ name: build-rules
 description: "Invokes the planning and approval flow before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Syntaris v0.5.2
+# BUILD RULES - Syntaris v0.5.3
 # Invoke: /build-rules or auto-triggered at new project start
 
 ## GATE MODEL
@@ -21,10 +21,20 @@ PER-GATE (each version):
 ```
 
 Each approval word requires the user to type it explicitly. No implicit
-advancement. **MOCKUPS APPROVED** and **FRONTEND APPROVED** only fire
-on gates that produce UI; backend-only gates skip them. Test plans fold
-into **ROADMAP APPROVED** (the gate's task list includes test tasks),
-and test enforcement happens at **GO** via /validate.
+advancement. **Matching is case-insensitive** — `BUILD APPROVED`,
+`build approved`, `Build Approved` all work. Canonical form is uppercase
+in docs and prompts; user input can be any case.
+
+**MOCKUPS APPROVED** and **FRONTEND APPROVED** fire on any gate that
+produces user-facing visual output — full screens, scaffold/chrome
+components, design system tokens, layout primitives. Pure backend gates
+(data layer, API endpoints, migrations, infra) with no visual artifacts
+skip them. A v0.0.0 foundation gate that builds a design system + app
+shell + page stubs is a UI-producing gate even though it has no
+business logic yet.
+
+Test plans fold into **ROADMAP APPROVED** (the gate's task list includes
+test tasks), and test enforcement happens at **GO** via /validate.
 
 If the user proposes a per-gate scope change (adding a feature, dropping
 a sub-task, changing the gate's deliverable), that triggers a re-do of

@@ -1,10 +1,10 @@
 # DEPLOYMENT_CONFIG.md
-# Syntaris v0.5.2 | External Service Configuration Checklist
+# Syntaris v0.5.3 | External Service Configuration Checklist
 # Run this checklist before every production deployment
 # Invoke: /deploy --configure
 #
 # STACK-SPECIFIC FILE
-# This checklist is written for the Syntaris v0.5.2 stack: Next.js + FastAPI +
+# This checklist is written for the Syntaris v0.5.3 stack: Next.js + FastAPI +
 # Supabase + LangGraph + Plaid + Voyage AI, deploying to Vercel (frontend) and
 # Render (backend). The Plaid, Voyage AI, and Sentry sections are specific to
 # fintech projects. If you are on a different stack, copy this file into your

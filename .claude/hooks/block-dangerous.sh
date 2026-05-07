@@ -1,6 +1,6 @@
 #!/bin/bash
 # block-dangerous.sh
-# Syntaris v0.5.2: Block dangerous bash commands before execution
+# Syntaris v0.5.3: Block dangerous bash commands before execution
 # Runs as PreToolUse hook with matcher "Bash"
 # Per Anthropic hook spec: input arrives as JSON on stdin, exit 2 blocks with
 # stderr feedback to Claude.

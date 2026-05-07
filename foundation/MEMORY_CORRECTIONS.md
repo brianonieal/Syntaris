@@ -1,5 +1,5 @@
 # MEMORY_CORRECTIONS.md
-# Syntaris v0.5.2 | Reflexion Entries and Estimation Calibration
+# Syntaris v0.5.3 | Reflexion Entries and Estimation Calibration
 # New entries added ABOVE previous (newest first).
 # Used by build-rules.md to calibrate future estimates.
 

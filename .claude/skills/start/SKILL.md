@@ -3,7 +3,7 @@ name: start
 description: "Session orchestration entry point. Greets the user, detects runtime, figures out if they're starting fresh or resuming, handles project logistics, gets them talking about what they want to build, runs competitive landscape and stack recommendation with critical-thinker pressure-testing, then hands off to /build-rules. Always the first command at the start of any project session."
 ---
 
-# START SKILL - Syntaris v0.5.2
+# START SKILL - Syntaris v0.5.3
 # Invoke: /start
 
 ## TONE
@@ -22,7 +22,7 @@ Before saying anything, detect which runtime you're in. Run `.claude/lib/detect-
 
 Print one short line:
 
-> "Syntaris v0.5.2 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
+> "Syntaris v0.5.3 on [Claude Code / Cursor / etc.] (Tier [1/2/3])"
 
 For Tier 2/3, add one sentence about what's different. Don't dwell on it.
 
@@ -236,5 +236,6 @@ If no: ask what they want to change or talk about. Loop back to whichever step i
 - Runtime detection is automatic. Never ask the user which runtime they're in.
 - For Tier 2/3, don't promise enforcement that doesn't exist. Point to `docs/COMPATIBILITY.md`.
 - The five approval words (CONFIRMED, ROADMAP APPROVED, MOCKUPS APPROVED, FRONTEND APPROVED, GO) work on all tiers. The new BUILD APPROVED word lives inside `/build-rules`. The enforcement mechanism differs across tiers; the words don't.
+- **Approval-word matching is case-insensitive.** Canonical form in docs and prompts is uppercase, but `build approved`, `Build Approved`, and `BUILD APPROVED` all work. Don't push back on the user for using lowercase.
 - Critical-thinker is invoked once during `/start` - on the stack decision in Step 5. Don't invoke it during competitive landscape; that's analysis, not a decision-lock moment.
 - Tone stays consistent throughout: warm, grounded, senior-engineer. Not a cheerleader, not a form. The user should finish `/start` feeling like they're in capable hands.

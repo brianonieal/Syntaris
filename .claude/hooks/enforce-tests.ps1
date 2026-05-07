@@ -1,5 +1,5 @@
 ﻿# enforce-tests.ps1
-# Syntaris v0.5.2: Block new implementation writes when tests are failing
+# Syntaris v0.5.3: Block new implementation writes when tests are failing
 # Runs as PreToolUse hook with matcher "Write|Edit|MultiEdit"
 # Per Anthropic hook spec: input arrives as JSON on stdin, exit 2 blocks.
 

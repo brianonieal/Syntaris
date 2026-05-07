@@ -1,5 +1,5 @@
 # MEMORY_EPISODIC.md
-# Syntaris v0.5.2 | Session Log and Gate Outcomes
+# Syntaris v0.5.3 | Session Log and Gate Outcomes
 # Appended by writethru-episodic hook on Stop events.
 # Updated at gate close with gate outcome rows.
 

@@ -3,7 +3,7 @@ name: critical-thinker
 description: "Pressure-tests significant architectural decisions before they become load-bearing. Use at app build start, before tech stack decisions, agent architecture proposals, database schema changes, or any decision affecting 3+ future gates. The analytical heavy lift happens in an isolated subagent; the back-and-forth conversation with the user stays in the main thread."
 ---
 
-# CRITICAL THINKER - Syntaris v0.5.2
+# CRITICAL THINKER - Syntaris v0.5.3
 # Invoke: /critical-thinker
 
 ## PURPOSE

@@ -1,6 +1,6 @@
 #!/bin/bash
 # context-check.sh
-# Syntaris v0.5.2: Warn when context approaches dangerous fill level
+# Syntaris v0.5.3: Warn when context approaches dangerous fill level
 # Runs as PostToolUse hook. Uses a turn-count proxy stored per session.
 #
 # The previous version used session-file size, which grows monotonically and

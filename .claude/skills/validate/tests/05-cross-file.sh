@@ -167,6 +167,30 @@ else
   FAILURES+=("05.12d CI workflow")
 fi
 
+# 05.12e - Case-insensitive approval-word matching documented (v0.5.3+)
+TOTAL=$((TOTAL+1))
+if grep -qi "case.insensitive\|case insensitive" "$R/foundation/CLAUDE.md" 2>/dev/null \
+   && grep -qi "case.insensitive\|case insensitive" "$R/.claude/skills/build-rules/SKILL.md" 2>/dev/null; then
+  echo "  [PASS] 05.12e Case-insensitive approval matching documented"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12e Case-insensitive approval-word rule not documented"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12e case-insensitive docs")
+fi
+
+# 05.12f - MOCKUPS/FRONTEND APPROVED clarification (v0.5.3+ - foundation gates count as UI)
+TOTAL=$((TOTAL+1))
+if grep -qi "scaffold\|chrome\|design system" "$R/.claude/skills/build-rules/SKILL.md" 2>/dev/null \
+   | head -5 >/dev/null && grep -qi "user-facing visual" "$R/.claude/skills/build-rules/SKILL.md" 2>/dev/null; then
+  echo "  [PASS] 05.12f UI-gate definition includes scaffold/chrome"
+  PASS=$((PASS+1))
+else
+  echo "  [FAIL] 05.12f UI-gate definition not clarified"
+  FAIL=$((FAIL+1))
+  FAILURES+=("05.12f UI-gate clarification")
+fi
+
 # 05.13 - Plugin manifest is valid JSON
 TOTAL=$((TOTAL+1))
 PLUGIN="$R/.claude-plugin/plugin.json"

@@ -4,6 +4,67 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.5.3] - 2026-05-07 - Methodology clarifications from first cold-run
+
+Patch release driven by feedback from the first real-project run on
+v0.5.1 (a personal reading tracker built from /start through v0.0.0
+gate close). Two clarifications landed in the methodology docs based
+on observed behavior versus what the spec said.
+
+### Changed (clarifications, not behavior changes)
+
+- **Approval-word matching is case-insensitive.** The system already
+  accepted lowercase approval words in v0.5.1 (the cold-run user
+  typed `confirmed`, `mockups approved`, `frontend approved`, `go`
+  in lowercase and it all worked). Docs now state this explicitly:
+  canonical form is uppercase, but `BUILD APPROVED`,
+  `build approved`, and `Build Approved` all work. No more
+  pretending the system is strict when it isn't.
+- **MOCKUPS APPROVED / FRONTEND APPROVED definition clarified.** v0.5.1
+  said "MOCKUPS APPROVED only fires on UI gates; backend-only gates
+  skip them." That language was too tight. Foundation gates that
+  produce design systems, layout primitives, app shell, and page
+  stubs (like the v0.0.0 the cold-run produced) are UI-producing
+  gates. Updated to: "fires on any gate that produces user-facing
+  visual output — full screens, scaffold/chrome components, design
+  system tokens, layout primitives. Pure backend gates (data layer,
+  API endpoints, migrations, infra) with no visual artifacts skip
+  them."
+
+### Validated by cold-run feedback (no action needed)
+
+- BUILD APPROVED summary table felt like a real commitment moment to
+  the user. Project-level lock concept holds.
+- /critical-thinker raised real, substantive issues during stack
+  selection (Supabase pause behavior, Pages Router vs App Router for
+  tight timeline). User accepted both. The pressure-test isn't a
+  rubber stamp.
+- /research competitive landscape produced real research, not
+  research-theater. Goodreads, StoryGraph, Literal all surfaced
+  with named user counts and complaints.
+- First-ever ESTIMATION line landed: v0.0.0 estimated 4h, actual
+  ~2h, variance -50%. Auto-proposed correction: -40% on personal
+  project foundation gates. One data point, but the calibration
+  loop is producing real data now.
+
+### Tests
+
+- `tests/05-cross-file.sh`: 2 new tests (05.12e, 05.12f) verifying
+  case-insensitive matching is documented and the UI-gate definition
+  includes scaffold/chrome.
+- /validate suite is now 131/131 (was 129).
+
+### Plus
+
+- Plugin manifest version `0.5.2` → `0.5.3`.
+- `SYNTARIS_VERSION` env var bumped.
+
+### Migration
+
+None. v0.5.2 → v0.5.3 is documentation-only; no skill behavior changes.
+
+---
+
 ## [0.5.2] - 2026-05-07 - Adopt-mode in /start + README onboarding pass
 
 Patch release. Two pieces of work, both about onboarding friction

@@ -1,5 +1,5 @@
 # MEMORY_SEMANTIC.md
-# Syntaris v0.5.2 | Persistent Patterns Across Projects
+# Syntaris v0.5.3 | Persistent Patterns Across Projects
 # Updated at gate close when a pattern is validated or invalidated.
 # Auto-extracted patterns from .syntaris/proposed-patterns.md are
 # promoted here after human review (/health --review-patterns).

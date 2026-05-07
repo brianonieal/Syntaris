@@ -1,6 +1,6 @@
 #!/bin/bash
 # extract-patterns.sh
-# Syntaris v0.5.2: Pattern extraction from accumulated ESTIMATION data.
+# Syntaris v0.5.3: Pattern extraction from accumulated ESTIMATION data.
 #
 # Reads ESTIMATION lines from MEMORY_CORRECTIONS.md, detects four pattern
 # types, writes proposed PAT entries to .syntaris/proposed-patterns.md.

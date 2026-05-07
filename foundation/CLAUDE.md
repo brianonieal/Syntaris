@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Syntaris v0.5.2 | Session Rules
+# Syntaris v0.5.3 | Session Rules
 # Read at every session start. Keep under 150 lines.
 
 ---
@@ -63,10 +63,18 @@ PER-GATE (each version: v0.1.0, v0.2.0, ..., v1.0.0):
 ```
 
 Each approval word requires the user to type it explicitly. No implicit
-advancement. MOCKUPS APPROVED and FRONTEND APPROVED only apply to gates
-that produce UI; backend-only gates skip them. Test plans fold into
-ROADMAP APPROVED (the gate's task list), and test enforcement happens
-at GO via /validate.
+advancement. **Matching is case-insensitive** — `BUILD APPROVED`,
+`build approved`, and `Build Approved` all work. The canonical form
+shown in docs and prompts is uppercase, but the system accepts any case.
+
+**MOCKUPS APPROVED** and **FRONTEND APPROVED** fire on any gate that
+produces user-facing visual output — full screens, scaffold/chrome
+components, design system tokens, layout primitives. The only gates
+that skip them are pure backend gates (data layer, API endpoints,
+migrations, infra) with no visual artifacts at all.
+
+Test plans fold into ROADMAP APPROVED (the gate's task list), and test
+enforcement happens at GO via /validate.
 
 Scope changes mid-build require re-doing CONFIRMED for the affected
 gate. Roadmap-level changes (changing the v1.0 endpoint, adding/removing
