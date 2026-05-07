@@ -4,7 +4,20 @@ What's planned after v0.4.0. This file is a working planning doc, not a
 contract — items here may be reordered, dropped, or moved between
 versions as evidence accumulates.
 
-Last updated: 2026-05-07 (v0.5.0 ship)
+Last updated: 2026-05-07 (v0.5.1 ship)
+
+---
+
+## Shipped in v0.5.1 ✓
+
+- Gate model evolution: project-level `BUILD APPROVED` (locks the
+  full version roadmap once), per-gate `CONFIRMED → ROADMAP APPROVED
+  → MOCKUPS APPROVED → FRONTEND APPROVED → GO`
+- `SCOPE CONFIRMED` and `TESTS APPROVED` retired
+- New conversational `/start` rewrite (matches the v0.5.0 user-supplied
+  text)
+- Foundation, hook, skill, and methodology docs aligned to the new
+  gate model
 
 ---
 
@@ -294,6 +307,108 @@ Two preconditions:
    Hook contracts are locked. Recipe format is locked.
 
 Tentative timeline: late 2026 / early 2027. No commitment.
+
+---
+
+## Candidates pending real-world feedback
+
+Designed and drafted, not yet assigned to a version. Held until
+evidence from real-project use of the existing system tells us
+whether they're worth building, what they need to do differently
+than the current draft, and where they slot in the version arc.
+
+---
+
+### `/mockup` skill — target HTML mockups for project versions
+
+**Status:** drafted 2026-05-07, held pending first real-project /start runs.
+
+**Purpose.** Generate standalone HTML mockup files showing what the
+app is being built toward at each version. Not "what the current code
+looks like" but "what we're aiming at." Each version in the roadmap
+gets its own mockup state. Visual fidelity progresses across versions
+so the user can *see* the difference between MVP and polished, not
+just read about it in a feature table.
+
+**Design intent.** Two mockups by default at `BUILD APPROVED` time:
+v1.0 (the MVP, functional tier) and v-final (the polished build,
+polished tier). Intermediate versions interpolate. Output to
+`foundation/MOCKUPS/<version>.html` plus a `foundation/MOCKUPS/index.html`
+showroom.
+
+**Architecture.** Matches the `/critical-thinker` pattern — main
+thread orchestrates, `mockup-agent` subagent does HTML generation,
+main thread writes files. Subagent stays read-only.
+
+**Fidelity tiers (drafted):**
+
+- **Wireframe** — v0.x. Light styling, neutral palette, system fonts,
+  visible structure. Looks intentionally early.
+- **Functional** — v1.0 MVP. Tailwind CDN, real product styling,
+  contextual placeholder data. Looks like a shipped product, narrow
+  scope.
+- **Polished** — v-final. Presentation-quality, refined typography,
+  considered visual identity. Looks like something a person would
+  pay for.
+
+**Auto + manual invocation:**
+
+- Auto from `/build-rules` after the version table, before
+  `BUILD APPROVED`. Default targets: v1.0 + v-final.
+- Manual: `/mockup` (regenerate defaults), `/mockup v2.0`
+  (specific version), `/mockup all` (every version in roadmap).
+
+**Five things that need to change before this ships:**
+
+1. **`mockup-agent` doesn't exist yet.** Skill delegates to it; first
+   invocation fails without it. Build alongside the skill. Tools:
+   Read, Glob (read-only). Returns either HTML string or
+   `DOMAIN_UNCLEAR: <question>` signal for the main thread to
+   handle.
+2. **Per-gate `MOCKUPS APPROVED` relationship is ambiguous.** Two
+   mockup concepts now: target mockups (this skill, locked at
+   BUILD APPROVED) vs per-gate mockups (current /build-rules PHASE 3,
+   locked at MOCKUPS APPROVED). The draft only addresses the first.
+   Decision deferred: leave per-gate mockups ad-hoc (option A,
+   recommended for first ship), or extend `/mockup` to also fire at
+   per-gate time (option B, deferred follow-up).
+3. **Domain-unclear flow needs explicit handling.** Subagent can't
+   ask the user directly. Skill must route the `DOMAIN_UNCLEAR`
+   signal back to the main thread, which asks the user, then
+   re-invokes with the answer in DOMAIN_CONTEXT.
+4. **`/build-rules` needs an explicit `/mockup` invocation step.**
+   Between version-table generation and waiting for BUILD APPROVED.
+   Without this, auto-invocation never fires.
+5. **/validate updates.** Skill count `15 → 16`, agent list adds
+   `mockup-agent`, new `tests/13-mockup.sh` covering skill+agent
+   presence and build-rules integration.
+
+**Tailwind via CDN (decided).** Single `<script>` tag dependency for
+functional/polished tiers. The portability concern is real but
+mockups are presentation artifacts, not deployable apps. Hand-written
+CSS for offline use would lose 80% of what makes the polished tier
+look polished.
+
+**Why held, not shipped.** v0.5.1 is the seventh release of the day
+on a system that hasn't been used on a fresh project yet. Claude can
+already produce HTML mockups conversationally during /build-rules.
+Codifying it as a skill before anyone has felt the friction of the
+un-codified version risks building the wrong abstraction. The right
+moment to ship `/mockup` is after the first real `/start` run cold
+where mockups would obviously help — at that point the design will
+be informed by evidence rather than intuition.
+
+**What would unblock shipping:**
+
+- 1+ fresh project taken through `/start` → `/build-rules`
+- Concrete observation of where mockups would help, what fidelity
+  tier was wanted, what content the subagent needed to know
+- Confirmation (or revision) of the auto-invocation point and
+  default version set
+
+**Where the draft lives.** Skill text and `mockup-agent` design notes
+are in this session's transcript. Full skill markdown ready to paste
+into `.claude/skills/mockup/SKILL.md` when the time comes.
 
 ---
 
