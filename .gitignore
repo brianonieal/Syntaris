@@ -1,4 +1,4 @@
-# Syntaris v0.3.0 — .gitignore
+# Syntaris v0.4.0 — .gitignore
 #
 # Keep the public repo clean. These files are either local-only,
 # contain personal information, or are build artifacts.
@@ -20,6 +20,7 @@ Syntaris-install/
 # ── Local state and logs ──────────────────────────────────────────────────
 # Hook wrapper error logs and marker files written during use.
 .claude/state/
+.claude/settings.local.json
 bp-hook-err-*.log
 tests-passing-marker
 
