@@ -239,4 +239,36 @@ if ($varianceAbs -gt 30) {
     [Console]::Error.WriteLine("")
 }
 
+# --- Pattern extraction (v0.5.0+) ---
+# After every gate close, attempt to extract patterns. The extractor
+# is bash-only; we invoke it via Git Bash if available. If not, skip
+# silently - the user can run /validate later to surface patterns.
+
+$extractor = $null
+$libCandidates = @(
+    (Join-Path $env:USERPROFILE ".claude\lib\extract-patterns.sh"),
+    (Join-Path $projDir ".claude\lib\extract-patterns.sh")
+)
+foreach ($c in $libCandidates) {
+    if (Test-Path $c) { $extractor = $c; break }
+}
+
+if ($extractor -and (Get-Command bash -ErrorAction SilentlyContinue)) {
+    try {
+        $env:CLAUDE_PROJECT_DIR = $projDir
+        $extractorOut = & bash $extractor 2>&1
+        $proposalLine = $extractorOut | Select-String -Pattern "wrote [1-9][0-9]* proposals"
+        if ($proposalLine) {
+            [Console]::Error.WriteLine("")
+            [Console]::Error.WriteLine("=== Pattern extraction ===")
+            $extractorOut | Select-String -Pattern "wrote [0-9]+ proposals|/health --review-patterns" | ForEach-Object {
+                [Console]::Error.WriteLine($_.Line)
+            }
+            [Console]::Error.WriteLine("")
+        }
+    } catch {
+        # Silently swallow - pattern extraction is opportunistic, not required
+    }
+}
+
 exit 0

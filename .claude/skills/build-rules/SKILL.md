@@ -3,7 +3,7 @@ name: build-rules
 description: "Invokes the five-phase planning and approval process before any code is written. Use when starting a new app build, when the user types /build-rules, or when a project needs its initial specification. This is a new-project skill; for resuming an existing project, use the start skill instead."
 ---
 
-# BUILD RULES - Syntaris v0.4.0
+# BUILD RULES - Syntaris v0.5.0
 # Invoke: /build-rules or auto-triggered at new project start
 
 ## THE FIVE PHASES
@@ -214,27 +214,35 @@ that gate. Every gate needs its own GO.
 
 When a gate's work is done:
 
-1. **Run /validate.** Runs the harness validation suite (103 tests
+1. **Run /validate.** Runs the harness validation suite (107+ tests
    covering hooks, calibration math, stale references, install
    round-trip) plus the user-project test suite (pytest / vitest /
    jest / go / cargo, auto-detected). Fails block the gate. This
    replaces the older "verify all tests for this gate pass" step
    because /validate covers both the harness and the project tests.
-2. Run /security (hook runs anyway at production gate)
-3. Run /performance (hook runs anyway at production gate)
-4. **Update VERSION_ROADMAP.md for the closing gate.** Edit the row for
+2. **Grade OUTCOMES.md (v0.5.0+).** If `foundation/OUTCOMES.md` exists
+   with `Status: PENDING` entries for this gate, invoke the
+   spec-reviewer subagent as grader. Each pending outcome is verified
+   against the actual implementation; PASSED/FAILED verdicts get
+   written back to OUTCOMES.md. FAILED outcomes block the gate and
+   trigger a retry attempt (manual in v0.5.0, automated in v0.6.0+).
+   Skip this step if OUTCOMES.md doesn't exist or has no PENDING
+   entries for this gate.
+3. Run /security (hook runs anyway at production gate)
+4. Run /performance (hook runs anyway at production gate)
+5. **Update VERSION_ROADMAP.md for the closing gate.** Edit the row for
    this version: change `Status` from `pending` to `DONE`, and fill in
    `Actual Hours` with the real hours figure (from TIMELOG.md if
-   tracked, otherwise from the calibration hook's output in step 9).
+   tracked, otherwise from the calibration hook's output in step 10).
    This keeps the roadmap honest about what's done vs. planned. Do NOT
    edit future gate rows here; variance-driven review of future ranges
-   is handled in step 9.
-5. Update CHANGELOG.md, TIMELOG.md, SPEC.md
-6. Write REFLEXION to MEMORY_CORRECTIONS.md (newest first)
-7. Update MEMORY_EPISODIC.md gate outcome row
-8. Check MEMORY_SEMANTIC.md for pattern updates
-9. Append ESTIMATION entry to MEMORY_CORRECTIONS.md using the
-   calibration hook:
+   is handled in step 10.
+6. Update CHANGELOG.md, TIMELOG.md, SPEC.md
+7. Write REFLEXION to MEMORY_CORRECTIONS.md (newest first)
+8. Update MEMORY_EPISODIC.md gate outcome row
+9. Check MEMORY_SEMANTIC.md for pattern updates
+10. Append ESTIMATION entry to MEMORY_CORRECTIONS.md using the
+    calibration hook:
    ```bash
    ~/.claude/hooks/gate-close-calibration.sh <version>    # Mac/Linux/WSL
    ```
@@ -251,12 +259,17 @@ When a gate's work is done:
    If the variance pattern is significant, raise it with the user as a
    scope-change candidate (which would re-open SCOPE CONFIRMED).
 
-   IMPORTANT: this step must run BEFORE the snapshot in step 10.
-   Otherwise the snapshot captures a stale MEMORY_CORRECTIONS.md
-   that is missing this gate's ESTIMATION entry, and a later
-   rollback will silently wipe it.
+    The calibration hook also auto-runs pattern extraction
+    (`extract-patterns.sh`). When patterns are proposed, the hook
+    surfaces a heads-up. Run `/health --review-patterns` afterward
+    to walk through them.
 
-10. Snapshot foundation files for rollback safety (runs AFTER
+    IMPORTANT: this step must run BEFORE the snapshot in step 11.
+    Otherwise the snapshot captures a stale MEMORY_CORRECTIONS.md
+    that is missing this gate's ESTIMATION entry, and a later
+    rollback will silently wipe it.
+
+11. Snapshot foundation files for rollback safety (runs AFTER
     calibration):
     ```bash
     mkdir -p .syntaris/snapshots/<version>
@@ -274,16 +287,16 @@ When a gate's work is done:
     ls -1t .syntaris/snapshots/ 2>/dev/null | tail -n +11 | \
       xargs -I{} rm -rf .syntaris/snapshots/{}
     ```
-11. git add . && git commit && git tag syntaris-gate-<version> &&
+12. git add . && git commit && git tag syntaris-gate-<version> &&
     git push origin main --tags
-12. **Invoke billing skill if PROJECT_TYPE is client.** Read foundation/CONTRACT.md.
+13. **Invoke billing skill if PROJECT_TYPE is client.** Read foundation/CONTRACT.md.
     If `PROJECT_TYPE: client`, hand off to the billing skill (core/skills/billing/SKILL.md).
     The billing skill reads MEMORY_CORRECTIONS.md actual hours, computes invoice line item,
     and prompts the user for invoice generation. If `PROJECT_TYPE: personal`, skip this step.
     If the just-closed gate is the v1.0.0 final gate AND PROJECT_TYPE is client, the billing
     skill also produces three handoff documents in foundation/HANDOFF/.
-13. Present gate close checklist with all items checked
-14. Wait for next gate's **GO**
+14. Present gate close checklist with all items checked
+15. Wait for next gate's **GO**
 
 ## HARD RULES
 

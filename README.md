@@ -2,7 +2,7 @@
 
 [![validate](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml/badge.svg)](https://github.com/brianonieal/Syntaris/actions/workflows/validate.yml)
 
-**v0.4.1** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
+**v0.5.0** | A compilation-stage knowledge layer and harness engineering implementation for AI coding agents.
 
 Syntaris breaks software projects into five mechanically-gated phases, accumulates structured calibration data across sessions so estimates improve with each gate, and runs across eight AI coding harnesses at three enforcement tiers.
 
@@ -104,12 +104,13 @@ Syntaris runs across eight AI coding harnesses at three enforcement tiers.
 
 The compatibility matrix in `docs/COMPATIBILITY.md` is the single source of truth on capability per runtime. Other Claude Code frameworks may claim equal support across all runtimes; Syntaris doesn't, because hook systems, rule auto-application, and subagent isolation differ mechanically.
 
-### What ships in v0.4.0
+### What ships in v0.5.0
 
-- **15 skills** in `.claude/skills/` covering session orchestration (`start`), build rules (`build-rules`), critical thinking (`critical-thinker`), research (`research`), costs (`costs`), testing (`testing`), security (`security`), performance (`performance`), deployment (`deployment`), debug (`debug`), health (`health`), billing (consolidated), rollback (`rollback`), global rules (`global-rules`), and the new harness validation suite (`validate`, 103 tests)
-- **20 hook scripts** in `.claude/hooks/` (10 bash + 10 PowerShell pairs), with the v0.4.0 diagnostic delta in `gate-close-calibration` and `session-start`
-- **7 subagents** in `.claude/agents/`: `spec-reviewer`, `test-writer`, `security-auditor`, `research-agent`, `debug-agent`, `health-agent`, `critical-thinker-agent`
-- **23 foundation file templates** in `foundation/` covering contract, spec, decisions, memory, costs, components (now with `Test File` column for spec-to-test traceability), frontend spec, design system, examples, etc., plus `CLIENTS.md.template` for client work
+- **15 skills** in `.claude/skills/` covering session orchestration (`start`), build rules (`build-rules`), critical thinking (`critical-thinker`), research (`research`), costs (`costs`), testing (`testing`), security (`security`), performance (`performance`), deployment (`deployment`), debug (`debug`), health (`health` — extended with `--review-patterns`), billing (consolidated), rollback (`rollback`), global rules (`global-rules`), and harness validation (`validate`, 120 tests)
+- **20 hook scripts** in `.claude/hooks/` (10 bash + 10 PowerShell pairs), with v0.5.0 pattern-extraction integration in `gate-close-calibration` and the v0.4.0 diagnostic delta in `session-start`
+- **1 lib script** at `.claude/lib/extract-patterns.sh` — pattern extraction from accumulated ESTIMATION data
+- **7 subagents** in `.claude/agents/`: `spec-reviewer` (now an Outcomes grader), `test-writer`, `security-auditor`, `research-agent`, `debug-agent`, `health-agent`, `critical-thinker-agent`
+- **24 foundation file templates** in `foundation/` covering contract, spec, decisions, memory (with auto-extraction metadata in `MEMORY_SEMANTIC.md`), costs, components (with `Test File` column for spec-to-test traceability), frontend spec, design system, the new `OUTCOMES.md` for task-level success criteria, examples, etc., plus `CLIENTS.md.template` for client work
 - **8 target adapters** in `targets/` (one per supported runtime, with per-target install logic)
 - **6 recipe families** in `recipes/`: `web-app-starter` with React/Vue/Svelte/Plain sub-recipes, `api-starter` with TypeScript/Python/Go sub-recipes, `python-cli`, `mobile-starter` with platform sub-recipes, `bring-your-own`, `_template`
 - **Runtime detection** at `.claude/lib/detect-runtime.sh` and `.ps1`
@@ -232,9 +233,9 @@ Syntaris uses a fresh `0.x` version line. Internal predecessor versions (Syntari
 - **v0.1.0** - first public release; README cleanup, security baseline, version reset
 - **v0.3.0** - multi-runtime support (8 targets, 3 tiers), personal/client branch, billing skill consolidation, vocabulary reframe, stack-flexible recipes, pilot benchmark
 - **v0.4.0** - diagnostic delta in calibration, spec-to-test traceability, `/validate` skill (103 tests), conversational `/start` rewrite, competitive landscape mode in `/research`, README install simplification, install.sh CRLF fix
-- **v0.4.1** - wire `/validate` into the methodology: build-rules gate-close integration (Layer 1), GitHub Actions CI on every push (Layer 2), health-agent freshness check via skill-telemetry log (Layer 3). **This version.**
-- **v0.5.0** - planned: pattern extraction from MEMORY_CORRECTIONS.md (auto-surface variance patterns into MEMORY_SEMANTIC.md), task-level Outcomes (success criteria + grader + retry within a gate), full 30-task benchmark
-- **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards) plus `/start --quick` mode
+- **v0.4.1** - wire `/validate` into the methodology: build-rules gate-close integration (Layer 1), GitHub Actions CI on every push (Layer 2), health-agent freshness check via skill-telemetry log (Layer 3)
+- **v0.5.0** - pattern extraction from MEMORY_CORRECTIONS.md (4 pattern types: project-systemic, error-introduction, source bias, gate-type variance), `/health --review-patterns` flow, Outcomes template + spec-reviewer grader. **This version.**
+- **v0.6.0** - planned: telemetry (cost, model routing, stuck-loop guards), `/start --quick` mode, automated Outcomes retry loop, recovery patterns (5th pattern type)
 - **v0.7.0** - planned: calibration evidence (auto-generated learning curve from accumulated patterns, populated MEMORY_CORRECTIONS.md example)
 - **v1.0.0** - when calibration data exists across at least three different stacks AND the API is stable enough to commit to backward compatibility
 

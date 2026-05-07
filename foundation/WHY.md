@@ -1,5 +1,5 @@
 # WHY.md
-# Syntaris v0.4.0 | The Reasoning Behind Every Major Decision
+# Syntaris v0.5.0 | The Reasoning Behind Every Major Decision
 # Read this before questioning the methodology
 # Stack-specific: Next.js + FastAPI + Supabase + LangGraph + Plaid
 #

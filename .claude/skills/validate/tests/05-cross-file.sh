@@ -10,9 +10,9 @@ for agent in $EXPECTED_AGENTS; do
   assert_file_exists "05.1 agent: $agent" "$R/.claude/agents/${agent}.md"
 done
 
-# 05.2 - Skill count matches v0.3.0 spec (14 skills)
+# 05.2 - Skill count v0.5.0: 15 skills (14 from v0.3.0 + /validate from v0.4.0)
 SKILL_COUNT=$(ls "$R/.claude/skills/" 2>/dev/null | wc -l)
-assert_eq "05.2 Skill count = 14 (or 15 with /validate added)" "15" "$SKILL_COUNT"
+assert_eq "05.2 Skill count = 15 (v0.4.0+/validate)" "15" "$SKILL_COUNT"
 
 # 05.3 - Hook count: 10 .sh + 10 .ps1
 BASH_COUNT=$(ls "$R/.claude/hooks/"*.sh 2>/dev/null | wc -l)

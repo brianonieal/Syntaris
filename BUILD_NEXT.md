@@ -4,16 +4,36 @@ What's planned after v0.4.0. This file is a working planning doc, not a
 contract — items here may be reordered, dropped, or moved between
 versions as evidence accumulates.
 
-Last updated: 2026-05-07 (v0.4.0 ship)
+Last updated: 2026-05-07 (v0.5.0 ship)
 
 ---
 
-## v0.5.0 - Pattern extraction + Outcomes + 30-task benchmark
+## Shipped in v0.5.0 ✓
 
-Three thrusts. Pattern extraction is the headline because it closes
-the gap with Anthropic Managed Agents Dreaming. Outcomes is the
-genuinely missing primitive. Benchmark is the deferred v0.5.0 work
-from the original roadmap.
+- Pattern extraction (`extract-patterns.sh`): 4 of 5 pattern types
+  (project-systemic, error-introduction, source bias, gate-type
+  variance). Recovery patterns deferred to v0.5.1/v0.6.0.
+- `/health --review-patterns` conversational accept/reject/edit flow
+- MEMORY_SEMANTIC.md format extension (Auto-extracted, Human-reviewed,
+  Data points fields)
+- Outcomes (template + manual grading + spec-reviewer extension)
+- Build-rules gate-close protocol updated (Outcomes grading step)
+
+---
+
+## ~~v0.5.0~~ (now historical reference)
+
+Pattern extraction and Outcomes (manual-grading slice) shipped.
+Recovery patterns and the automated Outcomes retry loop moved to
+v0.6.0. The 30-task benchmark is still scoped here as research work
+gated on Tier 2 adapter validation.
+
+The original v0.5.0 scope below is preserved as historical context;
+the "Shipped in v0.5.0" list above is what actually landed.
+
+---
+
+## v0.5.0 (original scope, now partially shipped)
 
 ### Thrust 1: Pattern extraction (headline)
 

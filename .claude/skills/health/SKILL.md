@@ -3,8 +3,9 @@ name: health
 description: "Audits Syntaris installation and project foundation files. Use when checking system integrity, after long breaks from a project, or when the user types /health. The 22-file read happens in an isolated subagent."
 ---
 
-# HEALTH SKILL - Syntaris v0.4.0
-# Invoke: /health
+# HEALTH SKILL - Syntaris v0.5.0
+# Invoke: /health  (full audit)
+#         /health --review-patterns  (walk through proposed patterns)
 
 ## STEP 1: DELEGATE TO HEALTH-AGENT
 
@@ -48,6 +49,54 @@ HEALTH CHECK: <date> - <X items addressed, Y items deferred>
 ```
 
 Do not let the subagent write this. You write it.
+
+## --review-patterns MODE (v0.5.0+)
+
+When the user invokes `/health --review-patterns`, skip the full audit
+and run this flow instead:
+
+### Step A: Read the proposed patterns
+
+Open `.syntaris/proposed-patterns.md`. If it doesn't exist, tell the user
+"No proposed patterns yet. Pattern extraction runs at gate close once
+there are 5+ ESTIMATION entries in MEMORY_CORRECTIONS.md." Stop.
+
+### Step B: Walk each entry conversationally
+
+For each `### PAT-NNN` block, present the entry to the user and ask:
+
+> "Pattern PAT-NNN proposes [one-sentence summary]. Confidence: [X],
+> based on [N] data points. Accept, reject, or edit?"
+
+If accepted:
+- Copy the block to `foundation/MEMORY_SEMANTIC.md` under `## PATTERNS`
+- Update `Human-reviewed:` field to `yes (accepted by <user> <today>)`
+- Confirm with the user
+
+If rejected:
+- Skip it. The next extract-patterns run will re-propose if data still
+  supports it; the user can reject again.
+
+If edit:
+- Ask the user what to change (typically the description text or
+  confidence level)
+- Apply the edit, then write to MEMORY_SEMANTIC.md as if accepted
+
+### Step C: Clear or preserve the staging file
+
+After all entries are walked through:
+
+- If at least one was accepted, the staging file's contents are now in
+  MEMORY_SEMANTIC.md. Leave the staging file in place so the user can
+  re-read it; it will be overwritten on next extract-patterns run.
+- If everything was rejected, no harm done; staging file stays.
+
+### Step D: Log the review
+
+Append to MEMORY_EPISODIC.md:
+```
+PATTERN REVIEW: <date> - <X accepted, Y rejected, Z edited> from <N proposals>
+```
 
 ## RULES
 

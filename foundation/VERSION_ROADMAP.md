@@ -1,5 +1,5 @@
 # VERSION_ROADMAP.md
-# Syntaris v0.4.0 | Full Version Roadmap
+# Syntaris v0.5.0 | Full Version Roadmap
 # Generated during SCOPE CONFIRMED phase.
 # Covers v0.0 through the final version for this build type.
 

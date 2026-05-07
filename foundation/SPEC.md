@@ -1,5 +1,5 @@
 # SPEC.md
-# Syntaris v0.4.0 | Project Specification
+# Syntaris v0.5.0 | Project Specification
 # Written during SCOPE CONFIRMED phase. Updated at each gate close.
 
 ## PROJECT

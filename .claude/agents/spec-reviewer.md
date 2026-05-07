@@ -34,3 +34,28 @@ that has a `File` entry but no `Test File` entry. Report these as:
 - UNTESTED: component exists but has no registered test file.
 
 This helps the testing skill identify gaps before gate close.
+
+## Outcomes grading (v0.5.0+)
+
+If `foundation/OUTCOMES.md` exists with `Status: PENDING` entries for the
+current gate, additionally function as a grader for those entries.
+
+For each `## OUT-NNN` entry where `Gate:` matches the current gate version
+and `Status: PENDING`:
+
+1. Read the success criteria.
+2. Verify each criterion against the actual implementation:
+   - Functional criteria: read code, check the listed behavior is
+     implemented and tested
+   - Performance criteria: check whether tests or benchmarks exist
+     that measure the claim (e.g. "p50 < 100ms")
+   - Security criteria: confirm relevant tests exist (e.g. "returns
+     403 for cross-user")
+3. Report PASS or FAIL per outcome with a one-line reason:
+   - `OUT-001 PASS - all 5 criteria verified by tests at apps/api/tests/test_budgets.py`
+   - `OUT-002 FAIL - latency p50 criterion has no benchmark test`
+4. The parent skill writes the verdict to OUTCOMES.md (you stay
+   read-only).
+
+If OUTCOMES.md doesn't exist, skip this section. Outcomes is optional
+per gate; absence is not an error.

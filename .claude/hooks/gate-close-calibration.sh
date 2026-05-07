@@ -282,4 +282,27 @@ if [ "$VARIANCE_ABS" -gt 30 ]; then
   echo "" >&2
 fi
 
+# --- Pattern extraction (v0.5.0+) ---
+# After every gate close, attempt to extract patterns from accumulated
+# ESTIMATION data. The extractor exits silently if there's not enough
+# data yet (< 5 entries). When it does propose patterns, we surface a
+# heads-up so the user knows to run /health --review-patterns.
+
+EXTRACTOR="${SYNTARIS_LIB:-$HOME/.claude/lib}/extract-patterns.sh"
+# Fall back to project-local copy (used during Syntaris development)
+[[ ! -f "$EXTRACTOR" ]] && EXTRACTOR="$PROJ_DIR/.claude/lib/extract-patterns.sh"
+# Fall back to repo-relative (used when this hook is run from the Syntaris repo itself)
+[[ ! -f "$EXTRACTOR" ]] && EXTRACTOR="$(dirname "$0")/../lib/extract-patterns.sh"
+
+if [[ -f "$EXTRACTOR" ]]; then
+  EXTRACTOR_OUT=$(CLAUDE_PROJECT_DIR="$PROJ_DIR" bash "$EXTRACTOR" 2>&1) || true
+  # Surface only the proposal-count line if patterns were proposed.
+  if echo "$EXTRACTOR_OUT" | grep -q "wrote [1-9][0-9]* proposals"; then
+    echo "" >&2
+    echo "=== Pattern extraction ===" >&2
+    echo "$EXTRACTOR_OUT" | grep -E "wrote [0-9]+ proposals|/health --review-patterns" >&2
+    echo "" >&2
+  fi
+fi
+
 exit 0

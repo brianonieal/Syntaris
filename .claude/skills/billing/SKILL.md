@@ -3,7 +3,7 @@ name: billing
 description: "Client work billing automation. Activates conditionally when CONTRACT.md has PROJECT_TYPE: client. Generates invoices at gate close based on hours from MEMORY_CORRECTIONS.md, prompts for invoice generation per gate, produces handoff deliverables at v1.0.0 final gate. Never activates for personal projects."
 ---
 
-# BILLING SKILL - Syntaris v0.4.0
+# BILLING SKILL - Syntaris v0.5.0
 # Conditional activation based on CONTRACT.md PROJECT_TYPE field
 
 ## ACTIVATION RULES

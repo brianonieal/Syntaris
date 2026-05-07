@@ -3,7 +3,7 @@ name: security
 description: "This skill runs security audits at gate close and before production deployments. Use when checking for vulnerabilities, before deploying, or when the user types /security. Covers OWASP Top 10 and AI-specific threats."
 ---
 
-# SECURITY SKILL - Syntaris v0.4.0
+# SECURITY SKILL - Syntaris v0.5.0
 # Invoke: /security or auto-triggered pre-deploy
 
 ## WHEN TO RUN

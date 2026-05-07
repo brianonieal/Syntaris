@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Syntaris v0.4.0 | Session Rules
+# Syntaris v0.5.0 | Session Rules
 # Read at every session start. Keep under 150 lines.
 
 ---
@@ -67,22 +67,27 @@ At every gate close, do all of this before presenting the checklist:
 1. Run /validate - fails block the gate. Covers harness validation
    (hooks, calibration, stale refs, install round-trip) plus the
    project test suite (pytest/vitest/jest/go/cargo) in one pass.
-2. Run lightweight security check
-3. Take Playwright screenshots if screens were built (/visual-checks)
-4. Update VERSION_ROADMAP.md for the closing gate: set Status = DONE,
+2. Grade OUTCOMES.md if present - if foundation/OUTCOMES.md has
+   PENDING entries for this gate, invoke spec-reviewer as grader.
+   FAILED outcomes block the gate; manual retry in v0.5.0, automated
+   in v0.6.0+.
+3. Run lightweight security check
+4. Take Playwright screenshots if screens were built (/visual-checks)
+5. Update VERSION_ROADMAP.md for the closing gate: set Status = DONE,
    fill in Actual Hours
-5. Update CHANGELOG.md, TIMELOG.md, SPEC.md
-6. Write REFLEXION to MEMORY_CORRECTIONS.md (newest first)
-7. Update MEMORY_EPISODIC.md gate outcome row
-8. Check MEMORY_SEMANTIC.md for pattern updates
-9. Run the calibration hook - writes ESTIMATION entry; hook auto-prints
-   heads-up if variance > 30%
-10. Snapshot foundation files to `.syntaris/snapshots/<version>/`;
+6. Update CHANGELOG.md, TIMELOG.md, SPEC.md
+7. Write REFLEXION to MEMORY_CORRECTIONS.md (newest first)
+8. Update MEMORY_EPISODIC.md gate outcome row
+9. Check MEMORY_SEMANTIC.md for pattern updates
+10. Run the calibration hook - writes ESTIMATION entry; hook auto-prints
+    heads-up if variance > 30%; auto-runs pattern extraction when
+    >=5 ESTIMATION entries exist
+11. Snapshot foundation files to `.syntaris/snapshots/<version>/`;
     prune to last 10
-11. git add . && git commit && git tag syntaris-gate-<version> &&
+12. git add . && git commit && git tag syntaris-gate-<version> &&
     git push origin main --tags
-12. Present gate close checklist with all items checked
-13. Wait for next gate's GO
+13. Present gate close checklist with all items checked
+14. Wait for next gate's GO
 
 ---
 

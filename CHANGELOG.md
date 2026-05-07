@@ -4,6 +4,92 @@ Public release line starts at v0.1.0. The earlier version lineage (Syntaris v8 t
 
 ---
 
+## [0.5.0] - 2026-05-07 - Pattern extraction + Outcomes
+
+The headline is closing the gap with Anthropic Managed Agents'
+"Dreaming" feature on the calibration loop's pattern-extraction
+surface, while keeping the structural differences (gate-tied
+boundary, numeric format) that make Syntaris's loop usable across
+runtimes that don't have Managed Agents at all. Plus the first
+slice of Outcomes (task-level success criteria + spec-reviewer
+grader); the automated retry loop is deferred to v0.6.0 per the
+BUILD_NEXT split.
+
+### Added
+
+- **Pattern extraction (`extract-patterns.sh`).** New script at
+  `.claude/lib/extract-patterns.sh` reads accumulated ESTIMATION
+  lines from MEMORY_CORRECTIONS.md, detects four pattern types,
+  writes proposed PAT entries to `.syntaris/proposed-patterns.md`.
+  Pattern types implemented:
+    1. Project-level systemic estimation bias (mean variance >=15%)
+    2. Error-introduction variance (gates that grew error count vs
+       not, with 15% mean-difference threshold)
+    3. Source-of-actuals bias (timelog vs git source means)
+    4. Gate-type variance bias (keyword-grouped from VERSION_ROADMAP
+       feature column: auth, rls, migration, agent, deployment,
+       crud, scaffold, data)
+  Recovery patterns (gates after STOP EVENT) deferred to v0.5.1 or
+  v0.6.0 since they need episodic-event-timing parsing.
+- **Confidence scoring**: LOW (2-3 points) / MEDIUM (4-6) / HIGH (7+).
+- **Auto-extraction at gate close.** `gate-close-calibration.sh` and
+  `.ps1` now invoke the extractor after writing the ESTIMATION line.
+  When patterns are proposed, the hook surfaces a heads-up.
+- **`/health --review-patterns` flow.** New mode in the health skill
+  that walks proposed patterns one at a time conversationally
+  (accept / reject / edit), promotes accepted ones to
+  MEMORY_SEMANTIC.md, logs the review to MEMORY_EPISODIC.md.
+- **MEMORY_SEMANTIC.md format extension.** New optional fields on
+  PATTERN entries: `Auto-extracted: yes | no`, `Human-reviewed: yes
+  (accepted by [user] [date]) | no`, `Data points: [N gates ...]`.
+  Pre-v0.5.0 patterns without these fields keep working.
+- **Outcomes (template + manual grading).** New `foundation/OUTCOMES.md`
+  template for task-level success criteria within a gate. Format:
+  `## OUT-NNN: [task]` with `Status: PENDING | PASSED | FAILED |
+  RETRY-N`, success criteria list, grader, retry budget. Deferred
+  to v0.6.0: automated retry loop.
+- **`spec-reviewer` extended as Outcomes grader.** When OUTCOMES.md
+  exists with PENDING entries for the current gate, spec-reviewer
+  verifies each criterion against the actual implementation and
+  reports PASS/FAIL with reason. Stays read-only; the parent skill
+  writes the verdict.
+- **Gate-close protocol** (in build-rules SKILL and foundation/CLAUDE.md)
+  now includes a "Grade OUTCOMES.md" step between /validate and
+  /security. Skipped if OUTCOMES.md is absent.
+- **/validate test coverage**: `tests/11-pattern-extraction.sh` (8 tests)
+  and `tests/12-outcomes.sh` (5 tests). Suite is now 120/120.
+
+### Changed
+
+- Plugin manifest version `0.4.1` → `0.5.0`.
+- `SYNTARIS_VERSION` env var `v0.4.1` → `v0.5.0`.
+- Foundation, hooks, skills version headers all bumped to v0.5.0.
+- `MEMORY_SEMANTIC.md` template format extended with optional
+  auto-extraction metadata fields.
+- 24 foundation file templates (was 23 with addition of OUTCOMES.md).
+- Skill count remains 15 (no new skills, /health and build-rules
+  extended).
+
+### Migration
+
+- v0.4.x → v0.5.0 is **additive only**. No migration script needed.
+- Existing MEMORY_SEMANTIC.md entries without auto-extraction fields
+  default to "Auto-extracted: no" / "Human-reviewed: no" implicitly.
+- Existing projects can adopt OUTCOMES.md by creating the file
+  and filling in OUT-NNN entries from the gate they want to start.
+- Pattern extraction won't fire until 5+ ESTIMATION entries
+  accumulate; existing projects with fewer entries see no change.
+
+### Deferred (per BUILD_NEXT.md scope)
+
+- 30-task benchmark (research/operator time, not engineering)
+- Recovery patterns (5th pattern type, needs episodic timing)
+- Automated Outcomes retry loop → v0.6.0
+- `/start --quick` mode → v0.6.0
+- Telemetry expansion → v0.6.0
+
+---
+
 ## [0.4.1] - 2026-05-07 - Wire `/validate` into the methodology
 
 Patch release that integrates the v0.4.0 `/validate` skill more deeply

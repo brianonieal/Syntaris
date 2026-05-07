@@ -1,5 +1,5 @@
 ﻿# block-dangerous.ps1
-# Syntaris v0.4.0: Block dangerous commands before execution
+# Syntaris v0.5.0: Block dangerous commands before execution
 # Runs as PreToolUse hook with matcher "Bash"
 # Per Anthropic hook spec: input arrives as JSON on stdin, exit 2 blocks.
 

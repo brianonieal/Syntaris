@@ -1,5 +1,5 @@
 ﻿# uninstall.ps1
-# Syntaris v0.4.0: Remove Syntaris-owned files from this machine.
+# Syntaris v0.5.0: Remove Syntaris-owned files from this machine.
 #
 # Removes: $InstallRoot\skills, hooks, agents, settings.json, state
 # Restores: settings.json.bak if present

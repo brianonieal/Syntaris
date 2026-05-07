@@ -1,5 +1,5 @@
 # COMPONENT_REGISTRY.md
-# Syntaris v0.4.0 | Component Registry
+# Syntaris v0.5.0 | Component Registry
 # Every UI component is registered here when built.
 # Source of truth for what exists, who owns it, and whether it's been visually verified.
 
